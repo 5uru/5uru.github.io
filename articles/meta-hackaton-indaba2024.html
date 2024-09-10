@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plongée Technique dans le Hackathon Meta : Notre Solution de Traduction Anglais-Twi - Blog de Jonathan Suru</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<main>
+    <article>
+        <h1>Plongée Technique dans l'Hackathon Meta : Notre Solution de Traduction Anglais-Twi</h1>
+
+        <h2>Introduction</h2>
+        <p>Lors du Deep Learning Indaba 2024 à Dakar, un événement majeur pour l'IA en Afrique, Meta a lancé un défi stimulant : développer un modèle de traduction automatique de l'anglais vers le twi, une langue parlée par des millions de Ghanéens. En tant que duo d'étudiants africains passionnés par l'IA, nous avons saisi cette opportunité unique.</p>
+        <p>Notre parcours de quatre jours intensifs au cœur de cette conférence nous a non seulement menés à la quatrième place, mais nous a aussi offert des perspectives précieuses sur le potentiel et les défis de l'IA appliquée aux langues africaines. Cette expérience a renforcé notre conviction que la technologie peut être un puissant vecteur de préservation et de promotion de la diversité linguistique de notre continent.</p>
+
+        <h2>Le Défi : Contexte et Enjeux</h2>
+        <p>L'hackathon organisé par Meta visait à résoudre un problème crucial : l'inaccessibilité des technologies de traduction avancées pour de nombreuses langues africaines, dont le twi. Les objectifs étaient clairs :</p>
+        <ol class="article-list">
+            <li>Développer un modèle de traduction automatique de l'anglais vers le twi.</li>
+            <li>Utiliser des modèles open-source de la suite Meta (comme NLLB, SeamlessM4T, ou leurs dérivés).</li>
+            <li>Créer une solution accessible et évolutive pour la communauté.</li>
+        </ol>
+        <p>L'importance de ce défi va bien au-delà de la simple prouesse technique. Il s'agit de démocratiser l'accès à l'information, d'améliorer l'éducation et les soins de santé, et de préserver la richesse linguistique de l'Afrique à l'ère numérique.</p>
+
+        <h2>Notre Approche : De la Théorie à la Pratique</h2>
+
+        <h3>1. Comprendre et Préparer les Données</h3>
+        <p>Le jeu de données, fourni par GhanaNLP, comprenait :</p>
+        <ul>
+            <li>4 800 phrases pour l'entraînement</li>
+            <li>3 200 phrases pour le test</li>
+        </ul>
+        <p>Avant de commencer le développement du modèle, nous avons dû préparer nos données. Voici comment nous avons procédé :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Chargement des données
+df = pd.read_csv('/content/Train.csv')
+
+# Division en ensembles d'entraînement et de validation
+train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
+
+print(f"Taille de l'ensemble d'entraînement : {len(train_df)}")
+print(f"Taille de l'ensemble de validation : {len(val_df)}")
+                </code>
+            </pre>
+        </div>
+        <p>Ce code charge les données et les divise en ensembles d'entraînement et de validation. La division 80/20 est courante dans le domaine du ML pour assurer une bonne généralisation du modèle.</p>
+
+        <h3>2. Choix et Configuration du Modèle</h3>
+        <p>Nous avons opté pour le modèle NLLB (No Language Left Behind) de Facebook. Voici notre configuration :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+model_checkpoint = "facebook/nllb-200-distilled-600M"
+source_lang = "eng_Latn"
+target_lang = "twi_Latn"
+
+tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, src_lang=source_lang, tgt_lang=target_lang)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_checkpoint)
+
+# Activation du gradient checkpointing pour optimiser l'utilisation de la mémoire
+model.gradient_checkpointing_enable()
+                </code>
+            </pre>
+        </div>
+        <p>Explications :</p>
+        <ul>
+            <li><b>AutoTokenizer</b> et <b>AutoModelForSeq2SeqLM</b> sont utilisés pour charger le tokenizer et le modèle pré-entraînés.</li>
+            <li><b>src_lang</b> et <b>tgt_lang</b> spécifient les langues source et cible pour le tokenizer.</li>
+            <li><b>gradient_checkpointing_enable()</b> est une technique d'optimisation de la mémoire qui sacrifie un peu de vitesse pour permettre l'entraînement de modèles plus grands.</li>
+        </ul>
+
+        <h3>3. Préparation et Augmentation des Données</h3>
+        <p>L'augmentation des données a été une étape cruciale. Nous avons expérimenté plusieurs approches :</p>
+
+        <h4>3.1 Augmentation par Paraphrase</h4>
+        <div class="code-block">
+            <pre>
+                <code>
+import nltk
+from nltk.corpus import wordnet as wn
+
+nltk.download('wordnet', quiet=True)
+nltk.download('averaged_perceptron_tagger', quiet=True)
+
+def paraphrase_sentence(sentence):
+    words = nltk.word_tokenize(sentence)
+    new_words = []
+    for word, tag in nltk.pos_tag(words):
+        if tag.startswith('NN'):  # Pour les noms
+            synsets = wn.synsets(word, 'n')
+        elif tag.startswith('VB'):  # Pour les verbes
+            synsets = wn.synsets(word, 'v')
+        else:
+            synsets = wn.synsets(word)
+
+        if synsets:
+            synonym = synsets[0].lemmas()[0].name()
+            new_words.append(synonym)
+        else:
+            new_words.append(word)
+    return ' '.join(new_words)
+
+def augment_dataset(examples):
+    augmented_english = [paraphrase_sentence(text) for text in examples["English"]]
+    return {"English": augmented_english, "Twi": examples["Twi"]}
+                </code>
+            </pre>
+        </div>
+        <p>Explications :</p>
+        <ul>
+            <li><b>paraphrase_sentence()</b> utilise WordNet pour remplacer certains mots par leurs synonymes.</li>
+            <li><b>augment_dataset()</b> applique cette paraphrase à chaque phrase anglaise du dataset.</li>
+            <li>Nous appliquons cette augmentation à l'ensemble du dataset d'entraînement.</li>
+        </ul>
+
+        <h4>3.2 Augmentation Partielle (75% du dataset)</h4>
+        <p>Nous avons découvert qu'appliquer l'augmentation à seulement une partie du dataset pouvait offrir un bon équilibre entre amélioration des performances et temps de calcul. Voici comment nous avons implémenté l'augmentation partielle :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+import numpy as np
+from datasets import Dataset, concatenate_datasets
+
+# Sélection aléatoire de 75% des données pour l'augmentation
+augmentation_mask = np.random.rand(len(train_df)) < 0.75
+train_to_augment = train_df[augmentation_mask]
+train_not_augment = train_df[~augmentation_mask]
+
+# Application de l'augmentation
+augmented_data = Dataset.from_pandas(train_to_augment).map(augment_dataset, batched=True, batch_size=8)
+not_augmented_data = Dataset.from_pandas(train_not_augment)
+
+# Combinaison des données augmentées et non augmentées
+final_train_dataset = concatenate_datasets([augmented_data, not_augmented_data])
+                </code>
+            </pre>
+        </div>
+        <p>Cette approche nous a permis d'obtenir un score de 0.62451523, une amélioration significative par rapport à notre score initial de 0.597801611 sans augmentation.</p>
+
+        <h4>3.3 Back-to-Back Translation (Conceptuel)</h4>
+        <p>Nous avons également envisagé d'utiliser la technique de back-to-back translation. Bien que nous n'ayons pas pu l'implémenter complètement en raison des contraintes de temps (plus d'une heure de traitement pour 4200 lignes), voici un aperçu conceptuel de comment cela aurait pu être implémenté :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+from transformers import pipeline
+
+# Initialisation des pipelines de traduction
+en_to_fr = pipeline("translation", model="Helsinki-NLP/opus-mt-en-fr")
+fr_to_en = pipeline("translation", model="Helsinki-NLP/opus-mt-fr-en")
+
+def back_to_back_translate(text):
+    # Traduire de l'anglais vers le français
+    fr_text = en_to_fr(text, max_length=128)[0]['translation_text']
+    # Retraduire du français vers l'anglais
+    back_translated = fr_to_en(fr_text, max_length=128)[0]['translation_text']
+    return back_translated
+
+def augment_dataset_b2b(examples):
+    augmented_english = [back_to_back_translate(text) for text in examples["English"]]
+    return {"English": augmented_english, "Twi": examples["Twi"]}
+
+# Cette fonction n'a pas été utilisée dans notre solution finale en raison du temps de traitement
+# augmented_data_b2b = Dataset.from_pandas(train_df).map(augment_dataset_b2b, batched=True, batch_size=4)
+                </code>
+            </pre>
+        </div>
+        <p>Cette approche aurait pu potentiellement introduire plus de diversité dans nos données d'entraînement, mais le coût en temps de calcul était prohibitif dans le cadre du hackathon.</p>
+
+        <h4>3.4 Résultats des Différentes Stratégies d'Augmentation</h4>
+        <p>Voici un résumé de nos résultats avec différentes stratégies d'augmentation :</p>
+        <ul>
+            <li>Sans augmentation : 0.597801611</li>
+            <li>Augmentation à 75% : 0.62451523</li>
+            <li>Augmentation à 100% : 0.626154416</li>
+        </ul>
+        <p>Ces résultats montrent que l'augmentation des données a significativement amélioré les performances de notre modèle, avec un gain marginal entre 75% et 100% d'augmentation.</p>
+
+        <h3>4. Tokenization et Préparation des Données pour l'Entraînement</h3>
+        <p>Voici comment nous avons configuré l'entraînement de notre modèle :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+max_input_length = 128
+max_target_length = 128
+
+def preprocess_function(examples):
+    inputs = [f"{source_lang} {text}" for text in examples["English"]]
+    targets = [f"{target_lang} {text}" for text in examples["Twi"]]
+    model_inputs = tokenizer(inputs, max_length=max_input_length, truncation=True)
+
+    with tokenizer.as_target_tokenizer():
+        labels = tokenizer(targets, max_length=max_target_length, truncation=True)
+
+    model_inputs["labels"] = labels["input_ids"]
+    return model_inputs
+
+tokenized_datasets = augmented_data.map(preprocess_function, batched=True)
+                </code>
+            </pre>
+        </div>
+        <p>Ce code prépare les données pour l'entraînement en les tokenisant et en les formatant correctement pour notre modèle.</p>
+
+        <h3>5. Configuration de l'Entraînement</h3>
+        <div class="code-block">
+            <pre>
+                <code>
+from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq
+
+training_args = Seq2SeqTrainingArguments(
+    output_dir=f"{model_checkpoint}-finetuned-{source_lang}-to-{target_lang}",
+    evaluation_strategy="epoch",
+    learning_rate=5e-5,
+    per_device_train_batch_size=1,
+    gradient_accumulation_steps=32,
+    weight_decay=0.01,
+    save_total_limit=3,
+    num_train_epochs=10,
+    predict_with_generate=True,
+    fp16=True,
+    push_to_hub=False,
+)
+
+data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+
+trainer = Seq2SeqTrainer(
+    model=model,
+    args=training_args,
+    train_dataset=tokenized_datasets["train"],
+    eval_dataset=tokenized_datasets["validation"],
+    tokenizer=tokenizer,
+    data_collator=data_collator,
+)
+                </code>
+            </pre>
+        </div>
+        <p>Explications :</p>
+        <ul>
+            <li><b>Seq2SeqTrainingArguments</b> configure les paramètres d'entraînement comme le taux d'apprentissage, la taille du batch, etc.</li>
+            <li><b>Seq2SeqTrainer</b> gère l'ensemble du processus d'entraînement.</li>
+            <li><b>DataCollatorForSeq2Seq</b> prépare les batchs de données pour l'entraînement.</li>
+        </ul>
+
+        <h3>6. Entraînement du Modèle</h3>
+        <div class="code-block">
+            <pre>
+                <code>
+trainer.train()
+                </code>
+            </pre>
+        </div>
+        <p>Cette simple ligne lance l'entraînement qui a duré environ 6 heures sur un GPU L4 de Google Colab Pro.</p>
+
+        <h3>7. Évaluation et Inférence</h3>
+        <p>Après l'entraînement, nous avons évalué notre modèle :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+import evaluate
+
+metric = evaluate.load("sacrebleu")
+
+def compute_metrics(eval_preds):
+    preds, labels = eval_preds
+    if isinstance(preds, tuple):
+        preds = preds[0]
+    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+
+    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+    result = metric.compute(predictions=decoded_preds, references=decoded_labels)
+    return {"bleu": result["score"]}
+
+# Évaluation
+results = trainer.evaluate()
+print(f"BLEU score: {results['eval_bleu']:.2f}")
+                </code>
+            </pre>
+        </div>
+        <p>Pour l'inférence, nous avons utilisé cette fonction :</p>
+        <div class="code-block">
+            <pre>
+                <code>
+def translate_en_to_twi(text):
+    inputs = tokenizer(f"{source_lang} {text}", return_tensors="pt", max_length=max_input_length, truncation=True)
+    outputs = model.generate(**inputs, max_length=max_target_length, num_beams=4, early_stopping=True)
+    return tokenizer.decode(outputs[0], skip_special_tokens=True).replace(f"{target_lang} ", "")
+
+# Exemple d'utilisation
+print(translate_en_to_twi("Hello, how are you?"))
+                </code>
+            </pre>
+        </div>
+
+        <h2>Défis Rencontrés et Solutions</h2>
+        <ol>
+            <li><strong>Gestion de la Mémoire GPU</strong> : Utilisation du gradient checkpointing et de l'accumulation de gradient.</li>
+            <li><strong>Qualité des Données</strong> : Mise en place d'un processus de nettoyage et d'augmentation des données.</li>
+            <li><strong>Évaluation des Traductions</strong> : Accent mis sur des métriques quantitatives comme BLEU et ROUGE.</li>
+            <li><strong>Contraintes de Temps</strong> : Priorisation des tâches et optimisation du workflow.</li>
+            <li><strong>Optimisation de l'Augmentation des Données</strong> : Recherche d'un équilibre entre amélioration des performances et temps de traitement.</li>
+        </ol>
+
+        <h2>Résultats et Analyse</h2>
+        <p>Après 10 époques d'entraînement, notre modèle final a atteint les performances suivantes :</p>
+        <ul>
+            <li>BLEU Score : 26.4146</li>
+            <li>ROUGE-1 : 0.6184</li>
+            <li>ROUGE-2 : 0.3958</li>
+            <li>ROUGE-L : 0.5809</li>
+        </ul>
+        <p>Exemples de traductions :</p>
+        <ul>
+            <li>EN: Hello, how are you?<br>TWI: Anigyeɛ, wote sɛn?</li>
+            <li>EN: I love learning new languages.<br>TWI: Mani gye kasa foforo a mɛsua ho.</li>
+            <li>EN: Thank you for your help!<br>TWI: Meda mo ase wɔ mo mmoa ho!</li>
+        </ul>
+
+        <h2>Conclusion</h2>
+        <p>Notre participation au hackathon Meta lors du Deep Learning Indaba 2024 à Dakar a été une immersion profonde dans les enjeux de l'IA en Afrique. Ce défi a souligné l'importance cruciale de développer des solutions adaptées à nos contextes linguistiques uniques, notamment en travaillant avec des ensembles de données limités pour les langues à faibles ressources.</p>
+        <p>L'expérience acquise avec un dataset de seulement 4 800 phrases en twi met en lumière à la fois le potentiel et les défis du développement de modèles de traduction pour les langues africaines. À l'avenir, l'expansion de ces datasets et le développement de techniques d'augmentation plus sophistiquées seront essentiels pour améliorer les performances de traduction.</p>
+        <p>Ce hackathon n'est qu'un début. Il ouvre la voie à de nombreuses possibilités d'innovation dans l'IA appliquée aux langues africaines. Notre quatrième place est un tremplin vers de futures recherches, nous motivant à poursuivre ce travail crucial pour un avenir technologique qui célèbre pleinement la diversité linguistique de l'Afrique.</p>
+    </article>
+
+    <div class="music-suggestion">
+        <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+        <a href="https://www.youtube.com/watch?v=Zv5E6Szbnkg" target="_blank">Écouter sur YouTube</a>
+    </div>
+</main>
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+</body>
+</html>
