@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Awalé rencontre l'IA : Un voyage dans l'apprentissage par renforcement (Partie1) - Blog de Jonathan Suru</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<main>
+    <article>
+        <h1>L'Awalé rencontre l'IA : Un voyage dans l'apprentissage par renforcement (Partie1).</h1>
+
+        <h2>Introduction</h2>
+        <p>Dans le cadre de mes expériences en intelligence artificielle, j'ai décidé d'apprendre le Renforcement Learning (RL). Pour ce faire, je me suis lancé dans un projet intéressant : apprendre à une IA à jouer à l'Awalé. Ce jeu traditionnel africain est un excellent terrain d'expérimentation pour l'apprentissage par renforcement. Dans cet article, je vais vous présenter les premières étapes de mon projet, notamment la création de l'environnement de jeu.</p>
+
+        <h2>Qu'est-ce que l'apprentissage par renforcement ?</h2>
+        <p>L'apprentissage par renforcement (RL) est une technique de machine learning qui entraîne les logiciels à prendre des décisions pour obtenir les meilleurs résultats. Elle imite le processus d'apprentissage par essais et erreurs des humains. Les actions du logiciel qui contribuent à atteindre l'objectif sont renforcées, tandis que celles qui y nuisent sont ignorées.</p>
+        <p>Les algorithmes de RL utilisent un système de récompenses et de punitions. Ils apprennent du retour d'information de chaque action et découvrent par eux-mêmes les meilleures stratégies. Ils peuvent même différer la gratification, acceptant des sacrifices à court terme pour une meilleure stratégie globale.</p>
+
+        <h2>L'Awalé : Un défi intéressant pour l'IA</h2>
+        <p>L'Awalé est un jeu de stratégie joué sur un plateau de 12 trous, chacun contenant initialement 4 graines. Les joueurs déplacent ces graines selon des règles spécifiques, avec pour objectif de capturer plus de graines que l'adversaire.</p>
+        <p>Ce jeu est particulièrement intéressant pour l'apprentissage par renforcement car :</p>
+        <ol class="article-list">
+            <li>Il offre un espace d'états gérable, mais suffisamment complexe</li>
+            <li>Ses règles sont claires avec des conséquences à long terme</li>
+            <li>Il nécessite un équilibre entre stratégie et tactique</li>
+        </ol>
+
+        <h2>Choix technologiques : JAX</h2>
+        <p>Pour ce projet, j'ai choisi d'utiliser JAX, une bibliothèque de calcul numérique développée par Google. Voici pourquoi :</p>
+        <ul>
+            <li>Elle offre des performances élevées grâce à la compilation JIT</li>
+            <li>Sa syntaxe est familière, proche de NumPy</li>
+            <li>Elle permet d'utiliser l'accélération GPU</li>
+        </ul>
+
+        <h2>Implémentation de l'environnement de jeu</h2>
+        <p>J'ai d'abord construit une simple classe Awale pour implémenter un premier environnement de jeu sans JAX. Ensuite, j'ai essayé d'intégrer JAX pour profiter de ses accélérations. Examinons maintenant en détail les différentes parties de notre classe `AwaleJAX` et leurs rôles :</p>
+
+        <h3>Initialisation du jeu</h3>
+        <div class="code-block">
+            <pre><code>
+def __init__(self, player: jnp.int8 = 0):
+    self.current_player = player  # 0 ou 1
+    self.action_space = jnp.arange(player * 6, (player + 1) * 6, dtype=jnp.int8)
+    self.state = jnp.array([4] * 12, dtype=jnp.int8)  # 12 trous avec 4 graines chacun
+    self.scores = jnp.zeros(2, dtype=jnp.int8)  # 2 joueurs avec un score de 0 chacun
+            </code></pre>
+        </div>
+        <p>Cette méthode initialise l'état du jeu, définissant le joueur actuel, l'espace d'actions, l'état initial du plateau et les scores.</p>
+
+        <h3>La méthode step</h3>
+        <div class="code-block">
+            <pre><code>
+def step(self, action):
+    reward = -0.1  # Légère pénalité pour chaque action
+    # Logique de distribution des graines...
+    self.state, captured = capture_seeds(current_pit)
+    self.scores = self.scores.at[self.current_player].add(captured)
+    reward += 0.5 * captured  # Récompense pour la capture
+    # Vérification de fin de partie et changement de joueur...
+    return self.state, reward, done, info
+            </code></pre>
+        </div>
+        <p>Cette méthode gère le déroulement d'un tour complet, y compris la distribution des graines, la capture, et le calcul des récompenses.</p>
+
+        <h3>Vérification de la validité du mouvement</h3>
+        <div class="code-block">
+            <pre><code>
+@jit
+def is_valid_move(action: jnp.int8) -> jnp.bool_:
+    in_range = jnp.logical_and(
+        self.current_player * 6 <= action,
+        action < (self.current_player + 1) * 6,
+    )
+    has_seeds = self.state[action] > 0
+    return jnp.logical_and(in_range, has_seeds)
+            </code></pre>
+        </div>
+        <p>Cette fonction vérifie si le mouvement est valide en s'assurant que l'action est dans la plage des trous du joueur actuel et que le trou choisi contient des graines.</p>
+
+        <h3>Capture des graines</h3>
+        <div class="code-block">
+            <pre><code>
+@jit
+def capture_seeds(last_pit) -> jnp.int8:
+    opponent_side = (1 - self.current_player) * 6
+    # ... [logique de capture avec lax.while_loop]
+            </code></pre>
+        </div>
+        <p>Cette fonction gère la capture des graines, utilisant une boucle optimisée de JAX pour capturer les graines de l'adversaire si les conditions sont remplies.</p>
+
+        <h3>Gestion de fin de partie</h3>
+        <p>Plusieurs fonctions auxiliaires gèrent les différents aspects de la fin de partie, comme le calcul de la récompense finale, la détermination du gagnant, et la vérification si un côté du plateau est vide.</p>
+
+        <h2>Optimisations avec JAX</h2>
+        <p>Notre implémentation utilise plusieurs fonctionnalités de JAX pour optimiser les performances :</p>
+        <ul>
+            <li>Utilisation de `jnp` (JAX NumPy) pour les opérations sur les tableaux</li>
+            <li>Décorateur `@jit` pour la compilation Just-In-Time des fonctions</li>
+            <li>Utilisation de `lax.while_loop` pour les boucles optimisées</li>
+            <li>Utilisation de `lax.select` pour les conditions, évitant les branches conditionnelles</li>
+        </ul>
+
+        <h2>Défis rencontrés et en cours</h2>
+        <p>La création de cet environnement a présenté et continue de présenter plusieurs défis intéressants :</p>
+        <ol>
+            <li>L'implémentation précise des règles de l'Awalé</li>
+            <li>L'optimisation des performances avec JAX</li>
+            <li>La gestion des conditions de fin de partie</li>
+            <li>La détermination d'une méthode de récompense optimale</li>
+        </ol>
+        <p>Ce dernier point est particulièrement crucial et complexe. Actuellement, notre système de récompense est relativement simple :</p>
+        <div class="code-block">
+            <pre><code>
+reward = -0.1  # Légère pénalité pour chaque action
+# ...
+reward += 0.5 * captured  # Récompense pour la capture de graines
+            </code></pre>
+        </div>
+        <p>Cependant, je cherche à développer une méthode de récompense plus sophistiquée qui pourrait mieux refléter la stratégie à long terme nécessaire dans l'Awalé. Quelques pistes que j'explore incluent :</p>
+        <ul>
+            <li>Prendre en compte la position des graines sur le plateau</li>
+            <li>Récompenser les mouvements qui ouvrent des opportunités de capture future</li>
+            <li>Pénaliser les actions qui laissent trop de vulnérabilités à l'adversaire</li>
+            <li>Intégrer une composante de récompense basée sur la différence de score</li>
+        </ul>
+
+        <h2>Prochaines étapes</h2>
+        <p>Pour la construction de mon environnement, je me suis basé sur les environnements de Jumanji d'InstaDeep. Actuellement, l'environnement fonctionne mais n'est pas encore totalement conforme aux normes de Jumanji.</p>
+        <p>Les prochaines étapes du projet seront :</p>
+        <ol>
+            <li>Réécrire ma classe pour profiter pleinement des avantages de JAX</li>
+            <li>Expérimenter avec différentes structures de récompense</li>
+            <li>Développer un agent d'apprentissage par renforcement</li>
+            <li>Entraîner l'agent contre lui-même</li>
+            <li>Évaluer les performances et analyser les stratégies</li>
+            <li>Explorer des techniques avancées pour améliorer l'agent</li>
+        </ol>
+
+        <h2>Conclusion</h2>
+        <p>La création de cet environnement de jeu Awalé est la première étape d'un projet passionnant à l'intersection de l'IA et des jeux traditionnels. Cela ouvre la voie à des expériences intéressantes en apprentissage par renforcement.</p>
+        <p>Dans les prochains articles, je détaillerai non seulement le développement de l'agent IA et son processus d'apprentissage, mais aussi mes expériences avec différentes structures de récompense et leur impact sur les performances de l'agent. Cette exploration de la conception des récompenses est un aspect fascinant de l'apprentissage par renforcement, particulièrement dans un jeu aussi stratégique que l'Awalé.</p>
+        <p>N'hésitez pas à partager vos idées sur des méthodes de récompense potentielles ou sur d'autres aspects du projet !</p>
+
+        <h2>Pour aller plus loin</h2>
+        <p>Si vous souhaitez en savoir plus sur l'apprentissage par renforcement, l'Awalé ou JAX, voici quelques ressources utiles :</p>
+        <ul>
+            <li><a href="https://spinningup.openai.com/en/latest/spinningup/rl_intro.html">Introduction à l'apprentissage par renforcement</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Awale">Page Wikipédia sur l'Awalé</a></li>
+            <li><a href="https://jax.readthedocs.io/en/latest/index.html">Documentation officielle de JAX</a></li>
+            <li><a href="https://huggingface.co/learn/deep-rl-course/en/unit0/introduction">Cours sur l'apprentissage par renforcement profond de Hugging Face</a></li>
+            <li><a href="https://chariow.com/">La plateforme tout-en-un pour vendre vos produits digitaux.(Sponsor)</a></li>
+        </ul>
+    </article>
+
+    <div class="music-suggestion">
+        <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+        <a href="https://www.youtube.com/watch?v=PGHqP-ua-ng" target="_blank">Écouter sur YouTube</a>
+    </div>
+</main>
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+</body>
+</html>
