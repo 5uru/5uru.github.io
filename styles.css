@@ -9,12 +9,18 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    transition: padding 0.3s; /* Ajout d'une transition fluide */
 }
 
 header, footer {
     border-bottom: 2px solid #000;
     padding-bottom: 20px;
     margin-bottom: 20px;
+    transition: border-color 0.3s; /* Effet de survol subtil */
+}
+
+header:hover, footer:hover {
+    border-color: #333;
 }
 
 footer {
@@ -27,49 +33,78 @@ footer {
 
 h1, h2 {
     font-weight: normal;
+    letter-spacing: -0.5px; /* Meilleure lisibilité pour les titres */
 }
 
 main {
     flex-grow: 1;
+    padding: 15px 0; /* Espacement interne ajusté */
 }
 
 article {
     margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed #999; /* Séparation discrète entre articles */
 }
 
 .project {
     margin-bottom: 40px;
+    padding: 15px;
+    background: #f9f9f9; /* Fond très léger pour les projets */
+    border-radius: 4px;
+    transition: transform 0.2s;
 }
+
+.project:hover {
+    transform: translateX(5px); /* Léger déplacement au survol */
+}
+
 .project-title {
     display: flex;
     align-items: center;
+    gap: 12px; /* Espacement moderne entre éléments */
 }
+
 .project-hook {
-    margin-right: 10px;
     font-size: 1.2em;
+    color: #555; /* Ton sobre pour les hooks */
 }
+
 a {
     color: #000;
     text-decoration: underline;
+    text-decoration-thickness: 1.5px; /* Soulignement plus prononcé */
+    transition: color 0.3s;
 }
+
 a:hover {
     text-decoration: none;
+    color: #333;
 }
+
 .copyleft {
     display: inline-block;
     transform: rotate(180deg);
+    font-size: 0.9em;
+    margin-left: 5px;
 }
+
 .publication-date {
     font-style: italic;
     margin-bottom: 20px;
+    color: #666; /* Ton secondaire pour les dates */
 }
+
 .music-suggestion {
     border: 2px solid #000;
     padding: 15px;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin: 30px -20px; /* Dépassement des bords pour effet */
     text-align: center;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Ombre légère */
 }
+
 .music-suggestion a {
     display: inline-block;
     margin-top: 10px;
@@ -77,30 +112,41 @@ a:hover {
     background-color: #000;
     color: #fff;
     text-decoration: none;
-    transition: background-color 0.3s;
-}
-.music-suggestion a:hover {
-    background-color: #333;
+    transition: all 0.3s;
+    border-radius: 3px;
 }
 
+.music-suggestion a:hover {
+    background-color: #333;
+    transform: scale(1.05); /* Léger zoom au survol */
+}
 
 .code-block {
     background-color: #f5f5f5;
     border: 1px solid #ddd;
-    border-radius: 3px;
+    border-radius: 5px;
     padding: 15px;
     margin: 20px 0;
     overflow-x: auto;
     font-family: 'Courier New', Courier, monospace;
+    line-height: 1.5;
+    box-shadow: inset 0 0 0 1px #eee; /* Bordure intérieure subtile */
 }
 
 .article-list {
     margin-left: 20px;
     margin-bottom: 20px;
+    list-style: square; /* Puces plus visuelles */
+    color: #444;
 }
 
 .article-list li {
     margin-bottom: 10px;
+    transition: color 0.3s;
+}
+
+.article-list li:hover {
+    color: #000;
 }
 
 .article-quote {
@@ -108,4 +154,16 @@ a:hover {
     border-left: 3px solid #000;
     padding-left: 15px;
     margin: 20px 0;
+    position: relative;
+    padding-right: 30px;
+}
+
+.article-quote::after {
+    content: '"';
+    position: absolute;
+    right: 10px;
+    bottom: -10px;
+    font-size: 3em;
+    color: #ddd;
+    line-height: 0;
 }
