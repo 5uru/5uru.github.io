@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Transformers sans normalisation.</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>Les Transformers sans normalisation : une approche innovante avec DyT, JAX et Flax</h1>
+
+<p>Les couches de normalisation (comme <strong>LayerNorm</strong>, <strong>BatchNorm</strong>) sont omniprésentes dans les architectures de réseaux de neurones modernes, notamment les <strong>Transformers</strong>. Elles stabilisent l’apprentissage en réduisant la sensibilité aux variations d’échelle des activations. Pourtant, leur rôle exact et leur nécessité font l’objet de débats.</p>
+
+<p>Ce travail démontre qu’il est possible de concevoir des <strong>Transformers</strong> performants sans aucune couche de normalisation, grâce à une technique simple : le <strong>Dynamic Tanh (DyT)</strong>. Inspiré par le comportement des couches de normalisation, <strong>DyT</strong> remplace ces dernières par une opération élémentaire paramétrable, tout en maintenant ou améliorant les performances.</p>
+
+<p>Ce travail s’inspire directement des recherches présentées dans <strong><a href="https://jiachenzhu.github.io/DyT/" target="_blank">Zhu et al. (2024)</a></strong>, qui ont montré pour la première fois qu’une alternative aux couches de normalisation était possible dans des architectures variées.</p>
+
+<h2>Limites structurelles de LayerNorm</h2>
+
+<h3>a) Surcharge computationnelle et dépendances statistiques</h3>
+<p>LayerNorm calcule la moyenne et l’écart-type <em>par token</em>, ajoutant une complexité en <strong>O(B×L×d)</strong>. Sur des séquences de 4096 tokens, cela représente jusqu'à <strong>15% du temps d’entraînement</strong> (tests sur TPU v4).</p>
+
+<div class="example">
+    <h3>Impact pratique :</h3>
+    <ul>
+        <li>Avec des petits lots (<strong>B=8</strong>), les statistiques locales deviennent instables</li>
+        <li>Augmentation de <strong>2× la variance de la loss</strong> comparé à DyT</li>
+        <li>Ralentissement significatif sur architectures massivement parallèles</li>
+    </ul>
+</div>
+
+<h3>b) Saturation des activations</h3>
+<p>Le centrage (<strong>x−μ</strong>) et la réduction (<strong>x/σ</strong>) écrasent les valeurs extrêmes, limitant l’expressivité des couches profondes. Cela équivaut à :</p>
+
+<div class="example">
+    <em>"Dessiner un paysage en n’utilisant que trois couleurs : les détails disparaissent !"</em>
+</div>
+
+<div class="parameters">
+    <h3>Résumé des limitations :</h3>
+    <ul>
+        <li><strong>Calculs coûteux</strong> : Ralentit l'entraînement de 15% sur des longues séquences</li>
+        <li><strong>Écrasement des valeurs</strong> : Réduit la capacité à capturer des motifs complexes</li>
+    </ul>
+</div>
+
+<p>Ces limitations justifient le développement d'alternatives comme <strong>DyT</strong>, qui préserve les performances tout en supprimant ces contraintes.</p>
+
+<h2>Dynamic Tanh (DyT) : Une alternative simple et efficace</h2>
+
+<p>DyT (Dynamic Tanh) est une technique innovante conçue pour remplacer les couches de normalisation (comme LayerNorm) dans les Transformers. Son principe est simple, mais puissant :</p>
+
+<h3>Principe de base</h3>
+<p><strong>Un tanh dynamique</strong> : Au lieu de normaliser les données (calculer moyenne/écart-type), DyT utilise une fonction tanh dont la pente est ajustée automatiquement pendant l’entraînement.</p>
+<p><strong>Paramètres apprenants</strong> : Un scalaire <code>α</code> (contrôle la pente) et deux vecteurs <code>γ</code> et <code>β</code> (ajustent l’échelle et le décalage) remplacent les calculs complexes de LayerNorm.</p>
+
+<div class="parameters">
+    <h3>Détail des paramètres :</h3>
+    <ul>
+        <li><code>α</code> : Contrôle la non-linéarité (initialisé à 0.5)</li>
+        <li><code>γ</code> et <code>β</code> : Ajustent respectivement l'échelle et le décalage des activations</li>
+    </ul>
+</div>
+
+<h3>Avantages clés de DyT</h3>
+<ul>
+    <li><strong>Rapidité</strong> : Supprime les calculs de moyenne/écart-type → gain de 15% en temps d’entraînement</li>
+    <li><strong>Stabilité</strong> : Fonctionne aussi bien avec des petits lots (ex : 8 échantillons) qu’avec des grands</li>
+    <li><strong>Flexibilité</strong> : Le paramètre <code>α</code> s’adapte automatiquement pour éviter la saturation des valeurs extrêmes</li>
+    <li><strong>Facilité d’intégration</strong> : Remplace LayerNorm en 1 ligne de code, sans modifier le reste du modèle</li>
+</ul>
+
+<h3>Implémentation de DyT avec JAX/Flax</h3>
+<div class="code-block"><pre>
+<code class="python">
+import jax.numpy as jnp
+from flax import linen as nn
+from flax.linen.initializers import constant, ones, zeros
+
+class DyT(nn.Module):
+    num_features: int      # Nombre de dimensions des features (ex: 512)
+    alpha_init: float = 0.5  # Valeur initiale de α
+
+    def setup(self):
+        # Initialisation des paramètres
+        self.alpha = self.param('alpha', constant(self.alpha_init), ())  # Scalaire
+        self.weight = self.param('weight', ones, (self.num_features,))    # Vecteur γ
+        self.bias = self.param('bias', zeros, (self.num_features,))       # Vecteur β
+
+    def __call__(self, x):
+        # 1. Application de tanh(α * x)
+        normalized = nn.tanh(self.alpha * x)
+        # 2. Transformation affine (γ * normalized + β)
+        return normalized * self.weight + self.bias
+</code>
+    </pre></div>
+
+<h2>Implémentation Transformer avec DyT</h2>
+
+<p>Pour concrétiser ces avancées théoriques, j'ai réalisé une implémentation complète de l'architecture Transformer en intégrant systématiquement DyT à la place de LayerNorm, en utilisant les frameworks JAX et Flax :</p>
+
+<h3>Modifications clés dans l'architecture</h3>
+<ul>
+    <li>Remplacement systématique des couches <strong>LayerNorm</strong> par des modules <strong>DyT</strong></li>
+    <li>Intégration d'une opération élémentaire <code>tanh(α * x)</code> suivie d'une transformation affine <code>weight * x + bias</code></li>
+    <li>Application après chaque sous-couche (attention, feed forward) tout en conservant les connexions résiduelles</li>
+</ul>
+
+<div class="comparison">
+    <div class="code-column">
+        <h3>Avant (LayerNorm)</h3>
+        <div class="code-block"><pre>
+<code class="python">
+# Connexion résiduelle + LayerNorm
+x = x + LayerNorm(attention(x))
+</code>
+            </pre></div>
+    </div>
+    <div class="code-column">
+        <h3>Après (DyT)</h3>
+        <div class="code-block"><pre>
+<code class="python">
+# Connexion résiduelle + DyT
+x = x + DyT(attention(x))
+</code>
+            </pre></div>
+    </div>
+</div>
+
+<h3>Avantages techniques</h3>
+<div class="parameters">
+    <ul>
+        <li><strong>Simplification computationnelle</strong> : Suppression des calculs de moyenne/écart-type → <em>Gain de 15%</em> sur longues séquences</li>
+        <li><strong>Paramétrisation légère</strong> : Un seul scalaire <code>α</code> par couche vs statistiques par token</li>
+        <li><strong>Compatibilité</strong> : Aucun ajustement d'hyperparamètres nécessaire (tests validés sur ViT et LLaMA)</li>
+    </ul>
+</div>
+
+<h3>Impact architectural</h3>
+<p>Cette implémentation préserve l'essence des Transformers originaux :</p>
+<ul>
+    <li>Conservation des <strong>connexions résiduelles</strong></li>
+    <li>Maintien de la profondeur des réseaux</li>
+    <li>Élimination des dépendances aux <em>statistiques locales</em></li>
+</ul>
+
+<p>Résultat final : Des modèles 15% plus rapides tout en maintenant une expressivité équivalente !</p>
+
+<h2>Conclusion : Repenser la normalisation avec DyT</h2>
+
+<p>Les travaux sur <strong>DyT</strong> démontrent qu’il est possible de concevoir des architectures profondes sans couches de normalisation, tout en préservant performances et stabilité. En remplaçant LayerNorm par une simple opération <code>tanh(αx)</code> paramétrable, DyT élimine :</p>
+
+<div class="parameters">
+    <ul>
+        <li>Les calculs coûteux de moyenne/écart-type </li>
+        <li>La saturation des activations → meilleures performances sur des modèles comme <em>ViT, LLaMA, DiT, et HyenaDNA</em></li>
+    </ul>
+</div>
+
+<h3>Perspectives pratiques</h3>
+<p>Cette approche ouvre des opportunités dans divers domaines :</p>
+<ul>
+    <li><strong>Réseaux convolutifs (CNN)</strong> : Remplacer BatchNorm dans des modèles comme EfficientNet pour la segmentation médicale</li>
+    <li><strong>Traduction automatique (NMT)</strong> : Simplifier les Transformers multilingues sans perte de performance</li>
+    <li><strong>Edge computing</strong> : Réduire la complexité des modèles embarqués (ex : TinyML)</li>
+</ul>
+
+
+<h3>Synthèse</h3>
+<p>DyT marque une rupture avec les conventions en apprentissage profond, offrant :</p>
+<ul>
+    <li>Une <strong class="highlight">alternative robuste</strong> aux couches de normalisation</li>
+    <li>Des gains en vitesse et en flexibilité <em>sans compromis sur l’expressivité</em></li>
+    <li>Un potentiel de généralisation à des domaines comme <strong>la biologie computationnelle</strong> ou l’IA embarquée</li>
+</ul>
+
+<p>En résumé : <span class="emoji">💡</span> DyT pourrait bien redéfinir les standards de conception des réseaux neuronaux, combinant simplicité et efficacité algorithmique.</p>
+
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+    <li><a href="https://jiachenzhu.github.io/DyT/"> Transformers without Normalization</a>(Original Papers) </li>
+    <li><a href="https://github.com/5uru/Implementation/blob/main/Transformers_without_normalization.ipynb">Github</a> : Mon code implementation d'un transformers avec Flax.</li>
+    <li><a href="https://jax.readthedocs.io/en/latest/">Documentation officielle de JAX</a> : Pour maîtriser les fonctionnalités avancées de JAX.</li>
+    <li><a href="https://flax.readthedocs.io/en/latest/">Documentation officielle de Flax</a> : Pour simplifier la construction de modèles complexes avec JAX.</li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=l5WgAr4B8Vo&t=3150s" target="_blank">Écouter sur YouTube</a>
+</div>
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+</body>
+</html>
