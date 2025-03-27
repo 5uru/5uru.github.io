@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction à JAX et Flax</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>Introduction à JAX et Flax</h1>
+<p>Depuis mes débuts dans le domaine de l'apprentissage automatique, j'ai exploré de nombreux frameworks pour développer des modèles de deep learning. Ces derniers temps, j'ai choisi de me concentrer sur deux outils en particulier : <strong>JAX</strong> et <strong>Flax</strong>. Dans cet article, je vous expliquerai pourquoi cette combinaison est devenue ma préférée, et comment elle se distingue des autres frameworks comme TensorFlow ou PyTorch.</p>
+
+<h2>Pourquoi JAX et FLAX ?</h2>
+<p>Les frameworks traditionnels comme <strong>PyTorch</strong> ou <strong>TensorFlow</strong> dominent le paysage du Deep Learning, mais <strong>JAX</strong> et <strong>Flax</strong> se démarquent par leur <strong>vitesse</strong>, <strong>flexibilité</strong> et <strong>contrôle fin</strong> des calculs. Conçus pour exploiter pleinement les GPU/TPU, ils sont idéaux pour la recherche et les applications gourmandes en ressources. Cet article détaille leurs fonctionnalités clés, leurs différences avec NumPy, et comment contourner leurs limites.</p>
+
+<h2>Qu'est-ce que JAX ?</h2>
+<p>JAX est un paquet python pour écrire des transformations numériques composables. Il tire parti d'Autograd et de XLA (Accelerated Linear Algebra) pour réaliser des calculs numériques à haute performance, ce qui est particulièrement pertinent dans le machine learning.Il peut être considéré comme une version accélérée de NumPy et est couramment utilisé avec des bibliothèques de réseaux de neurones de plus haut niveau telles que Flax.</p>
+
+<h2>JAX vs NumPy : Similitudes et Différences</h2>
+
+<h3>Similitudes </h3>
+<p>JAX et NumPy permettent tous deux d'effectuer des opérations basées sur des tableaux, en utilisant une interface similaire. Cela signifie que vous pouvez exécuter bon nombre de vos opérations NumPy préférées dans JAX, en utilisant une API similaire.</p>
+<p>Exemple:</p>
+<div class="code-block"><pre><code>
+import jax.numpy as jnp
+
+# Addition élément par élément
+jax_array1 + jax_array2
+
+# Multiplication matricielle
+jnp.dot(matrix1, matrix2)
+
+# Fonctions mathématiques
+jnp.sin(x)
+    </code></pre></div>
+
+<h3>Différences </h3>
+<p>Bien que JAX et NumPy présentent certaines similitudes, ils ont également des différences importantes. Nous aborderons ici quelques différences d'API.</p>
+<h4>1. Les tableaux Jax sont immuables. </h4>
+<p>Les tableaux JAX sont immuables, ce qui signifie que vous ne pouvez pas modifier les valeurs d'un tableau une fois qu'il a été créé. Cela diffère de NumPy, où vous pouvez modifier les valeurs d'un tableau en place.</p>
+<div class="comparison">
+    <div class="code-block"><pre><code>
+# NumPy (modifiable)
+np_array[0] = 10
+
+# JAX (immutable)
+new_array = jax_array.at[0].set(10)
+        </code></pre></div>
+    <h4>2. Génération Aléatoire</h4>
+    <p>JAX exige que vous soyez plus explicite lors de la génération de nombres aléatoires. Vous devez passer une clé (key) à chaque fois que vous appelez une fonction qui a un certain degré d'aléatoire.</p>
+    <div class="example">
+        <p>Dans NumPy :</p>
+        <div class="code-block"><pre><code>
+np.random.seed(0)
+valeurs = np.random.rand(3)
+print(valeurs)  # [0.5488135  0.71518937 0.60276338]
+            </code></pre></div>
+
+        <p>Dans JAX (avec gestion explicite des clés) :</p>
+        <div class="code-block"><pre><code>
+from jax import random
+
+key = random.PRNGKey(0)
+valeurs = random.uniform(key, (3,))
+print(valeurs)  # [0.5488135  0.71518937 0.60276338]
+
+# Pour générer plusieurs ensembles
+key, subkey = random.split(key)
+nouvelles_valeurs = random.uniform(subkey, (3,))
+            </code></pre></div>
+    </div>
+</div>
+
+<h2>Primitives Essentielles de JAX</h2>
+
+<h3>jit : Compilation Juste-à-Temps</h3>
+<p>jit (Compilation Juste-à-Temps) - compile et met en cache les fonctions Python JAX afin qu'elles puissent être exécutées efficacement sur XLA pour accélérer les appels de fonctions.
+    jit prend en entrée une fonction Python et renvoie une version compilée de cette fonction.</p>
+<div class="code-block"><pre><code>
+from jax import jit
+
+@jit
+def add(a, b):
+    return a + b
+
+result = add(jnp.array([1,2]), jnp.array([3,4]))
+    </code></pre></div>
+<p>Il existe des règles concernant les types de fonctions pouvant être compilées avec jit. Par exemple, les fonctions qui contiennent un flux de contrôle Python (comme des boucles ou des conditions) peuvent ne pas être compatibles avec jit. </p>
+
+<h3>grad : Différentiation Automatique</h3>
+<p>grad est utilisé pour calculer automatiquement le gradient d'une fonction dans JAX. Il peut être appliqué aux fonctions Python et NumPy, ce qui signifie que vous pouvez différencier à travers des boucles, des branches, des récursions et des fermetures.</p>
+<div class="code-block"><pre><code>
+from jax import grad
+
+def square(x):
+    return x**2
+
+gradient = grad(square)(3.0)  # Renvoie 6.0
+    </code></pre></div>
+
+<h3>vmap : Vectorisation Automatique</h3>
+<p>vmap (Vectorizing map) vectorise automatiquement vos fonctions python. Cela signifie que vous pouvez écrire une fonction qui opère sur des exemples individuels, et vmap l'appliquera automatiquement à un lot d'exemples.</p>
+<div class="code-block"><pre><code>
+from jax import vmap
+
+batched_square = vmap(square)
+result = batched_square(jnp.array([1,2,3]))  # [1, 4, 9]
+    </code></pre></div>
+<p>Sans vmap, vous devriez écrire une boucle pour appliquer la fonction à chaque élément du lot. vmap vectorise automatiquement la fonction, la rendant plus efficace et concise.</p>
+
+<p>JAX est différent des frameworks tels que PyTorch ou Tensorflow (TF). Il est plus bas niveau et minimaliste. JAX offre simplement un ensemble de primitives (opérations simples) comme jit et vmap, et s'appuie sur d'autres bibliothèques pour d'autres choses, par exemple en utilisant le chargeur de données de PyTorch ou TF. En raison de la simplicité de JAX, il est couramment utilisé avec des bibliothèques de réseaux de neurones de plus haut niveau telles que Haiku ou Flax. </p>
+
+<h2>Flax : Une API Flexible pour les Réseaux Neuraux</h2>
+<p>Flax simplifie la création et l'entraînement de modèles en combinant la puissance de JAX avec une structure orientée objet. Ses composants principaux sont :</p>
+
+<h3>Linen API : Définition des Couches</h3>
+<p>Les couches neurales sont définies via des <strong>modules immuables</strong> (dataclasses). Exemple :</p>
+<div class="code-block"><pre><code>import flax.linen as nn
+
+class SimpleClassifier(nn.Module):
+    @nn.compact
+    def __call__(self, x):
+        x = nn.Dense(128)(x)
+        x = nn.relu(x)
+        x = nn.Dense(1)(x)
+        return x</code></pre></div>
+
+<h3>Gestion des Paramètres avec Pytrees</h3>
+<p>Les paramètres (poids, biais) sont stockés dans des <strong>Pytrees</strong>, des structures arborescentes imbriquées. JAX exige une initialisation explicite des modèles :</p>
+<div class="code-block"><pre><code>model = SimpleClassifier()
+# Initialisation avec une clé aléatoire JAX
+params = model.init(jax.random.PRNGKey(0), x_sample)
+# Inférence
+predictions = model.apply(params, x_new)</code></pre></div>
+<p>La fonction <code>init</code> génère un Pytree contenant tous les paramètres, tandis que <code>apply</code> exécute le modèle avec ces paramètres.</p>
+
+<h3>Optimisation avec Optax</h3>
+<p>Optax est une bibliothèque dédiée à l'optimisation dans JAX. Elle permet de :</p>
+<ul>
+    <li>Créer des optimiseurs standards (<code>SGD</code>, <code>Adam</code>) :</li>
+    <div class="code-block"><pre><code>import optax
+
+optimizer = optax.adam(learning_rate=1e-3)
+opt_state = optimizer.init(params)</code></pre></div>
+    <li>Mettre à jour les paramètres via <code>optax.apply_updates</code> :</li>
+    <div class="code-block"><pre><code>def update_params(params, gradients, opt_state):
+    updates, new_opt_state = optimizer.update(gradients, opt_state)
+    new_params = optax.apply_updates(params, updates)
+    return new_params, new_opt_state</code></pre></div>
+</ul>
+<p>Optax gère les gradients et les mises à jour de manière fonctionnelle, sans effets de bord.</p>
+
+<h3>TrainState : Centraliser l'Entraînement</h3>
+<p>Pour simplifier l'entraînement, Flax fournit <code>TrainState</code>, un conteneur immutable regroupant :</p>
+<ul>
+    <li>Les paramètres du modèle</li>
+    <li>L'optimiseur</li>
+    <li>La fonction <code>apply</code> pour l'inférence</li>
+</ul>
+<div class="code-block"><pre><code>from flax.training import train_state
+
+state = train_state.TrainState.create(
+    apply_fn=model.apply,
+    params=params,
+    tx=optimizer
+)</code></pre></div>
+
+<h3>Boucle d'Entraînement</h3>
+<p>Exemple de fonction d'entraînement compilée avec <code>jax.jit</code> :</p>
+<div class="code-block"><pre><code>@jax.jit
+def train_step(state, batch):
+    def loss_fn(params):
+        preds = state.apply_fn(params, batch['inputs'])
+        loss = jnp.mean((preds - batch['labels']) ** 2)
+        return loss
+
+    # Calcul des gradients et mise à jour
+    grad_fn = jax.grad(loss_fn)
+    grads = grad_fn(state.params)
+    new_state = state.apply_gradients(grads=grads)
+    return new_state
+
+# Boucle d'entraînement
+for epoch in range(num_epochs):
+    state = train_step(state, next_batch)</code></pre></div>
+
+<h2>Conclusion : Un duo exigeant mais gratifiant</h2> <p>Travailler avec JAX et Flax n’est pas toujours simple – les ressources sont encore rares, et la communauté, bien que dynamique, reste petite. Mais c’est justement ce qui rend l’aventure passionnante. En recodant des architectures PyTorch ou TensorFlow "à la main" avec ces outils, j’ai dû comprendre ce qui se cache sous la couche d’abstraction des frameworks traditionnels : gestion des clés aléatoires, vectorisation explicite, gradients manuels… Ces contraintes m’ont forcée à maîtriser des concepts souvent occultés par la simplicité de torch.nn ou tf.keras. Et finalement, cette rigueur paye : les principes de différentiation automatique, de compilation XLA, ou de gestion fonctionnelle des états sont des compétences qui dépassent largement JAX. Aujourd’hui, même quand je reviens à PyTorch, je code mieux – en comprenant *pourquoi* les choses fonctionnent, pas seulement *comment*. C’est ça, la magie de ce duo : il vous rend meilleur, même quand vous ne l’utilisez plus.</p>
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+    <li><a href="https://phlippe.github.io/media/GDE_Talk_Intro_to_JAX_Flax_2022_12_06.pdf"> Introduction to JAX
+        with Flax</a> </li>
+    <li><a href="https://github.com/deep-learning-indaba/indaba-pracs-2024/blob/main/practicals/Intro_to_ML_using_JAX/Introduction_to_ML_using_JAX_French.ipynb">DLI</a> : Introduction au Machine Learning [en utilisant JAX].</li>
+    <li><a href="https://jax.readthedocs.io/en/latest/">Documentation officielle de JAX</a> : Pour maîtriser les fonctionnalités avancées de JAX.</li>
+    <li><a href="https://flax.readthedocs.io/en/latest/">Documentation officielle de Flax</a> : Pour simplifier la construction de modèles complexes avec JAX.</li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=gkMm8sBeTgE" target="_blank">Écouter sur YouTube</a>
+</div>
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+</body>
+</html>
