@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Les Transformers sans normalisation.</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>Implémentation d'une Vision Transformer (ViT) avec Flax et JAX pour la classification MNIST</h1>
+<p>Dans cet article, je détaille l’implémentation d’un <strong>Vision Transformer (ViT)</strong> simplifié pour la classification des chiffres manuscrits MNIST, en m’appuyant sur les bibliothèques <code>Flax</code> (framework de deep learning basé sur <code>JAX</code>) et <code>Optax</code> pour l’optimisation.</p>
+
+
+<p>Les Vision Transformers (ViT) représentent une avancée majeure dans le domaine de la vision par ordinateur, en adaptant l’architecture Transformer, initialement conçue pour le traitement du langage naturel (NLP), aux tâches d’analyse d’images. Contrairement aux réseaux convolutifs (CNN) qui exploitent des filtres locaux pour capturer des motifs spatiaux, les ViT décomposent une image en patchs (morceaux) linéarisés, traités comme une séquence de tokens similaires à des mots. Ces patchs sont ensuite projetés dans un espace d’embeddings, enrichis par des informations de position (embeddings positionnels), et passés à travers un encodeur Transformer. Ce dernier, grâce à son mécanisme d’attention multi-têtes , modélise efficacement les interactions à longue portée entre les régions de l’image, permettant une compréhension globale et contextuelle.</p>
+
+<p>Cette approche novatrice a été formalisée dans l’article fondateur "<cite>An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</cite>" (Dosovitskiy et al., 2020). Les auteurs y démontrent que les Transformers, appliqués à des patchs d’images (par exemple, 16×16 pixels pour ImageNet), surpassent les CNN classiques en précision lorsque le modèle est pré-entraîné sur des jeux de données massifs (comme JFT-300M). Leur travail souligne également l’importance cruciale de l’échelle : les ViT atteignent des performances compétitives uniquement lorsqu’ils sont entraînés sur des corpus suffisamment grands, mettant en lumière les compromis entre complexité calculatoire et généralisation. Ce papier a non seulement challengé l’hégémonie des CNN en vision par ordinateur, mais a aussi ouvert la voie à une nouvelle génération de modèles hybrides (combinant CNN et Transformers) et à des applications allant de la classification à la segmentation d’images.</p>
+<h3>Bloc d’encodage Transformer avec LayerNorm</h3>
+<p>Le bloc <code>TransformerEncoderWithLayerNorm</code> est l’unité de base de l’encodeur Transformer. Il combine des mécanismes d’<strong>attention multi-têtes</strong> et un <strong>réseau feed-forward (MLP)</strong>, le tout régularisé par des <strong>normalisations par couche (LayerNorm)</strong> et des <strong>résidus</strong>.</p>
+
+<h4>Structure détaillée</h4>
+<ol>
+    <li><strong>Normalisation par couche (LayerNorm)</strong> :<br>
+        Appliquée <em>avant</em> chaque sous-couche (attention et MLP), la normalisation stabilise les activations en centrant et en réduisant leurs valeurs. Contrairement à BatchNorm (qui normalise sur le batch), LayerNorm opère sur la dernière dimension des features, ce qui est mieux adapté aux séquences de patchs.</li>
+
+    <li><strong>Attention multi-têtes</strong> :<br>
+        La couche <code>nnx.MultiHeadAttention</code> divise les embeddings en <code>num_heads</code> têtes, permettant au modèle de focaliser sur différentes parties de l’image simultanément.<br>
+        Paramètres clés :<br>
+        <ul>
+            <li><code>dropout_rate=0.2</code> : Désactive aléatoirement 20% des connections pendant l’entraînement pour éviter le surajustement.</li>
+            <li><code>deterministic=False</code> : Active le dropout uniquement en mode entraînement.</li>
+        </ul>
+    </li>
+
+    <li><strong>Réseau feed-forward (MLP)</strong> :<br>
+        Une séquence de deux couches linéaires (<code>hidden_size</code> → <code>mlp_dim</code> → <code>hidden_size</code>) avec :<br>
+        <ul>
+            <li>Activation GELU (plus stable que ReLU pour les Transformers).</li>
+            <li>Dropout après chaque activation pour limiter la complexité du modèle.</li>
+        </ul>
+    </li>
+
+    <li><strong>Résidus (skip connections)</strong> :<br>
+        Les sorties de l’attention et du MLP sont additionnées aux entrées (<em>residual connections</em>), facilitant la propagation des gradients et l’entraînement de réseaux profonds.</li>
+</ol>
+
+<p><strong>Exemple de flux</strong> :</p>
+<pre>
+x → LayerNorm → Attention → + → LayerNorm → MLP → + → Sortie
+↓___________________________↑ ↓____________________↑
+    </pre>
+
+<h3>Modèle Vision Transformer (ViT) complet</h3>
+<p>La classe <code>VisionTransformerWithLayerNorm</code> assemble les composants pour traiter une image et produire une prédiction.</p>
+
+<h4>Étapes clés</h4>
+<ol>
+    <li><strong>Découpage en patchs et embedding</strong> :<br>
+        Une couche convolutive (<code>patch_embeddings</code>) découpe l’image en patchs de taille <code>patch_size</code> et les projette dans un espace de dimension <code>embed_dim</code>.<br>
+        Exemple : Une image 28x28 avec <code>patch_size=7</code> génère 16 patchs (4x4), chacun converti en un vecteur de 256 dimensions.</li>
+
+    <li><strong>Token CLS et embeddings positionnels</strong> :<br>
+        Un token spécial <code>[CLS]</code> (vecteur appris) est ajouté au début de la séquence de patchs. Son embedding final servira à la classification.<br>
+        Des embeddings positionnels (aussi appris) sont ajoutés pour encoder l’ordre spatial des patchs. Ces embeddings sont initialisés avec une distribution normale tronquée (meilleure stabilité).</li>
+
+    <li><strong>Encodeur Transformer</strong> :<br>
+        Une séquence de <code>num_layers</code> blocs <code>TransformerEncoderWithLayerNorm</code> transforme les embeddings en représentations contextuelles.<br>
+        Le dropout est appliqué après les embeddings pour réduire le surajustement.</li>
+
+    <li><strong>Classification</strong> :<br>
+        Après l’encodeur, le vecteur <code>[CLS]</code> est isolé (<code>x = x[:, 0]</code>) et passé dans une couche linéaire (<code>classifier</code>) pour prédire les 10 classes MNIST.</li>
+</ol>
+
+<p><strong>Mécanisme d’inférence</strong> :</p>
+<pre>
+Image → Patchs → [CLS] + Patchs → Embeddings → Encodeur → [CLS] → Classification
+    </pre>
+
+<p><strong>Exemple concret</strong> :</p>
+<ul>
+    <li><strong>Input</strong> : Image 28x28 (MNIST).</li>
+    <li><strong>Patchs</strong> : 16 patchs de 7x7 → 16 embeddings de 256 dimensions.</li>
+    <li><strong>Séquence</strong> : <code>[CLS]</code> + 16 patchs → 17 embeddings.</li>
+    <li><strong>Sortie</strong> : Le vecteur <code>[CLS]</code> final est transformé en logits pour les 10 classes.</li>
+</ul>
+
+<h3>Points de conception critiques</h3>
+<ul>
+    <li><strong>Positionnement de la normalisation</strong> : La LayerNorm est appliquée <em>avant</em> chaque sous-couche (pré-normalisation), une pratique courante dans les Transformers pour améliorer la stabilité.</li>
+    <li><strong>Initialisation des poids</strong> : Les embeddings positionnels utilisent <code>truncated_normal</code> (stddev=0.02), une heuristique éprouvée dans les Transformers.</li>
+    <li><strong>Adaptation à MNIST</strong> : La petite taille des images (28x28) permet un <code>patch_size=7</code>, évitant un nombre excessif de tokens.</li>
+</ul>
+
+<p>Cette architecture illustre comment les Transformers, initialement conçus pour le texte, peuvent être adaptés aux images en exploitant leur structure séquentielle et leur capacité à modéliser des dépendances à longue portée.</p>
+<h3>Résultats de l’entraînement</h3>
+<p>Après <strong>20 epochs</strong> d’entraînement, le modèle atteint une précision de <strong>88,13 %</strong> sur les données de test, avec une amélioration continue malgré des fluctuations. La perte d’entraînement diminue progressivement (de 1,9 à 0,35), tandis que la précision passe de 34,8 % à près de 88 %, reflétant une bonne généralisation. Bien que des oscillations apparaissent (ex. : perte remontant temporairement à 0,49 à l’epoch 19), le modèle finit par converger, démontrant l’efficacité des Transformers pour MNIST. Ces résultats pourraient encore être optimisés en ajustant le <code>taux d’apprentissage</code> ou le <code>dropout</code> pour stabiliser l’entraînement.</p>
+<h3>Pistes d’amélioration</h3>
+<ol>
+    <li><strong>Optimisation du taux d’apprentissage</strong> :<br>
+        Utiliser un schéma de décroissance (ex. : <em>cosine annealing</em>) pour réduire le taux d’apprentissage progressivement et stabiliser la convergence.</li>
+
+    <li><strong>Augmentation des données</strong> :<br>
+        Appliquer des transformations (rotation, inversion) pour diversifier les exemples d’entraînement et améliorer la généralisation.</li>
+
+    <li><strong>Ajustement du dropout</strong> :<br>
+        Réduire le taux de dropout (<code>0.1</code> au lieu de <code>0.2</code>) pour limiter les fluctuations de perte observées en fin d’entraînement.</li>
+
+    <li><strong>Modèle plus profond</strong> :<br>
+        Augmenter <code>num_layers</code> (ex. : 8 au lieu de 6) ou <code>embed_dim</code> pour renforcer la capacité du réseau.</li>
+
+    <li><strong>Validation croisée</strong> :<br>
+        Effectuer plusieurs splits des données pour évaluer la robustesse du modèle.</li>
+</ol>
+
+<hr>
+
+<h3>Conclusion</h3>
+<p>Ce projet démontre qu’un Vision Transformer (ViT) léger, entraîné sur MNIST, atteint <strong>88 % de précision</strong> en 20 epochs, confirmant l’adaptabilité des Transformers à des tâches simples de vision par ordinateur. Bien que les résultats soient encourageants, des ajustements (taux d’apprentissage, <code>dropout</code>) pourraient réduire les oscillations et améliorer la stabilité. Cette implémentation sert de base pour explorer des architectures plus complexes (ex. : <code>Swin Transformer</code>) ou des datasets plus exigeants (CIFAR-10, ImageNet). Les ViT, avec leur capacité à capturer des relations globales, ouvrent des perspectives passionnantes pour l’avenir de l’apprentissage visuel.</p>
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+    <li><a href="https://arxiv.org/pdf/2010.11929"> Transformers without Normalization</a>(Original Papers) </li>
+    <li><a href="https://github.com/5uru/Implementation/blob/main/vit.ipynb">Github</a> : Mon implementation d'un ViT.</li>
+    <li><a href="https://docs.jaxstack.ai/en/latest/JAX_Vision_transformer.html">JaxStack</a> : Implement Vision Transformer (ViT) model from scratch.</li>
+    <li><a href="https://jax.readthedocs.io/en/latest/">Documentation officielle de JAX</a> : Pour maîtriser les fonctionnalités avancées de JAX.</li>
+    <li><a href="https://flax.readthedocs.io/en/latest/">Documentation officielle de Flax</a> : Pour simplifier la construction de modèles complexes avec JAX.</li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=l5WgAr4B8Vo&t=3150s" target="_blank">Écouter sur YouTube</a>
+</div>
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+
+
+</body>
+</html>
