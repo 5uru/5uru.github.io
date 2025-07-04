@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Données en Deep Learning : Tenseurs</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>Les Données en Deep Learning : Tenseurs</h1>
+
+<p>En deep learning, les données sont le carburant des modèles, mais leur utilisation efficace repose sur une compréhension profonde de leur représentation mathématique. Cet article explore le parcours qui mène des objets du monde réel aux tenseurs, ces structures multidimensionnelles qui permettent aux réseaux neuronaux de traiter des informations complexes. Comprendre ce processus est essentiel pour choisir les architectures adaptées et optimiser les performances des modèles.</p>
+
+<h2>Les Scalaires : La Brique Fondamentale</h2>
+<p>Tout commence par le scalaire, une unité de base qui représente une valeur isolée dans l'ensemble des nombres réels (ℝ). Un scalaire peut symboliser des grandeurs aussi variées que le nombre de passagers dans un bus (entier) ou la température extérieure (décimale). En pratique, les frameworks de deep learning utilisent presque toujours des scalaires en précision décimale (floating-point) par défaut, car ils permettent de gérer à la fois des nombres entiers et décimaux avec flexibilité.</p>
+
+<p>Cependant, derrière cette simplicité se cache une question cruciale : <strong>la précision numérique</strong>. La précision détermine la capacité à représenter finement les valeurs et à éviter les erreurs d'arrondi lors des calculs. Par exemple, un scalaire stocké en <em>FP32</em> (32 bits, simple précision) offre une résolution bien supérieure à un scalaire en <em>FP16</em> (16 bits, demi-précision). Ce choix influence directement la mémoire utilisée, la vitesse des calculs, et même la stabilité des algorithmes d'entraînement comme la descente de gradient.</p>
+
+<h2>La Précision Numérique : Un Équilibre Entre Performance et Stabilité</h2>
+<p>La précision est un compromis stratégique en deep learning. Historiquement, le format <em>FP32</em> (32 bits) est devenu la norme grâce à sa capacité à représenter des nombres avec une grande dynamique (jusqu'à ±3,4×10³⁸) et une précision relative de 7 chiffres décimaux. Il est idéal pour éviter les problèmes d'<em>underflow</em> (valeurs trop petites pour être représentées) et d'<em>overflow</em> (valeurs trop grandes) pendant l'entraînement.</p>
+
+<p>Pourtant, l'émergence de modèles massifs et de contraintes matérielles a popularisé le <em>FP16</em>. Ce format réduit la consommation mémoire de moitié et accélère les calculs sur les GPU modernes, mais il présente des limites :</p>
+<ul>
+    <li><strong>Plage limitée</strong> : Les nombres dépassant 65 504 deviennent des infinis (<em>overflow</em>).</li>
+    <li><strong>Précision réduite</strong> : Les gradients inférieurs à 6×10⁻⁸ sont arrondis à zéro (<em>underflow</em>), bloquant l'apprentissage.</li>
+</ul>
+
+<p>Pour pallier ces défis, des techniques comme le <em>gradient scaling</em> sont utilisées. Par exemple, multiplier un gradient microscopique (0,00004) par 1000 avant conversion en FP16 permet de le préserver, puis de le reconvertir en FP32 pour maintenir la précision. Cette gestion fine de la précision est un levier clé pour optimiser les modèles sans sacrifier leur stabilité.</p>
+
+<h3>Exemple Comparatif</h3>
+<ul>
+    <li><strong>Situation</strong> : Micro-gradient
+        <ul>
+            <li><strong>Gradient FP16 Brut</strong> : 0.00004 → 0.0 (perdu)</li>
+            <li><strong>Après Scaling (×1000)</strong> : 0.04 (préservé)</li>
+            <li><strong>Après Conversion en FP32</strong> : 0.00004 (précis)</li>
+        </ul>
+    </li>
+</ul>
+
+<p>Ce tableau illustre comment le <em>scaling</em> et la conversion entre formats préservent les gradients critiques, évitant l'échec de l'entraînement.</p>
+
+<h2>Les Tenseurs : La Structure Multidimensionnelle du Deep Learning</h2>
+<p>Un <strong>tenseur</strong> est une structure mathématique multidimensionnelle qui généralise les scalaires, vecteurs et matrices à des dimensions arbitraires. En deep learning, il sert de conteneur universel pour représenter des données structurées, en capturant leurs relations spatiales, temporelles ou sémantiques.</p>
+
+<p>Les frameworks comme <strong>TensorFlow</strong> et <strong>PyTorch</strong> utilisent par défaut le format <strong>FP32</strong> pour les tenseurs durant l'entraînement, car il garantit une stabilité maximale lors des calculs complexes (descente de gradient, rétropropagation). Toutefois, le <em>FP16</em> est de plus en plus adopté pour l'inférence ou les modèles à grande échelle, grâce à sa rapidité et son faible encombrement mémoire.</p>
+
+<p>Voici comment les tenseurs structurent l'information :</p>
+<ul>
+    <li><strong>Scalaire (rang 0)</strong> : Une valeur isolée, comme une température.</li>
+    <li><strong>Vecteur (rang 1)</strong> : Une liste ordonnée, comme les pixels d'une image en niveaux de gris.</li>
+    <li><strong>Matrice (rang 2)</strong> : Un tableau 2D, comme une image en noir et blanc.</li>
+    <li><strong>Tenseur 3D</strong> : Par exemple, une image couleur (hauteur × largeur × canaux RGB).</li>
+    <li><strong>Tenseur 4D/5D</strong> : Des vidéos (batch × temps × hauteur × largeur × canaux) ou des séries temporelles complexes.</li>
+</ul>
+
+<p>Les tenseurs capturent les relations spatiales, temporelles et sémantiques entre les données. Par exemple, un réseau convolutif (CNN) exploite la structure 3D d'une image pour détecter des motifs locaux, tandis qu'un modèle de traitement du langage (NLP) utilise des tenseurs 2D pour encoder les séquences de mots et leurs relations contextuelles.</p>
+
+<h3>Propriétés Clés des Tenseurs</h3>
+<ol>
+    <li><strong>Forme (Shape)</strong> : Définit les dimensions du tenseur. Par exemple, une vidéo de 10 secondes en 1080p avec 3 canaux couleur et un batch de 32 échantillons aura une forme <code>[32, 10, 1080, 1920, 3]</code>.</li>
+    <li><strong>Type de Données (dtype)</strong> : Spécifie si les éléments sont en FP32 (par défaut), FP16, entiers, etc.</li>
+    <li><strong>Contiguïté</strong> : Indique si les données sont stockées en mémoire de manière linéaire (utile pour les opérations vectorisées).</li>
+</ol>
+
+<h3>Opérations Tenseur : Le Cœur du Traitement</h3>
+<p>Les frameworks comme PyTorch et TensorFlow offrent des opérations optimisées pour manipuler les tenseurs :</p>
+<ul>
+    <li><strong>Slicing</strong> : Extraction de sous-tenseurs (ex. <code>tensor[:, :, 100:200, 150:250]</code> pour recadrer une image).</li>
+    <li><strong>Reshaping</strong> : Changement de dimension (ex. aplatir une image 28×28 en vecteur de 784 éléments).</li>
+    <li><strong>Broadcasting</strong> : Extension automatique pour aligner les dimensions (ex. addition d'un scalaire à un tenseur).</li>
+    <li><strong>Produits Matriciels</strong> : Opération fondamentale pour les couches dense (<code>torch.matmul</code>) et les convolutions.</li>
+</ul>
+
+<h3>Exemple Concret : Un Système de Recommandation Immobilière</h3>
+<p>Imaginons un modèle prédictif analysant le marché immobilier parisien. Les données peuvent être structurées en un tenseur 3D de forme <strong>[10 000 logements × 4 caractéristiques × 20 quartiers]</strong> :</p>
+<ul>
+    <li><strong>Dimension 1 (Logements)</strong> : Chaque logement est décrit par des caractéristiques comme le prix, la superficie, le nombre de pièces, et l'année de construction.</li>
+    <li><strong>Dimension 2 (Quartiers)</strong> : Les 20 quartiers (arrondissements) permettent d'analyser les variations géographiques.</li>
+</ul>
+
+<p>Un tel tenseur permet des opérations vectorisées complexes. Par exemple, pour comparer la superficie moyenne des 3-pièces entre le Marais (4ᵉ arrondissement) et Montmartre (18ᵉ) :</p>
+<pre>
+# Extraction et calcul en une ligne avec PyTorch
+superficie_moyenne = torch.mean(tensor[:, 1, [3,17]][tensor[:, 2, :] == 3], dim=0)
+</pre>
+<p>Ici, le tenseur encapsule à la fois la structure des données et les relations entre elles, rendant les analyses multidimensionnelles intuitives et efficaces.</p>
+
+<h3>Tenseurs et Architecture des Modèles</h3>
+<p>La structure d'un tenseur guide le choix de l'architecture :</p>
+<ul>
+    <li><strong>Images</strong> : CNN (Convolutional Neural Network) exploitant les dimensions spatiales.</li>
+    <li><strong>Textes</strong> : Transformers ou RNN (Recurrent Neural Network) pour les séquences temporelles.</li>
+    <li><strong>Vidéos</strong> : 3D-CNN ou architectures hybrides (ex. TimeDistributed + CNN).</li>
+</ul>
+
+<p>Par exemple, un modèle de traduction automatique traite des phrases encodées en tenseurs 2D <code>[batch_size, séquence_length]</code>, tandis qu'un générateur d'images (GAN) manipule des tenseurs 4D <code>[batch_size, canaux, hauteur, largeur]</code>.</p>
+
+<h2>Conclusion : Pourquoi la Représentation des Données Compte</h2>
+<p>Comprendre la transformation des objets réels en tenseurs est essentiel pour :</p>
+<ol>
+    <li><strong>Choisir la précision adaptée</strong> (FP16 vs FP32) selon les contraintes matérielles et la stabilité requise.</li>
+    <li><strong>Concevoir des architectures</strong> capables d'exploiter les structures multidimensionnelles (CNN, RNN, Transformers).</li>
+    <li><strong>Optimiser les performances</strong> en réduisant la mémoire et en accélérant les calculs.</li>
+</ol>
+
+<p>Dans le prochain article, nous explorerons comment les <strong>textes</strong> sont transformés en tenseurs via des techniques comme le <em>tokenization</em>, les <em>embeddings</em> (Word2Vec, BERT), et autres.</p>
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+    <li><a href="https://medium.com/decisionforce/understanding-mathematics-behind-floating-point-precisions-24c7aac535e3"> Understanding Mathematics behind floating-point precisions</a></li>
+    <li><a href="https://notes.101ai.net/basics/tensors">Tensors</a> </li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=PRrpGuzpJfo&list=RDPRrpGuzpJfo&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
