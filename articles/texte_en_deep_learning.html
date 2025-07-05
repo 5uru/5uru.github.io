@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Les Données en Deep Learning : Textes</title>
   <link rel="stylesheet" href="../styles.css">
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-  </script>
-  <script type="text/javascript"
-          src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-  </script></head>
 <body>
 <header>
   <h1>Jonathan Suru</h1>
@@ -27,9 +21,7 @@
 <h2>Label Encoding : Une Première Approche</h2>
 
 <p>Lorsqu’il s’agit de convertir des catégories discrètes en valeurs numériques, le <em>Label Encoding</em> offre une solution simple et immédiate. Prenons un exemple concret : imaginez que vous avez trois couleurs, ["Rouge", "Vert", "Bleu"]. Le Label Encoding attribue à chaque couleur un nombre unique, comme ceci :</p>
-<p>
-  $["Rouge", "Vert", "Bleu"] \rightarrow [0, 1, 2]$
-</p>
+<span>[Rouge, Vert, Bleu] &rarr; [0, 1, 2]</span>
 <p>Cela permet aux modèles de traiter des données non numériques tout en conservant leur structure discrète.</p>
 
 <p>Cependant, cette simplicité cache un écueil majeur. Le modèle interprète les valeurs numériques comme des grandeurs ordinales. Ainsi, $Bleu > Vert > Rouge$ (puisque $2 > 1 > 0$) devient une hiérarchie artificielle, sans fondement sémantique. De plus, des opérations comme $Bleu - Vert = 1$ n’ont aucun sens dans ce contexte catégoriel.</p>
@@ -37,9 +29,9 @@
 <h2>One-Hot Encoding : Éviter la Hiérarchie Artificielle</h2>
 
 <p>Pour résoudre ce problème, l’<em>One-Hot Encoding</em> propose une alternative radicale : chaque catégorie est représentée par un <strong>vecteur binaire</strong> dont la dimension correspond au nombre total de catégories. Par exemple :</p>
-<p>
-  $Rouge = [1, 0, 0],\ \text{ } Vert = [0, 1, 0],\ \text{ } Bleu = [0, 0, 1]$
-</p>
+<span>
+  Rouge = [1, 0, 0],&nbsp;Vert = [0, 1, 0],&nbsp;Bleu = [0, 0, 1]
+</span>
 <p>Cette méthode élimine toute notion d’ordre entre les catégories, car chaque token est isolé dans un espace vectoriel distinct.</p>
 
 <p>Malgré cet avantage, l’<em>One-Hot Encoding</em> génère rapidement des <strong>vecteurs creux</strong> (presque exclusivement composés de zéros) lorsque le vocabulaire est large. Avec 10 000 mots uniques, chaque token devient un vecteur de 10 000 dimensions, ce qui rend les calculs coûteux et inefficaces.</p>
@@ -49,9 +41,9 @@
 <p>Face à ces limitations, les <em>word embeddings</em> offrent une solution élégante : représenter les mots dans un <strong>espace vectoriel continu</strong>, où les relations sémantiques et syntaxiques sont capturées par la proximité géométrique des vecteurs.</p>
 
 <p>Prenons un exemple célèbre :</p>
-<p>
-  $\text{roi} - \text{homme} + \text{femme} \approx \text{reine}$
-</p>
+<span>
+  roi - homme + femme &asymp; reine
+</span>
 <p>Ce calcul montre comment les embeddings capturent des analogies linguistiques. Les modèles comme <strong>Word2Vec</strong> ou <strong>GloVe</strong> apprennent ces relations en analysant des milliards de phrases. Chaque mot est encodé comme un vecteur dense (ex: 300 dimensions), où les similarités entre vecteurs reflètent des analogies linguistiques.</p>
 <p>Cependant, ces embeddings statiques ont une limite majeure : un même mot possède une seule représentation, quel que soit son contexte.</p>
 
@@ -71,47 +63,68 @@
 
 <p>Avec des modèles comme BERT, chaque occurrence de "Rouge" est encodée différemment grâce à un mécanisme d’attention multi-tête(<em>Multi-Head Attention</em>), qui analyse les relations entre tous les mots de la phrase. Mathématiquement, ce processus repose sur des matrices de Query (Q), Key (K), et Value (V) dérivées des embeddings initiaux. L’attention calcule des pondérations via :</p>
 
-<p>
-  $Attention(Q,K,V)=softmax\left( \frac{QK^T}{\sqrt{d_k}} \right)V$
-</p>
-
-<p>où $d_k$ est la dimension des clés. Cette formule permet au modèle de "peser" l’importance de chaque mot dans le contexte. Ainsi, dans "vin rouge", le mot "Bordeaux" influence fortement l’interprétation de "rouge" comme un type de vin, tandis que dans "idées rouges", il s’associe à des termes politiques comme "communisme".</p>
+<em>
+  Attention(Q, K, V) = softmax( (QK<sup>T</sup>) / sqrt(d<sub>k</sub>) ) V
+</em>
+<p>où <em>d<sub>k</sub></em> est la dimension des clés. Cette formule permet au modèle de "peser" l’importance de chaque mot dans le contexte. Ainsi, dans "vin rouge", le mot "Bordeaux" influence fortement l’interprétation de "rouge" comme un type de vin, tandis que dans "idées rouges", il s’associe à des termes politiques comme "communisme".</p>
 
 <p>Grâce à cette approche, les embeddings contextuels capturent des nuances sémantiques et syntaxiques complexes, désambiguïsant les mots polyvalents et intégrant des variations linguistiques (fautes, synonymes, conjugaisons). Cela révolutionne des tâches comme la traduction ou l’analyse des sentiments, où le contexte détermine la signification.</p>
 <h2>Position Embeddings : Intégrer l’Ordre des Mots</h2>
 
 <p>Les architectures comme les <strong>Transformers</strong> traitent les mots en parallèle, sans notion d’ordre séquentiel. Pour pallier cette limitation, les <em>position embeddings</em> ajoutent des informations de position aux embeddings de mots.</p>
-<p>
-  $["Chat",\ "mange",\ "souris"] \rightarrow [\mathrm{Embedding}("Chat") + PE(0),\ \mathrm{Embedding}("mange") + PE(1),\ \mathrm{Embedding}("souris") + PE(2)]$
-</p>
+<em>
+  ["Chat", "mange", "souris"] &rarr; [Embedding("Chat") + PE(0), Embedding("mange") + PE(1), Embedding("souris") + PE(2)]
+</em>
 <p>Les positions sont encodées via des fonctions sinus et cosinus :</p>
-<p>
-  $PE(pos, 2i) = \sin\left(\frac{pos}{10000^{2i/d}}\right),\ \quad PE(pos, 2i+1) = \cos\left(\frac{pos}{10000^{2i/d}}\right)$
-</p>
-<p>où $d$ est la dimension de l’embedding. Cette méthode permet au modèle de généraliser à des séquences de longueurs variables tout en capturant les relations de proximité.</p>
+<span>
+  PE(pos, 2i) = sin( pos / 10000<sup>2i&#8260;d</sup> ),&nbsp;&nbsp;PE(pos, 2i+1) = cos( pos / 10000<sup>2i&#8260;d</sup> )
+</span>
+<p>où <em>d</em> est la dimension de l’embedding. Cette méthode permet au modèle de généraliser à des séquences de longueurs variables tout en capturant les relations de proximité.</p>
 
 <h2>Synthèse : Évolution des Méthodes</h2>
 
-<p>
-  $$
-  \renewcommand{\arraystretch}{1.5}
-  \begin{array}{|l|l|l|l|}
-  \hline
-  \textbf{Méthode} & \textbf{Avantages} & \textbf{Limites} & \textbf{Cas d'utilisation} \\
-  \hline
-  \text{Label Encoding} & \text{Simple, peu coûteux} & \text{Hiérarchie artificielle} & \text{Variables ordinales} \\
-  \hline
-  \text{One-Hot Encoding} & \text{Pas de hiérarchie} & \text{Explosion dimensionnelle} & \text{Petits vocabulaires} \\
-  \hline
-  \text{Word Embeddings} & \text{Relations sémantiques} & \text{Ambiguïté contextuelle} & \text{NLP classique} \\
-  \hline
-  \text{Embeddings Contextuels} & \text{Nuances sémantiques} & \text{Coût computationnel élevé} & \text{Modèles avancés} \\
-  \hline
-  \text{Position Embeddings} & \text{Intègre l'ordre des mots} & \text{Complexité mathématique} & \text{Transformers} \\
-  \hline
-  \end{array}
-  $$
-</p>
+<table style="border-collapse: collapse; width: 100%; border: 2px solid #333;">
+  <thead>
+  <tr>
+    <th style="border: 2px solid #333; padding: 8px;">Méthode</th>
+    <th style="border: 2px solid #333; padding: 8px;">Avantages</th>
+    <th style="border: 2px solid #333; padding: 8px;">Limites</th>
+    <th style="border: 2px solid #333; padding: 8px;">Cas d'utilisation</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td style="border: 2px solid #333; padding: 8px;">Label Encoding</td>
+    <td style="border: 2px solid #333; padding: 8px;">Simple, peu coûteux</td>
+    <td style="border: 2px solid #333; padding: 8px;">Hiérarchie artificielle</td>
+    <td style="border: 2px solid #333; padding: 8px;">Variables ordinales</td>
+  </tr>
+  <tr>
+    <td style="border: 2px solid #333; padding: 8px;">One-Hot Encoding</td>
+    <td style="border: 2px solid #333; padding: 8px;">Pas de hiérarchie</td>
+    <td style="border: 2px solid #333; padding: 8px;">Explosion dimensionnelle</td>
+    <td style="border: 2px solid #333; padding: 8px;">Petits vocabulaires</td>
+  </tr>
+  <tr>
+    <td style="border: 2px solid #333; padding: 8px;">Word Embeddings</td>
+    <td style="border: 2px solid #333; padding: 8px;">Relations sémantiques</td>
+    <td style="border: 2px solid #333; padding: 8px;">Ambiguïté contextuelle</td>
+    <td style="border: 2px solid #333; padding: 8px;">NLP classique</td>
+  </tr>
+  <tr>
+    <td style="border: 2px solid #333; padding: 8px;">Embeddings Contextuels</td>
+    <td style="border: 2px solid #333; padding: 8px;">Nuances sémantiques</td>
+    <td style="border: 2px solid #333; padding: 8px;">Coût computationnel élevé</td>
+    <td style="border: 2px solid #333; padding: 8px;">Modèles avancés</td>
+  </tr>
+  <tr>
+    <td style="border: 2px solid #333; padding: 8px;">Position Embeddings</td>
+    <td style="border: 2px solid #333; padding: 8px;">Intègre l'ordre des mots</td>
+    <td style="border: 2px solid #333; padding: 8px;">Complexité mathématique</td>
+    <td style="border: 2px solid #333; padding: 8px;">Transformers</td>
+  </tr>
+  </tbody>
+</table>
 
 <h2>Perspectives et Tendances Actuelles</h2>
 
