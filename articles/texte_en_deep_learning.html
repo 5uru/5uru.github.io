@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Les Données en Deep Learning : Textes</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+  </script>
+  <script type="text/javascript"
+          src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script></head>
+<body>
+<header>
+  <h1>Jonathan Suru</h1>
+  <nav>
+    <a href="../index.html">Accueil</a> |
+    <a href="../projects.html">Projets</a> |
+    <a href="../about.html">À propos</a>
+  </nav>
+</header>
+<h1>Les Données en Deep Learning : Textes</h1>
+
+<p>Dans l’article précédent, nous avons exploré les tenseurs comme structures fondamentales pour représenter les données en deep learning. Aujourd’hui, concentrons-nous sur un type de données particulièrement riche et complexe : le <strong>texte</strong>. Comment transformer des mots, des phrases ou des documents en représentations numériques exploitables par les modèles d’apprentissage automatique ? Découvrons les méthodes clés, étape par étape.</p>
+
+<h2>Label Encoding : Une Première Approche</h2>
+
+<p>Lorsqu’il s’agit de convertir des catégories discrètes en valeurs numériques, le <em>Label Encoding</em> offre une solution simple et immédiate. Prenons un exemple concret : imaginez que vous avez trois couleurs, ["Rouge", "Vert", "Bleu"]. Le Label Encoding attribue à chaque couleur un nombre unique, comme ceci :</p>
+<p>
+  $["Rouge", "Vert", "Bleu"] \rightarrow [0, 1, 2]$
+</p>
+<p>Cela permet aux modèles de traiter des données non numériques tout en conservant leur structure discrète.</p>
+
+<p>Cependant, cette simplicité cache un écueil majeur. Le modèle interprète les valeurs numériques comme des grandeurs ordinales. Ainsi, $Bleu > Vert > Rouge$ (puisque $2 > 1 > 0$) devient une hiérarchie artificielle, sans fondement sémantique. De plus, des opérations comme $Bleu - Vert = 1$ n’ont aucun sens dans ce contexte catégoriel.</p>
+
+<h2>One-Hot Encoding : Éviter la Hiérarchie Artificielle</h2>
+
+<p>Pour résoudre ce problème, l’<em>One-Hot Encoding</em> propose une alternative radicale : chaque catégorie est représentée par un <strong>vecteur binaire</strong> dont la dimension correspond au nombre total de catégories. Par exemple :</p>
+<p>
+  $Rouge = [1, 0, 0],\ \text{ } Vert = [0, 1, 0],\ \text{ } Bleu = [0, 0, 1]$
+</p>
+<p>Cette méthode élimine toute notion d’ordre entre les catégories, car chaque token est isolé dans un espace vectoriel distinct.</p>
+
+<p>Malgré cet avantage, l’<em>One-Hot Encoding</em> génère rapidement des <strong>vecteurs creux</strong> (presque exclusivement composés de zéros) lorsque le vocabulaire est large. Avec 10 000 mots uniques, chaque token devient un vecteur de 10 000 dimensions, ce qui rend les calculs coûteux et inefficaces.</p>
+
+<h2>Word Embeddings : Capturer les Relations Sémantiques</h2>
+
+<p>Face à ces limitations, les <em>word embeddings</em> offrent une solution élégante : représenter les mots dans un <strong>espace vectoriel continu</strong>, où les relations sémantiques et syntaxiques sont capturées par la proximité géométrique des vecteurs.</p>
+
+<p>Prenons un exemple célèbre :</p>
+<p>
+  $\text{roi} - \text{homme} + \text{femme} \approx \text{reine}$
+</p>
+<p>Ce calcul montre comment les embeddings capturent des analogies linguistiques. Les modèles comme <strong>Word2Vec</strong> ou <strong>GloVe</strong> apprennent ces relations en analysant des milliards de phrases. Chaque mot est encodé comme un vecteur dense (ex: 300 dimensions), où les similarités entre vecteurs reflètent des analogies linguistiques.</p>
+<p>Cependant, ces embeddings statiques ont une limite majeure : un même mot possède une seule représentation, quel que soit son contexte.</p>
+
+<div >
+  <p>Prenons le mot <span class="word">"Rouge"</span> :</p>
+  <ul>
+    <li><strong>Couleur :</strong> "Une robe rouge."</li>
+    <li><strong>Vin :</strong> "Un bon rouge de Bordeaux."</li>
+    <li><strong>Politique :</strong> "Les idées rouges."</li>
+  </ul>
+</div>
+
+<p>Avec Word2Vec, les trois sens de <span class="word">"Rouge"</span> partagent le même vecteur, alors qu'ils n'ont aucun lien sémantique. Cette ambiguïté limite leur utilité dans des tâches complexes.</p>
+<h2>Embeddings Contextuels : Adapter les Représentations au Contexte</h2>
+
+<p>Les <em>embeddings contextuels</em>résolvent les limites des embeddings statiques en générant des représentations dynamiques, adaptées au sens d’un mot dans une phrase. Prenons l’exemple du mot "Rouge", dont le sens varie selon le contexte.</p>
+
+<p>Avec des modèles comme BERT, chaque occurrence de "Rouge" est encodée différemment grâce à un mécanisme d’attention multi-tête(<em>Multi-Head Attention</em>), qui analyse les relations entre tous les mots de la phrase. Mathématiquement, ce processus repose sur des matrices de Query (Q), Key (K), et Value (V) dérivées des embeddings initiaux. L’attention calcule des pondérations via :</p>
+
+<p>
+  $Attention(Q,K,V)=softmax\left( \frac{QK^T}{\sqrt{d_k}} \right)V$
+</p>
+
+<p>où $d_k$ est la dimension des clés. Cette formule permet au modèle de "peser" l’importance de chaque mot dans le contexte. Ainsi, dans "vin rouge", le mot "Bordeaux" influence fortement l’interprétation de "rouge" comme un type de vin, tandis que dans "idées rouges", il s’associe à des termes politiques comme "communisme".</p>
+
+<p>Grâce à cette approche, les embeddings contextuels capturent des nuances sémantiques et syntaxiques complexes, désambiguïsant les mots polyvalents et intégrant des variations linguistiques (fautes, synonymes, conjugaisons). Cela révolutionne des tâches comme la traduction ou l’analyse des sentiments, où le contexte détermine la signification.</p>
+<h2>Position Embeddings : Intégrer l’Ordre des Mots</h2>
+
+<p>Les architectures comme les <strong>Transformers</strong> traitent les mots en parallèle, sans notion d’ordre séquentiel. Pour pallier cette limitation, les <em>position embeddings</em> ajoutent des informations de position aux embeddings de mots.</p>
+<p>
+  $["Chat",\ "mange",\ "souris"] \rightarrow [\mathrm{Embedding}("Chat") + PE(0),\ \mathrm{Embedding}("mange") + PE(1),\ \mathrm{Embedding}("souris") + PE(2)]$
+</p>
+<p>Les positions sont encodées via des fonctions sinus et cosinus :</p>
+<p>
+  $PE(pos, 2i) = \sin\left(\frac{pos}{10000^{2i/d}}\right),\ \quad PE(pos, 2i+1) = \cos\left(\frac{pos}{10000^{2i/d}}\right)$
+</p>
+<p>où $d$ est la dimension de l’embedding. Cette méthode permet au modèle de généraliser à des séquences de longueurs variables tout en capturant les relations de proximité.</p>
+
+<h2>Synthèse : Évolution des Méthodes</h2>
+
+<p>
+  $$
+  \renewcommand{\arraystretch}{1.5}
+  \begin{array}{|l|l|l|l|}
+  \hline
+  \textbf{Méthode} & \textbf{Avantages} & \textbf{Limites} & \textbf{Cas d'utilisation} \\
+  \hline
+  \text{Label Encoding} & \text{Simple, peu coûteux} & \text{Hiérarchie artificielle} & \text{Variables ordinales} \\
+  \hline
+  \text{One-Hot Encoding} & \text{Pas de hiérarchie} & \text{Explosion dimensionnelle} & \text{Petits vocabulaires} \\
+  \hline
+  \text{Word Embeddings} & \text{Relations sémantiques} & \text{Ambiguïté contextuelle} & \text{NLP classique} \\
+  \hline
+  \text{Embeddings Contextuels} & \text{Nuances sémantiques} & \text{Coût computationnel élevé} & \text{Modèles avancés} \\
+  \hline
+  \text{Position Embeddings} & \text{Intègre l'ordre des mots} & \text{Complexité mathématique} & \text{Transformers} \\
+  \hline
+  \end{array}
+  $$
+</p>
+
+<h2>Perspectives et Tendances Actuelles</h2>
+
+<ul>
+  <li><strong>Modèles légers</strong> : Des versions simplifiées comme DistilBERT ou ALBERT réduisent les coûts.</li>
+  <li><strong>Multilingue</strong> : XLM-RoBERTa ou text-embedding-3(OpenAI) partagent des embeddings entre langues pour des applications globales.</li>
+  <li><strong>Sparse Embeddings</strong> : Combinaison d’approches denses et parcimonieuses pour optimiser les performances.</li>
+</ul>
+
+<h2>Conclusion</h2>
+
+<p>La représentation du texte en deep learning a évolué d’approches basiques comme le Label Encoding vers des méthodes sophistiquées comme les embeddings contextuels. Chaque étape résout des limitations de la précédente, permettant aux modèles de capturer nuances sémantiques et structures syntaxiques. En combinant embeddings contextuels et positionnels, les architectures modernes atteignent des performances remarquables dans des tâches comme la traduction ou l’analyse des sentiments.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+  <li><a href="https://www.101ai.net/iframe-template?src=https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2Fe%2F2PACX-1vR1E4tdmHlCM9rDML0Z3qmTXkJ9eLpKsyAwADs7QWxPvtTP6jfizlsdiu0DpwDrwjmtdZVjtxvVaOzQ%2Fpub%3Fembedded%3Dtrue&topicTitle=Word%20Embedding">Understanding Word Embeddings</a></li>
+  <li><a href="https://www.101ai.net/iframe-template?src=https%3A%2F%2Fdocs.google.com%2Fdocument%2Fd%2Fe%2F2PACX-1vTpqKmuYThnKBrNIk7ObUDxXFH2MlmIezQpsLEDJam3WocYQeN7EQwupDCkcZgRu5vPTc2gG-Qbw2YW%2Fpub%3Fembedded%3Dtrue&topicTitle=Position%20Embedding">The Role of Position Embedding in NLP</a> </li>
+  <li><a href="https://jalammar.github.io/illustrated-word2vec/" target="_blank"> TheIllustrated Word2Vec</a></li>
+  <li><a href="https://jalammar.github.io/visual-numpy/" target="_blank">TA Visual Intro to NumPy and Data Representation</a></li>
+  <li><a href=https://p.migdal.pl/blog/2017/01/king-man-woman-queen-why/" target="_blank">king - man + woman is queen; but why? </a></li>
+  <li><a href="https://platform.openai.com/docs/guides/embeddings" target="_blank">OpenAI Vector embeddings</a></li>
+</ul>
+<div class="music-suggestion">
+  <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+  <a href="https://www.youtube.com/watch?v=PRrpGuzpJfo&list=RDPRrpGuzpJfo&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+  <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
