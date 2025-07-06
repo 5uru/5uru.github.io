@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Les Données en Deep Learning : Images</title>
+  <link rel="stylesheet" href="../styles.css">
+<body>
+<header>
+  <h1>Jonathan Suru</h1>
+  <nav>
+    <a href="../index.html">Accueil</a> |
+    <a href="../projects.html">Projets</a> |
+    <a href="../about.html">À propos</a>
+  </nav>
+</header>
+<h1>Les Données en Deep Learning : Images</h1>
+
+<p>
+  Après avoir exploré comment les données textuelles se transforment en tenseurs et comment ces structures mathématiques servent de fondation aux réseaux neuronaux, il est temps de s’intéresser à un autre pilier du deep learning : <strong>les images</strong>. Comme les textes, les images sont converties en tenseurs pour être traitées par les algorithmes. Une photo de vacances, une radiographie médicale ou une image satellitaire deviennent ainsi des objets numériques structurés, prêts à être analysés. Mais avant d’atteindre cette compréhension sémantique, les images brutes doivent subir une série d’étapes de transformation. Ces opérations, bien que techniques, sont décisives pour la performance finale des modèles.
+</p>
+
+<h2>Représentation Numérique des Images : Des Pixels aux Tenseurs</h2>
+
+<p>
+  Une image numérique est avant tout une <strong>grille de pixels</strong>, chaque pixel représentant une valeur ou un ensemble de valeurs décrivant la lumière ou la couleur. Dans le cas d’une image en <strong>niveaux de gris</strong>, chaque pixel encode une intensité lumineuse entre 0 (noir) et 255 (blanc), formant une matrice 2D (hauteur × largeur). Une image en couleurs (RVB) ajoute une troisième dimension : chaque pixel devient un triplet de valeurs (Rouge, Vert, Bleu), créant un tenseur 3D (hauteur × largeur × canaux). Ces structures multidimensionnelles sont les <strong>tenseurs</strong>, l’unité fondamentale de représentation des données en deep learning.
+</p>
+
+<p>
+  Les images peuvent aussi être capturées dans des formats plus complexes :
+</p>
+
+<ul>
+  <li><strong>Multispectral/Hyperspectral</strong> : Plusieurs canaux au-delà du visible (utilisé en agriculture ou en géologie).</li>
+  <li><strong>3D (volumes de voxels)</strong> : Pour l’imagerie médicale (IRM, scanner) ou la modélisation 3D.</li>
+  <li><strong>Binaire</strong> : Pixels noirs (0) ou blancs (1), utilisés pour la segmentation ou la détection de contours.</li>
+</ul>
+
+<p>
+  Ces formats varient selon l’application, mais tous partagent une structure commune : une organisation hiérarchique de données exploitables par les réseaux neuronaux.
+</p>
+
+<h2>Adapter les Images aux Modèles : Normalisation, Redimensionnement et Augmentation</h2>
+
+<p>
+  Les images numériques, bien que riches en informations, présentent des défis uniques pour l’apprentissage automatique. Leur structure multidimensionnelle (hauteur × largeur × canaux) exige des ajustements précis pour s’adapter aux contraintes des architectures neurales. Ces étapes de prétraitement — normalisation, redimensionnement et augmentation — garantissent que les données sont à la fois stables, standardisées et suffisamment variées pour entraîner des modèles robustes.
+</p>
+
+<h3>Normalisation : Uniformiser les Valeurs Numériques</h3>
+
+<p>
+  Une image brute contient des pixels dont les valeurs varient généralement entre 0 et 255 pour chaque canal chromatique (Rouge, Vert, Bleu). Cette dispersion rend l’apprentissage instable, car les gradients calculés pendant la rétropropagation peuvent devenir trop grands ou trop petits, ralentissant voire bloquant la convergence. La normalisation résout ce problème en ramenant toutes les valeurs à une échelle commune, souvent [0,1] ou [−1,1].
+</p>
+
+<p>
+  Cette étape n’est pas simplement une mise à l’échelle mécanique : elle stabilise les dynamiques d’apprentissage en éliminant les biais potentiels. Par exemple, si un canal rouge est systématiquement plus intense que le vert ou le bleu, cela pourrait fausser l’analyse du modèle. En uniformisant les valeurs, la normalisation assure que chaque canal contribue de manière équitable à l’apprentissage, sans dominer les autres. Elle prépare également les données pour des algorithmes d’optimisation comme Adam ou SGD, qui s’appuient sur des gradients bien équilibrés.
+</p>
+
+<h3>Redimensionnement : Adapter la Géométrie</h3>
+
+<p>
+  Les réseaux neuronaux exigent des entrées de taille fixe, mais les images varient en dimensions. Une photo de smartphone peut faire 4000×3000 pixels, tandis qu’un modèle d’IA nécessite des images de 224×224 pixels. Le redimensionnement ajuste ces dimensions via des méthodes d’interpolation mathématique, comme la bilinéaire ou la bicubique, qui estiment les nouvelles valeurs de pixels en moyennant leurs voisins.
+</p>
+
+<p>
+  Cependant, cette opération doit être réalisée avec soin. Un redimensionnement brutal peut déformer des détails critiques, comme les contours d’une tumeur sur une IRM ou les caractéristiques faciales dans un système de reconnaissance. Pour préserver la structure visuelle, des techniques comme le <em>padding</em> (ajout de bordures noires ou réfléchies) ou le recadrage centré sur les régions d’intérêt sont souvent utilisées. Le choix des dimensions finales implique un compromis : une résolution trop basse sacrifie les détails fins, tandis qu’une résolution excessive augmente la charge computationnelle sans apport significatif.
+</p>
+
+<h3>Augmentation : Créer de la Diversité Synthétique</h3>
+
+<p>
+  L’augmentation des données génère artificiellement des variantes d’images existantes pour enseigner au modèle la robustesse. Des transformations géométriques (rotation, translation) ou photométriques (variation de luminosité, ajout de bruit) simulent des conditions réelles que le modèle rencontrera en déploiement. Cette étape combat deux fléaux de l’apprentissage automatique : le surapprentissage (mémorisation des données d’entraînement) et la fragilité contextuelle (échec face à des conditions inédites).
+</p>
+
+<p>
+  Par exemple, un système de reconnaissance de chiens et chats doit identifier ces animaux même s’ils sont partiellement cachés, pris sous un angle inhabituel ou dans des conditions d’éclairage variables. L’augmentation prépare le modèle à ces défis en générant des scénarios synthétiques, rendant l’apprentissage plus généralisable. Des techniques avancées comme CutOut (masquage de zones aléatoires) ou MixUp (fusion de deux images) renforcent encore cette capacité, en forçant le réseau à apprendre des caractéristiques globales plutôt que des détails superficiels.
+</p>
+
+
+<br><br>
+<p>
+  Ces étapes — normalisation, redimensionnement, augmentation et extraction de caractéristiques — forment un pipeline cohérent. Elles transforment des données brutes hétérogènes en un flux standardisé, géométriquement cohérent et sémantiquement riche. Ensemble, elles constituent la fondation invisible sur laquelle repose la fiabilité des systèmes modernes de vision par ordinateur, depuis les diagnostics médicaux jusqu’aux véhicules autonomes.
+</p>
+
+<h2>Conclusion : De la Structure à la Compréhension Visuelle</h2>
+
+<p>
+  La transformation d’une image en un objet exploitable par l’intelligence artificielle repose sur une chaîne rigoureuse. Les pixels deviennent d’abord des tenseurs, structurés en dimensions (hauteur, largeur, canaux). Ces tenseurs sont ensuite normalisés pour stabiliser les gradients, redimensionnés pour respecter les contraintes techniques, et augmentés pour enrichir la diversité des données.
+</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+  <li><a href="https://notes.101ai.net/vision/image-data">Image Data in Machine Vision</a></li>
+  <li><a href="https://medium.com/@ChandraPrakash-Bathula/machine-learning-concept-55-image-data-and-processing-techniques-1c48133267a4" target="_blank"> Machine Learning Concept 55 : Image Data and processing Techniques.</a></li>
+</ul>
+<div class="music-suggestion">
+  <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+  <a href="https://www.youtube.com/watch?v=ezS5mi17Teo&list=RD5Ouu-wbFhEk&index=13" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+  <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
