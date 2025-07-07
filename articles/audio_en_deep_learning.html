@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Données en Deep Learning : Audio</title>
+    <link rel="stylesheet" href="../styles.css">
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>Les Données en Deep Learning : Audio</h1>
+
+<h2>Les Fondamentaux du Son et de sa Transformation en Données Numériques</h2>
+
+<h3>Qu’est-ce qu’un son ?</h3>
+<p>Un son est une vibration de l’air qui se propage sous forme d’onde. Lorsque vous parlez ou écoutez de la musique, ces vibrations frappent vos tympans et sont interprétées par votre cerveau. Pour qu’un ordinateur puisse analyser ces sons, il faut les convertir en nombres. Cela se fait en deux étapes :</p>
+<ul>
+    <li><strong>L’échantillonnage</strong> : Mesurer l’amplitude du son à intervalles réguliers (ex. 44 100 mesures par seconde pour un CD).</li>
+    <li><strong>La quantification</strong> : Convertir chaque mesure en un nombre binaire (ex. 16 bits = 65 536 niveaux de volume).</li>
+</ul>
+<p>Imaginez un tableau de valeurs numériques qui reproduit fidèlement l’onde sonore originale. Plus l’échantillonnage est dense (mesures fréquentes) et la quantification précise (grands nombres), meilleure est la qualité du son numérique.</p>
+
+<h3>Du Son au Signal Numérique</h3>
+<p>Un fichier audio brut est simplement une liste de nombres. Par exemple, un son de 1 seconde à 16 kHz contient 16 000 valeurs, chacune représentant l’amplitude du son à un instant précis. En Deep Learning, ces données deviennent un <strong>tenseur 1D</strong> (une ligne de nombres).</p>
+<p><em>Exemple concret</em> :</p>
+<pre><code>
+signal = [0.1, -0.3, 0.5, ..., 0.2]  # 16 000 valeurs pour 1 seconde à 16 kHz
+    </code></pre>
+
+<hr>
+
+<h2>Analyser le Son et le Préparer pour l’IA</h2>
+
+<h3>Comprendre les Fréquences avec la FFT</h3>
+<p>Le son est composé de multiples fréquences (aiguës, graves). Pour les identifier, on utilise la <strong>Transformée de Fourier Rapide (FFT)</strong>. Elle décompose le son en ses "composantes de base", comme un prisme décompose la lumière en couleurs.</p>
+<p><strong>Limitation de la FFT</strong> : Elle perd l’information temporelle. On sait <em>quelles</em> fréquences sont présentes, mais pas <em>quand</em>.</p>
+<p><strong>Solution</strong> : La <strong>Transformée de Fourier à Court Terme (STFT)</strong> analyse de courtes tranches de son, créant un <strong>spectrogramme</strong>. Ce dernier est une image où :</p>
+<ul>
+    <li>L’axe horizontal = le temps.</li>
+    <li>L’axe vertical = les fréquences.</li>
+    <li>La couleur = l’intensité (plus sombre = plus fort).</li>
+</ul>
+<p><em>Exemple</em> : Dire "bonjour" produit un spectrogramme avec des motifs distincts : les voyelles (comme "o") forment des bandes horizontales, tandis que les consonnes (comme "j") apparaissent comme des pics courts.</p>
+
+<h3>Représentations Avancées : Mel et MFCC</h3>
+<h4>Mel-Spectrogramme</h4>
+<p>L’oreille humaine est plus sensible aux graves qu’aux aigus. Le Mel-spectrogramme adapte cette perception en compressant les hautes fréquences.</p>
+<h4>MFCC (Coefficients Cepstraux en Échelle de Mel)</h4>
+<p>Les MFCC résument encore plus les données :</p>
+<ol>
+    <li>Calculer un Mel-spectrogramme.</li>
+    <li>Appliquer une transformation mathématique (DCT) pour extraire des "empreintes" du son.</li>
+</ol>
+<p>Les MFCC sont utilisés pour reconnaître des mots ou classer des genres musicaux. Par exemple, Google Assistant les utilise pour identifier des phonèmes (unités sonores).</p>
+
+<h3>Structurer les Données pour l’IA</h3>
+<h4>Signal Brut → Tenseur 1D</h4>
+<p>Un fichier audio est une liste de nombres (ex. 16 000 valeurs pour 1 seconde à 16 kHz). En Deep Learning, cela devient un <strong>tenseur 1D</strong> de forme <code>(N,)</code>.</p>
+<h4>Spectrogrammes → Tenseur 2D</h4>
+<p>Un spectrogramme STFT ou Mel devient une matrice <code>(F, T)</code> où :</p>
+<ul>
+    <li><code>F</code> = nombre de fréquences (ex. 128 bandes).</li>
+    <li><code>T</code> = nombre de trames temporelles (ex. 100 instants).</li>
+</ul>
+<h4>Adaptation aux Réseaux de Neurones</h4>
+<ul>
+    <li><strong>CNN (Convolutionnels)</strong> : Acceptent des tenseurs 3D <code>(Canaux, F, T)</code> comme pour les images.</li>
+    <li><strong>RNN/LSTM</strong> : Travaillent sur des séquences <code>(T, F)</code>.</li>
+    <li><strong>Transformers</strong> : Utilisent aussi des séquences <code>(T, F)</code> avec un encodage temporel.</li>
+</ul>
+<p><em>Code Python Simplifié</em> :</p>
+<div class="code-block"><pre><code>
+import librosa
+# Charger un fichier audio
+signal, sr = librosa.load("exemple.wav", sr=16000)
+# Calculer un Mel-spectrogramme
+mel = librosa.feature.melspectrogram(y=signal, sr=sr, n_mels=128)
+</code></pre></div>
+
+<h3>Réduire le Bruit : Techniques Classiques vs Deep Learning</h3>
+<h4>Méthodes Traditionnelles</h4>
+<ul>
+    <li><strong>Subtraction spectrale</strong> : Soustraire le bruit estimé du signal.</li>
+    <li><strong>Filtrage de Wiener</strong> : Ajuster le signal pour minimiser le bruit.</li>
+    <li><strong>Masquage binaire</strong> : Supprimer les parties dominées par le bruit.</li>
+</ul>
+<h4>Deep Learning</h4>
+<p>Des réseaux comme <strong>WaveNet</strong> ou les <strong>Autoencodeurs</strong> apprennent à reconstruire le son sans bruit. Exemple : Supprimer le ronflement électrique à 50 Hz en ciblant son pic dans le spectrogramme.</p>
+
+<h3>Un Pipeline Complet pour le Deep Learning Audio</h3>
+<ol>
+    <li><strong>Prétraitement</strong> :
+        <ul>
+            <li>Normaliser le volume.</li>
+            <li>Couper le son en petits segments (ex. 25 ms).</li>
+        </ul>
+    </li>
+    <li><strong>Extraction de Caractéristiques</strong> :
+        <ul>
+            <li>Convertir en Mel-spectrogramme ou MFCC.</li>
+            <li>Augmenter les données (ajouter du bruit, changer la hauteur).</li>
+        </ul>
+    </li>
+    <li><strong>Modélisation</strong> :
+        <ul>
+            <li><strong>CNN</strong> : Pour analyser des images de spectrogrammes.</li>
+            <li><strong>RNN</strong> : Pour comprendre des phrases longues.</li>
+            <li><strong>Transformers</strong> : Pour des tâches complexes comme la traduction vocale.</li>
+        </ul>
+    </li>
+</ol>
+
+<hr>
+
+<h2>Conclusion</h2>
+<p>Le Deep Learning transforme le son en modèles mathématiques pour créer des assistants vocaux, des correcteurs d’accent, ou des outils de reconnaissance musicale. En combinant physique, maths et programmation, on donne l’oreille à l’IA !</p>
+
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources incontournables :</p>
+<ul>
+    <li><a href="https://colab.research.google.com/drive/15NQ10Lur4C_wreEgdz0FgVRu-F_lEDjE?usp=sharing#scrollTo=nHfw">Foundations of Speech & Audio Processing</a></li>
+    <li><a href="https://www.101ai.net/audio/basics" target="_blank"> The Basics of Audio Signal Processing with FFT</a></li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=OpGmLQ_dpco&list=RDOpGmLQ_dpco&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
