@@ -21,7 +21,18 @@
   <h2>Papiers de Recherche</h2>
   <p>Cette section est dédiée à mes reproductions et implémentations de travaux académiques en IA.</p>
 
+  <article>
 
+    <h3><a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer">Implémentation de l'Optimiseur <strong>Lion</strong> avec TinyGrad.</a></h3>
+    <p>J'ai implémenté l'optimiseur <strong>Lion</strong> (basé sur l'article <a href="https://arxiv.org/abs/2302.06675 ">Symbolic Discovery of Optimization Algorithms</a>) pour entraîner un CNN sur le dataset <em>MNIST</em>. Contrairement à Adam, Lion n'utilise qu'un seul paramètre de moment et applique une opération <code>sign()</code> sur les mises à jour des poids, réduisant la mémoire utilisée.</p>
+    <p>Les résultats montrent une <strong>convergence extrêmement rapide</strong> : la perte chute de <strong>2.0</strong> à <strong>0.02</strong> en 5 000 étapes, tandis que l'accuracy atteint <strong>99%</strong> dès les premières centaines d'étapes.</p>
+  </article>
+  <article>
+
+    <h3><a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer">Implémentation d'un Optimiseur AdamW avec TinyGrad.</a></h3>
+    <p>J'ai implémenté une version personnalisée de l'optimiseur <strong>AdamW</strong> pour entraîner un réseau de neurones convolutif (CNN) sur le dataset <em>MNIST</em>.</p>
+    <p>Les résultats montrent une <strong>convergence rapide</strong> : la perte initiale de <strong>2.0</strong> chute à <strong>0.02</strong> en 5 000 étapes, tandis que l'accuracy atteint <strong>99%</strong> dès les premières centaines d'étapes.</p>
+  </article>
   <article>
 
     <h3><a href="https://github.com/5uru/Stream/tree/main/rbm">Implémentation d'une Machine de Boltzmann Restreinte (RBM) avec TinyGrad.</a></h3>
