@@ -23,6 +23,11 @@
 
   <article>
 
+    <h3><a href="https://github.com/5uru/Stream/tree/main/gcn">Implémentation d'un Réseau de Convolution sur Graphes (GCN) avec TinyGrad.</a></h3>
+    <p>J'ai implémenté un **GCN (Graph Convolutional Network)** pour détecter des communautés dans le <em>dataset Zachary Karate Club</em>. Le modèle utilise deux couches de convolution graphique, chacune suivie d'une couche linéaire et d'une activation <code>tanh</code>, terminé par un classifieur linéaire. Les caractéristiques des nœuds sont initialement codées en <strong>one-hot</strong>, et la matrice d'adjacence est normalisée avec des boucles auto-connectées. L'entraînement s'est effectué sur <strong>100 époques</strong> avec l'optimiseur <strong>Adam</strong>, atteignant une <strong>accuracy de 100%</strong> dès la 20e époque.</p>
+  </article>
+  <article>
+
     <h3><a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer">Implémentation de l'Optimiseur <strong>Lion</strong> avec TinyGrad.</a></h3>
     <p>J'ai implémenté l'optimiseur <strong>Lion</strong> (basé sur l'article <a href="https://arxiv.org/abs/2302.06675 ">Symbolic Discovery of Optimization Algorithms</a>) pour entraîner un CNN sur le dataset <em>MNIST</em>. Contrairement à Adam, Lion n'utilise qu'un seul paramètre de moment et applique une opération <code>sign()</code> sur les mises à jour des poids, réduisant la mémoire utilisée.</p>
     <p>Les résultats montrent une <strong>convergence extrêmement rapide</strong> : la perte chute de <strong>2.0</strong> à <strong>0.02</strong> en 5 000 étapes, tandis que l'accuracy atteint <strong>99%</strong> dès les premières centaines d'étapes.</p>
