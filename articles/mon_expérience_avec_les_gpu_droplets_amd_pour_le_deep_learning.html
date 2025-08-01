@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Expérience avec les GPU Droplets AMD pour le Deep Learning</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+  <h1>Jonathan Suru</h1>
+  <nav>
+    <a href="../index.html">Accueil</a> |
+    <a href="../projects.html">Projets</a> |
+    <a href="../about.html">À propos</a>
+  </nav>
+</header>
+<h1>Mon Expérience avec les GPU Droplets AMD pour le Deep Learning</h1>
+
+<h2>Les Défis Matériels en Deep Learning</h2>
+<p>Dans mon parcours en deep learning, j'ai régulièrement rencontré des défis liés aux ressources matérielles. Bien que mon ordinateur personnel suffise pour les petits projets, j'ai constaté que les modèles plus exigeants ralentissaient considérablement mon workflow de développement. Comme beaucoup de praticiens, j'ai utilisé Google Colab qui offre une solution pratique avec ses ressources GPU gratuites. Cependant, je me suis rendu compte que je préférais travailler dans mon environnement de développement local avec PyCharm, où j'ai configuré mes outils, extensions et raccourcis clavier pour optimiser ma productivité.</p>
+
+<p>Cette préférence pour mon environnement local ne remet pas en cause l'utilité de Colab - qui reste une excellente solution pour de nombreuses situations - mais reflète simplement mon besoin de cohérence dans mon processus de travail. J'apprécie particulièrement la possibilité de déboguer en temps réel, d'utiliser mes outils de profiling habituels, et de bénéficier d'une configuration stable sans risque de déconnexion. Lorsque Hugging Face a annoncé trackio, une alternative intégrée à leur écosystème pour le suivi d'expériences, j'ai vu une opportunité d'explorer une solution intermédiaire : utiliser des ressources cloud tout en conservant mon workflow de développement habituel.</p>
+
+<h2>Découverte des GPU Droplets de DigitalOcean</h2>
+<p>C'est alors que j'ai découvert les GPU Droplets de DigitalOcean. Avec un coût d'environ $1.99/GPU/hr et 100$ de crédit gratuit à l'inscription, l'idée m'a séduit immédiatement. Contrairement aux GPU NVIDIA qui nécessitent CUDA, ces machines équipées de cartes AMD fonctionnaient avec TinyGrad, un framework léger que j'utilisais déjà localement. Cette compatibilité était cruciale pour moi, car elle éliminait la complexité des drivers propriétaires. Pas de dépendances lourdes, pas de drivers à installer — juste du code pur qui fonctionne.</p>
+
+<h2>Configuration de la Sécurité avec les Clés SSH</h2>
+<p>Pour pouvoir accéder au Droplet, il fallait d'abord sécuriser l'accès. J'ai ouvert mon terminal et lancé <code>ssh-keygen -t ed25519</code>, appuyant trois fois sur Entrée pour valider les paramètres par défaut. J'ai copié le contenu de <code>~/.ssh/id_ed25519.pub</code> et l'ai collé dans l'interface DigitalOcean sous « Networking → Add SSH Key ». Cette configuration permet d'établir une connexion sécurisée entre mon terminal et le serveur sans avoir à utiliser de mot de passe à chaque connexion.</p>
+
+<h2>Création et Accès au GPU Droplet</h2>
+<p>Après avoir configuré la clé SSH, j'ai pu créer mon GPU Droplet. Une fois la création terminée, j'ai récupéré l'IP publique du serveur dans la section Networking de l'interface DigitalOcean. Pour me connecter, j'ai simplement utilisé la commande <code>ssh root@MON_IP</code> dans mon terminal, suivi d'un <code>yes</code> pour confirmer la première connexion. Cette étape simple mais essentielle m'a donné accès à un environnement propre et dédié pour mes entraînements.</p>
+
+<h2>Gestion Sécurisée des Tokens et Variables d'Environnement</h2>
+<p>Avant de lancer l'entraînement, une étape cruciale consiste à configurer les tokens d'authentification de manière sécurisée. Pour l'upload automatique des modèles sur Hugging Face, j'ai utilisé mon token personnel (HF_TOKEN), mais je n'ai jamais intégré ce token directement dans mon code.</p>
+
+<p>La bonne pratique que j'ai adoptée est d'utiliser des variables d'environnement. Avant de lancer l'entraînement, j'exporte mon token dans le terminal :</p>
+
+<pre><code>export HF_TOKEN="votre_token_ici"</code></pre>
+
+<p>Cette commande définit la variable d'environnement pour la session en cours. Mon script Python récupère ensuite cette valeur via <code>os.getenv("HF_TOKEN")</code>, comme dans ce fragment de code :</p>
+
+<pre><code>from huggingface_hub import HfApi
+api = HfApi(token=os.getenv("HF_TOKEN"))
+api.upload_file(
+    path_or_fileobj="best_model.safetensors",
+    path_in_repo="best_model.safetensors",
+    repo_id="jonathansuru/cnn",
+    repo_type="model",
+)</code></pre>
+
+<p>Cette approche présente plusieurs avantages :</p>
+<ul>
+  <li>Le token n'est jamais stocké dans le code source</li>
+  <li>Il n'est pas visible dans les fichiers versionnés (comme sur GitHub)</li>
+  <li>Il est limité à la session terminal en cours</li>
+</ul>
+
+<p>Pour éviter de devoir retaper cette commande à chaque nouvelle session SSH, j'ai également créé un petit script <code>setup_env.sh</code> (que je n'ajoute pas au dépôt Git) contenant l'export du token. Avant chaque entraînement, j'exécute simplement <code>source setup_env.sh</code>.</p>
+
+<h2>Transfert des Fichiers avec FileZilla</h2>
+<p>Pour transférer mes fichiers locaux vers le serveur cloud, j'ai choisi FileZilla plutôt que de lutter avec <code>scp</code>. J'ai eu du mal à maîtriser <code>scp</code> dans un premier temps, mais je compte m'y consacrer prochainement pour améliorer mon workflow. J'ai commencé par installer FileZilla selon la documentation DigitalOcean : sur mon Mac, j'ai téléchargé la version officielle, tandis que sur Ubuntu, j'aurais pu utiliser <code>sudo apt-get update && sudo apt-get install filezilla</code>.</p>
+
+<p>Après avoir ouvert FileZilla, je suis allé dans <strong>Éditer → Paramètres</strong>, puis dans la section <strong>Connexion → SFTP</strong>. J'ai cliqué sur <strong>Ajouter un fichier de clé...</strong> et sélectionné ma clé privée <code>id_ed25519</code>. FileZilla a demandé à convertir le fichier dans un format pris en charge — j'ai accepté avec un <em>« Oui »</em> prudent. Ensuite, j'ai ouvert le <strong>Gestionnaire de sites</strong> via le menu <strong>Fichier</strong>, créé un <strong>Nouveau site</strong>, et rempli les champs :</p>
+
+<ul>
+  <li><strong>Hôte</strong> : l'IP de mon Droplet</li>
+  <li><strong>Port</strong> : 22 (par défaut)</li>
+  <li><strong>Protocole</strong> : SFTP</li>
+  <li><strong>Type de connexion</strong> : Interactive</li>
+  <li><strong>Utilisateur</strong> : root</li>
+</ul>
+
+<p>Cette configuration simple mais efficace m'a permis de glisser-déposer mes fichiers entre mon ordinateur local et le Droplet sans effort. Pour une documentation plus détaillée sur l'utilisation de FileZilla, DigitalOcean propose un excellent guide complet disponible ici : <a href="https://docs.digitalocean.com/products/droplets/how-to/transfer-files/#install-filezilla">How to Transfer Files to Droplets With FileZilla</a>.</p>
+
+<h2>Installation de l'Environnement Python</h2>
+<p>Sur le Droplet, j'ai installé Python 3.12 via <code>apt install python3.12-venv</code>, créé un environnement virtuel avec <code>python3 -m venv venv</code>, et activé les dépendances listées dans <code>requirements.txt</code> : <code>tinygrad</code>, <code>trackio</code>, <code>huggingface_hub</code>, et <code>safetensors</code>. Ce choix de framework léger a été déterminant : TinyGrad fonctionne nativement avec les GPU AMD via OpenCL, éliminant toute friction liée aux drivers propriétaires.</p>
+
+<h2>Intégration de trackio pour le Suivi des Expériences</h2>
+<p>Une des fonctionnalités les plus appréciables est que l'intégration de trackio avec Hugging Face crée automatiquement un Space dédié qui affiche un dashboard interactif des différentes métriques de l'entraînement, permettant de visualiser en temps réel la perte, la précision et l'utilisation des ressources GPU sans configuration supplémentaire.</p>
+
+<p>L'intégration de <code>trackio</code> a transformé mon workflow. En remplaçant simplement <code>import wandb</code> par <code>import trackio as wandb</code> dans mon script, j'ai pu envoyer directement mes métriques vers Hugging Face Spaces sans configurer de token supplémentaire. Chaque appel à <code>wandb.log()</code> se synchronisait automatiquement avec mon espace personnel, affichant en temps réel perte, précision, et utilisation GPU. Ce détail a éliminé l'anxiété de perdre des heures de calcul : même si le script plantait, les logs restaient accessibles.</p>
+
+<p>Il est important de noter qu'il faut faire un choix sur la fréquence de <code>wandb.log()</code> pour ne pas ralentir l'entraînement. Trouver le bon équilibre entre rapidité d'entraînement et précision du suivi est essentiel pour optimiser les performances.</p>
+
+<h2>Résultats de l'Entraînement</h2>
+<p>Lors du premier lancement de <code>python cnn.py</code>, j'ai observé les métriques défiler : <em>« step 0, loss 2.3102, acc 10.53% »</em>. En 8 minutes, le modèle atteignait 98,7 % de précision sur MNIST — contre 30 minutes sur mon ordinateur personnel. Cette accélération, bien que modeste pour ce modèle simple de test, démontre déjà l'avantage du GPU pour le deep learning. Avec des architectures plus complexes, la différence de temps deviendrait encore plus significative.</p>
+
+<h2>Automatisation avec Hugging Face</h2>
+<p>À la fin de l'entraînement, le script a sauvegardé <code>best_model.safetensors</code> et uploadé automatiquement le fichier sur Hugging Face via l'API. Une vérification rapide sur <a href="https://huggingface.co/jonathansuru/cnn">huggingface.co/jonathansuru/cnn</a> confirmait sa présence. Ce processus automatisé, couplé au tracking en temps réel, a rendu l'expérience fluide et reproductible.</p>
+
+<p>Cette intégration transparente avec Hugging Face est particulièrement appréciée, car elle permet de centraliser tous les éléments du workflow de deep learning : du développement au déploiement, en passant par le suivi des expériences.</p>
+
+<h2>Mon Workflow Actuel</h2>
+<p>Aujourd'hui, mon workflow est structuré mais léger. Je code localement dans PyCharm, transfère les fichiers via FileZilla, et lance l'entraînement via SSH. Les métriques sont suivies en temps réel via trackio, et les modèles sont archivés sur Hugging Face. Mon ordinateur portable, libéré de la charge GPU, reste silencieux et frais, réservé à ce qu'il fait de mieux : coder.</p>
+
+<p>Cette configuration me permet de bénéficier du meilleur des deux mondes : la puissance de calcul du cloud pour les entraînements intensifs, et la familiarité de mon environnement de développement local pour l'écriture et le débogage du code.</p>
+
+<h2>Perspectives Futures</h2>
+<p>Cette expérience m'a appris que le cloud n'est pas réservé aux experts. Avec les bons outils — un framework léger comme TinyGrad, un service cloud simplifié comme DigitalOcean, et un écosystème intégré comme Hugging Face — il est possible de dépasser les limites matérielles sans se noyer dans la complexité. Et si FileZilla n'est pas la méthode la plus élégante pour transférer des fichiers, elle a rempli sa mission : me permettre de me concentrer sur ce qui compte vraiment, le code.</p>
+
+<p>Maintenant, je vais continuer à apprendre et mieux intégrer ces outils dans mon workflow quotidien. Mon prochain objectif est de maîtriser <code>scp</code> pour les transferts de fichiers plus avancés, et d'adapter davantage mon code pour optimiser son fonctionnement dans un environnement cloud. L'objectif final est de créer un pipeline d'entraînement entièrement automatisé, où je pourrais simplement envoyer mon code et recevoir les résultats sans intervention manuelle.</p>
+
+<h2>Liens Utiles</h2>
+<ul>
+  <li>Code complet de l'expérience : <a href="https://github.com/5uru/learn_cloud">https://github.com/5uru/learn_cloud</a></li>
+  <li><a href="https://docs.digitalocean.com/products/droplets/how-to/transfer-files/#install-filezilla">Documentation FileZilla pour DigitalOcean</a></li>
+  <li>Documentation de trackio : <a href="https://huggingface.co/docs/trackio/index">https://huggingface.co/docs/trackio/index</a></li>
+  <li><a href="https://docs.digitalocean.com/products/droplets/">Documentation de DigitalOcean pour les Droplets</a></li>
+  <li><a href="https://github.com/gradio-app/trackio">Documentation de trackio sur GitHub</a></li>
+  <li>Modèle publié sur Hugging Face : <a href="https://github.com/gradio-app/trackio">https://huggingface.co/jonathansuru/cnn</a></li>
+  <li><a href="https://huggingface.co/spaces/jonathansuru/CNN">Dashboard de suivi des expériences sur Hugging Face</a></li>
+</ul>
+<div class="music-suggestion">
+  <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+  <a href="https://www.youtube.com/watch?v=KcERsq36j6A&list=RDKcERsq36j6A&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+  <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
