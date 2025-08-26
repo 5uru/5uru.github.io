@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes sur l'Intelligence Artificielle</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+<h1>Notes sur l'Intelligence Artificielle : Fondamentaux et Concepts Clés</h1>
+
+<p>Bonjour à tous ! Aujourd'hui, je partage avec vous mes notes personnelles sur les concepts fondamentaux en intelligence artificielle. Que vous soyez débutant ou que vous souhaitiez rafraîchir vos connaissances, ce résumé structuré vous aidera à naviguer dans ce domaine en constante évolution.</p>
+
+<h2>Machine Learning Classique</h2>
+
+<h3>Régression linéaire</h3>
+<p>La régression linéaire est un modèle supervisé utilisé pour prédire une variable cible <em>continue</em> (comme le prix d'une maison). Son équation fondamentale est :</p>
+<p>\[ y = \beta_0 + \beta_1 x + \epsilon \]</p>
+<p>Où \(\beta_0\) est l'intercept, \(\beta_1\) est le coefficient de la variable indépendante, et \(\epsilon\) représente l'erreur résiduelle.</p>
+<p>Le modèle minimise l'<strong>erreur quadratique moyenne (MSE)</strong> pour ajuster au mieux la droite aux données :</p>
+<p>\[ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 \]</p>
+<p>Les hypothèses clés à vérifier sont : linéarité entre les variables, indépendance des résidus, et homoscédasticité (variance constante des erreurs).</p>
+<p>Très utilisée en économie, finance et pour des prévisions simples, la régression linéaire présente quelques limites : elle est sensible aux outliers et nécessite une vérification rigoureuse des hypothèses via des graphiques de résidus. Pour approfondir, je vous recommande <a href="https://mlu-explain.github.io/linear-regression/" target="_blank">ce guide visuel</a>.</p>
+
+<h3>Régression logistique</h3>
+<p>Contrairement à son nom, la régression logistique est un algorithme de <em>classification binaire</em> (par exemple, spam/non-spam). Elle utilise la fonction <strong>sigmoïde</strong> pour prédire des probabilités comprises entre 0 et 1 :</p>
+<p>\[ P(y=1) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 x)}} \]</p>
+<p>L'optimisation se fait via la maximisation de la <em>log-vraisemblance</em> (ou minimisation du <em>log loss</em>).</p>
+<p>Un seuil classique à 0.5 est utilisé pour la décision finale, mais ce seuil peut être ajusté selon le contexte. À ne pas confondre avec la régression linéaire : ici, la sortie est bornée entre 0 et 1, et on n'utilise pas la MSE comme fonction de perte. <a href="https://mlu-explain.github.io/logistic-regression/" target="_blank">Plus de détails ici</a>.</p>
+
+<h3>Arbres de décision</h3>
+<p>Les arbres de décision sont des algorithmes supervisés utilisés pour la classification et la régression. Leur principe est de découper les données via des <em>seuils</em> sur les caractéristiques, en minimisant l'<strong>entropie</strong> ou l'indice de <strong>Gini</strong> à chaque nœud.</p>
+<p>L'entropie est définie par :</p>
+<p>\[ H(S) = -\sum_{i=1}^{n} p_i \log_2 p_i \]</p>
+<p>Leur principal avantage est leur interprétabilité et leur capacité à gérer les non-linéarités sans prétraitement complexe des données. En revanche, ils sont sujets au surajustement.</p>
+<p><a href="https://mlu-explain.github.io/decision-tree/" target="_blank">Tutoriel interactif ici</a>.</p>
+
+<h3>Clustering (k-means)</h3>
+<p>Le k-means est une méthode non supervisée pour regrouper des données similaires en clusters. L'algorithme fonctionne en 3 étapes principales :</p>
+<ol>
+    <li>Initialiser \(k\) centroïdes aléatoirement</li>
+    <li>Assigner chaque point au centroïde le plus proche (via la distance euclidienne)</li>
+    <li>Recalculer les centroïdes comme moyenne des points du cluster</li>
+</ol>
+<p>L'inertie totale est donnée par :</p>
+<p>\[ \sum_{i=1}^{k} \sum_{x \in C_i} \|x - \mu_i\|^2 \]</p>
+<p>Le choix de \(k\) se fait souvent via la <em>méthode du coude</em>. Attention : le k-means est sensible aux outliers. <a href="https://stanford.edu/~cpiech/cs221/handouts/kmeans.html" target="_blank">Explication détaillée ici</a>.</p>
+
+<h3>Supervisé vs Non supervisé</h3>
+<p><strong>Supervisé</strong> : Utilise des données étiquetées (\(X \rightarrow y\)). L'objectif est de prédire ou de classer. Exemples : régression linéaire, forêts aléatoires.</p>
+<p><strong>Non supervisé</strong> : Fonctionne sans étiquettes. L'objectif est de découvrir des structures cachées (clustering, réduction de dimension). Exemples : k-means, PCA.</p>
+<p><a href="https://www.ibm.com/think/topics/supervised-learning" target="_blank">Plus d'informations ici</a> et <a href="https://www.ibm.com/think/topics/unsupervised-learning" target="_blank">ici</a>.</p>
+
+<h2>Deep Learning</h2>
+
+<h3>Réseaux de neurones (NNs)</h3>
+<p>Les réseaux de neurones sont des modèles inspirés du cerveau humain, composés de couches de neurones interconnectés. Chaque neurone calcule une combinaison linéaire de ses entrées : \( z = Wx + b \), puis applique une fonction d'activation non linéaire comme ReLU (\( \max(0, z) \)) ou sigmoïde.</p>
+<p>Le processus de propagation vers l'avant (forward pass) permet de générer une prédiction à partir des données d'entrée. Grâce à leurs couches cachées, ces réseaux peuvent modéliser des relations complexes entre les variables d'entrée et de sortie.</p>
+<p>Ils sont utilisés dans de nombreuses applications, de la classification d'images à la génération de texte. Leur capacité à apprendre des représentations hiérarchiques à partir des données en fait un pilier du deep learning moderne.</p>
+<p><a href="https://mlu-explain.github.io/neural-networks/" target="_blank">Guide interactif complet ici</a>.</p>
+
+<h3>Rétropropagation (Backpropagation)</h3>
+<p>La rétropropagation est l'algorithme fondamental qui permet aux réseaux de neurones d'apprendre. Elle calcule le gradient de la fonction de perte par rapport à chaque poids du réseau, en utilisant la règle de la chaîne du calcul différentiel.</p>
+<p>Le processus se déroule en deux étapes : un forward pass pour calculer la prédiction et la perte, puis un backward pass pour propager l'erreur depuis la sortie jusqu'aux premières couches.</p>
+<p>En fournissant une méthode efficace pour attribuer la responsabilité de l'erreur à chaque paramètre, la rétropropagation rend possible l'entraînement de réseaux profonds avec des millions de paramètres, en seulement deux passes.</p>
+
+<p>La rétropropagation calcule les gradients de la fonction de perte par rapport aux poids via la règle de la chaîne :</p>
+<p>\[ \frac{\partial \mathcal{L}}{\partial W} = \frac{\partial \mathcal{L}}{\partial z} \cdot \frac{\partial z}{\partial W} \]</p>
+<p><a href="https://www.ibm.com/think/topics/backpropagation" target="_blank">Explication détaillée ici</a>.</p>
+
+<h3>Optimiseurs</h3>
+<p>Les optimiseurs mettent à jour les poids d'un réseau de neurones en utilisant les gradients calculés par la rétropropagation. L'optimiseur de base est le SGD (Stochastic Gradient Descent) : \( \theta_{t+1} = \theta_t - \eta \nabla_\theta \mathcal{L} \).</p>
+<p>Des variantes comme Momentum ajoutent une inertie pour accélérer la convergence, tandis que RMSProp adapte le taux d'apprentissage dynamiquement. Adam combine ces deux approches et est devenu le choix par défaut dans de nombreuses applications.</p>
+<p>Ces algorithmes permettent d'optimiser efficacement les modèles, en évitant les minima locaux et en stabilisant la descente de gradient, ce qui est crucial pour l'entraînement de modèles complexes.</p>
+
+<p><strong>SGD</strong> : \(\theta_{t+1} = \theta_t - \eta \nabla_\theta \mathcal{L}\)</p>
+<p><strong>Adam</strong> :</p>
+<p>\[ m_t = \beta_1 m_{t-1} + (1-\beta_1) \nabla_\theta \mathcal{L} \]</p>
+<p>\[ v_t = \beta_2 v_{t-1} + (1-\beta_2) (\nabla_\theta \mathcal{L})^2 \]</p>
+<p>\[ \theta_{t+1} = \theta_t - \eta \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} \]</p>
+<p><a href="https://musstafa0804.medium.com/optimizers-in-deep-learning-7bf81fed78a0" target="_blank">Comparaison détaillée ici</a>.</p>
+
+<h2>Traitement du Langage Naturel (NLP)</h2>
+
+<h3>RNN & Limites</h3>
+<p>Les RNN (réseaux récurrents) traitent les séquences en utilisant une mémoire implicite : \( h_t = \tanh(W_h h_{t-1} + W_x x_t + b) \). Leur état caché \( h_t \) capture l'information du passé.</p>
+<p>Leur principal problème est le vanishing gradient, qui empêche le modèle de mémoriser des informations à long terme, rendant difficile l'apprentissage de dépendances distantes.</p>
+<p>Bien qu'efficaces pour des séquences courtes, cette limitation a conduit au développement de modèles plus avancés comme les LSTM et les Transformers.</p>
+
+<p><a href="https://www.ibm.com/fr-fr/think/topics/recurrent-neural-networks" target="_blank">Plus d'informations ici</a>.</p>
+
+<h3>LSTM & GRU</h3>
+<p>Les LSTM (Long Short-Term Memory) résolvent le vanishing gradient grâce à un mécanisme de portes (gates) et un état cellulaire \( c_t \) qui permet de conserver l'information sur de longues périodes.</p>
+<p>Les équations clés sont : \( c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t \) et \( h_t = o_t \odot \tanh(c_t) \), où \( f_t, i_t, o_t \) sont les portes d'oubli, d'entrée et de sortie.</p>
+<p>Les GRU sont une version simplifiée avec moins de paramètres mais des performances similaires, utilisant des portes de reset et d'update. Ces modèles ont été largement utilisés avant l'ère des Transformers.</p>
+
+<p><a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/" target="_blank">Explication détaillée des LSTM ici</a> et <a href="https://medium.com/@anishnama20/understanding-gated-recurrent-unit-gru-in-deep-learning-2e54923f3e2" target="_blank">des GRU ici</a>.</p>
+
+<h3>Seq2Seq & Attention</h3>
+<p>Les modèles Seq2Seq utilisent un encodeur (RNN/LSTM) pour compresser l'entrée en un vecteur contexte fixe, puis un décodeur pour générer la sortie séquentielle.</p>
+<p>Le problème majeur est la perte d'information dans le vecteur contexte unique, qui devient critique pour les longues séquences.</p>
+<p>Le mécanisme d'attention résout ce problème en permettant au décodeur de se "concentrer" sur différentes parties de l'entrée à chaque pas de temps, en calculant un contexte dynamique : \( \text{context}_t = \sum \alpha_{tj} h_j \).</p>
+
+<p>Mécanisme d'attention :</p>
+<p>\[ \text{context}_t = \sum_{j=1}^{T} \alpha_{tj} h_j \]</p>
+<p>\[ \alpha_{tj} = \frac{\exp(\text{score}(s_{t-1}, h_j))}{\sum_{k=1}^{T} \exp(\text{score}(s_{t-1}, h_k))} \]</p>
+<p><a href="https://www.ibm.com/think/topics/attention-mechanism" target="_blank">Plus d'informations ici</a>.</p>
+
+<h3>Transformers</h3>
+<p>Les Transformers remplacent les RNN par le mécanisme d'auto-attention, qui permet de traiter toute la séquence en parallèle : \( \text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V \).</p>
+<p>Le multi-head attention permet de capturer différents types de relations contextuelles en projetant \( Q, K, V \) dans plusieurs sous-espaces. Le positional encoding ajoute l'information de position.</p>
+<p>Cette architecture a révolutionné le NLP. BERT (encodeur seul) est optimisé pour la compréhension, tandis que GPT (décodeur seul) l'est pour la génération de texte.</p>
+
+<p><a href="https://poloclub.github.io/transformer-explainer/" target="_blank">Visualisation interactive ici</a> et <a href="https://medium.com/inside-machine-learning/what-is-a-transformer-d07dd1fbec04" target="_blank">explication détaillée ici</a>.</p>
+
+<h2>Optimisation NLP</h2>
+
+<h3>Quantification</h3>
+<p>La quantification réduit la précision des poids (FP32 → INT8/FP16), ce qui permet d'accélérer l'inférence et de réduire la mémoire nécessaire.</p>
+
+<ul>
+    <li><strong>Post-training quantization</strong> : Appliqué après l'entraînement (ex. TensorFlow Lite). Simple à mettre en œuvre mais peut entraîner une perte de précision.</li>
+
+    <li><strong>Quantization-Aware Training (QAT)</strong> : Simule la quantification pendant l'entraînement pour minimiser la perte de précision. Plus complexe à implémenter mais donne de meilleurs résultats.</li>
+</ul>
+
+<p>L'avantage principal est une inférence 2-4x plus rapide avec moins de mémoire requise, ce qui est essentiel pour le déploiement sur des appareils mobiles ou embarqués.</p>
+
+<h3>Distillation</h3>
+<p>La distillation entraîne un <em>student</em> (petit modèle) pour imiter un <em>teacher</em> (grand modèle). La perte combinée s'exprime comme :</p>
+<p>\[ \mathcal{L} = \alpha \mathcal{L}_{task} + (1-\alpha) \mathcal{L}_{KL}(p_{teacher}, p_{student}) \]</p>
+<p>Où \(\mathcal{L}_{KL}\) est la perte de Kullback-Leibler mesurant la divergence entre les distributions de probabilités du modèle teacher et student :</p>
+<p>\[ \mathcal{L}_{KL}(P||Q) = \sum_{i} P(i) \log \frac{P(i)}{Q(i)} \]</p>
+<p>Un exemple célèbre est <strong>DistilBERT</strong>, qui conserve 60 % des paramètres de BERT mais atteint 95 % de ses performances. Cette technique permet de créer des modèles plus légers tout en préservant une grande partie de la qualité.</p>
+
+<h3>Fine-tuning</h3>
+<p>Le fine-tuning est une technique essentielle pour adapter les modèles pré-entraînés à des tâches spécifiques :</p>
+<ol>
+    <li>Charger un modèle pré-entraîné (ex. BERT)</li>
+    <li>Remplacer la tête de sortie (ex. classifier pour la tâche cible)</li>
+    <li>Entraîner avec un <em>petit learning rate</em> (1e-5 à 5e-5) pour éviter de "détruire" les poids pré-appris</li>
+</ol>
+<p>Le critère de succès est l'adaptation rapide avec peu de données (ex. 1k exemples vs 300M pour le pré-entraînement). Cette approche exploite le savoir acquis lors du pré-entraînement tout en s'adaptant à la tâche spécifique.</p>
+
+<h2>Vision par Ordinateur (CV)</h2>
+
+<h3>CNNs & Architectures</h3>
+<p>Les réseaux de neurones convolutifs (CNNs) sont la base des modèles de vision par ordinateur modernes. Leurs couches clés sont :</p>
+<ul>
+    <li><strong>Convolution</strong> : Filtres/kernels qui détectent des motifs locaux</li>
+    <li><strong>ReLU</strong> : Fonction d'activation introduisant la non-linéarité</li>
+    <li><strong>Pooling</strong> : Max-pooling ou average-pooling pour réduire la dimensionnalité</li>
+    <li><strong>Fully connected</strong> : Couches classiques pour la classification finale</li>
+</ul>
+
+<h4>Architectures phares</h4>
+
+<ul>
+    <li><strong>VGG</strong> : Simplicité avec des couches 3×3 répétées, profondeur (16-19 couches). Facile à comprendre mais coûteux en calcul.</li>
+
+    <li><strong>ResNet</strong> : Utilise des <strong>skip connections</strong> (blocs résiduels) pour éviter le <em>vanishing gradient</em> (ex. ResNet-50). Permet de construire des réseaux extrêmement profonds.</li>
+
+    <li><strong>Inception</strong> : Convolutions multi-échelles (1×1, 3×3, 5×5) en parallèle, optimisant l'utilisation des ressources computationnelles.</li>
+</ul>
+
+<h4>Transfer Learning</h4>
+<p>Le transfer learning consiste à utiliser des poids pré-entraînés (ex. sur ImageNet) et à adapter uniquement la tête de classification. Cela réduit considérablement le besoin de données et de calcul, rendant les CNNs accessibles même avec des ressources limitées. <a href="https://poloclub.github.io/cnn-explainer/" target="_blank">Guide interactif ici</a>.</p>
+
+<h2>Modèles Génératifs</h2>
+
+<h3>GANs (Generative Adversarial Networks)</h3>
+<p>Les GANs opposent deux réseaux : un générateur \( G \) qui crée des données fausses à partir d'un bruit, et un discriminateur \( D \) qui tente de distinguer les vraies des fausses.</p>
+<p>La fonction de perte minimax est : \( \min_G \max_D \mathbb{E}[\log D(x)] + \mathbb{E}[\log(1-D(G(z)))] \). Les deux réseaux s'améliorent en compétition.</p>
+<p>Les GANs sont puissants pour générer des images réalistes, mais souffrent d'instabilité d'entraînement et de mode collapse. Des variantes comme WGAN ont été créées pour résoudre ces problèmes.</p>
+
+<p>Les principaux problèmes des GANs sont le <em>mode collapse</em> (diversité faible) et l'instabilité d'entraînement. Plusieurs variantes ont été développées pour résoudre ces problèmes :</p>
+<ul>
+    <li><strong>DCGAN</strong> : Utilise des CNNs pour stabiliser l'entraînement</li>
+    <li><strong>StyleGAN</strong> : Permet un contrôle précis du style via l'espace latent</li>
+    <li><strong>WGAN</strong> : Utilise la loss de Wasserstein pour améliorer la stabilité</li>
+</ul>
+<p><a href="https://poloclub.github.io/ganlab/" target="_blank">Visualisation interactive ici</a>.</p>
+
+<h3>VAEs (Variational Autoencoders)</h3>
+<p>Les VAEs sont des auto-encodeurs probabilistes. L'encodeur apprend une distribution gaussienne \( q_\phi(z|x) \) dans l'espace latent, et le reparametrization trick permet de l'échantillonner.</p>
+<p>La fonction de perte combine la reconstruction (\( \mathbb{E}[\log p_\theta(x|z)] \)) et la régularisation KL (\( \text{KL}(q_\phi(z|x) \| p(z)) \)) pour que l'espace latent suive une distribution simple (ex. N(0,I)).</p>
+<p>Les VAEs sont plus stables que les GANs et permettent l'interpolation dans l'espace latent, mais génèrent souvent des images plus floues.</p>
+
+
+<p><a href="https://medium.com/@halfdeb/understanding-variational-autoencoders-vaes-617a477879b5" target="_blank">Explication détaillée ici</a>.</p>
+
+<h3>Segmentation</h3>
+<p>La segmentation d'images consiste à attribuer une étiquette à chaque pixel :</p>
+<ul>
+    <li><strong>U-Net</strong> : Architecture encodeur-décodeur en "U" avec <strong>skip connections</strong> pour préserver les détails spatiaux. Très utilisé en imagerie médicale (ex. IRM).</li>
+
+    <li><strong>Mask R-CNN</strong> : Extension de Faster R-CNN qui ajoute une branche de segmentation, permettant la détection d'objets + masques de segmentation (via couche <em>RoIAlign</em>).</li>
+
+    <li><strong>FCN</strong> (Fully Convolutional Networks) : Remplace les couches fully connected par des convolutions pour prédire <em>pixel-wise</em>, permettant un traitement d'images de taille variable.</li>
+</ul>
+<p><a href="https://medium.com/@VK_Venkatkumar/segmentation-traditional-deep-learning-approaches-edd50a3308b3" target="_blank">Plus d'informations ici</a>.</p>
+
+<h3>Diffusion Models</h3>
+<p>Les modèles de diffusion génèrent des données en inversant un processus de bruitage progressif. Le forward process ajoute du bruit sur \( T \) étapes : \( x_t = \sqrt{\alpha_t} x_{t-1} + \sqrt{1-\alpha_t} \epsilon \).</p>
+<p>Le reverse process entraîne un modèle \( \epsilon_\theta \) à prédire le bruit ajouté à chaque étape, permettant de reconstruire \( x_0 \) à partir de \( x_T \) (bruit pur).</p>
+<p>Leur principal avantage est une qualité supérieure aux GANs avec une stabilité d'entraînement accrue, comme le montre Stable Diffusion. La fonction de perte est \( \mathbb{E}[\| \epsilon - \epsilon_\theta(x_t, t) \|^2] \).</p>
+
+<ul>
+    <li><strong>Forward process</strong> :
+        <p>\[ q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{\alpha_t} x_{t-1}, (1-\alpha_t)I) \]</p>
+    </li>
+
+    <li><strong>Reverse process</strong> : Un modèle \(\epsilon_\theta(x_t, t)\) prédit le bruit pour reconstruire \(x_0\) à partir de \(x_t\)</li>
+
+    <li><strong>DDPM</strong> (Denoising Diffusion Probabilistic Models) : Entraînement avec MSE loss sur le bruit
+        <p>\[ \mathcal{L} = \mathbb{E}_{t,x_0,\epsilon} \left[ \| \epsilon - \epsilon_\theta(x_t, t) \|^2 \right] \]</p>
+    </li>
+</ul>
+<p><a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/" target="_blank">Explication détaillée ici</a>.</p>
+
+<h3>Flow Matching</h3>
+<p>Le flow matching est une alternative prometteuse aux modèles de diffusion pour une génération plus efficace :</p>
+<ul>
+    <li><strong>Principe</strong> : Apprend un <strong>champ de vecteurs</strong> \(v_t(x)\) guidant les données vers une cible (ex. gaussienne) via une ODE :
+        <p>\[ \frac{dx}{dt} = v_t(x) \]</p>
+    </li>
+
+    <li><strong>Entraînement</strong> : Régression sur \(v_t(x)\) pour minimiser
+        <p>\[ \mathbb{E} \left[ \| v_t(x) - v^*_t(x) \|^2 \right] \]</p>
+    </li>
+
+    <li><strong>Avantages</strong> : Génération en moins d'étapes (résolution continue de l'ODE), idéal pour haute résolution</li>
+</ul>
+<p>Des applications notables incluent <em>Rectified Flow</em> (convergence en 1-2 étapes) et son intégration dans des systèmes comme Stable Diffusion. <a href="https://mlg.eng.cam.ac.uk/blog/2024/01/20/flow-matching.html" target="_blank">Plus d'informations ici</a>.</p>
+
+<h2>Reinforcement Learning (RL)</h2>
+
+<h3>RLHF & Alignement des LLMs</h3>
+<p>Le RLHF (Reinforcement Learning from Human Feedback) aligne les grands modèles de langage avec les préférences humaines en trois étapes : fine-tuning supervisé, entraînement d'un modèle de récompense, et fine-tuning par RL.</p>
+<p>Le modèle de récompense est entraîné sur des paires de réponses classées par des humains. PPO est utilisé pour maximiser la récompense tout en évitant les dérives avec une pénalité KL.</p>
+<p>DPO (Direct Preference Optimization) est une alternative plus simple qui optimise directement les préférences sans modèle de récompense ni PPO, en reformulant l'objectif.</p>
+
+<ol>
+    <li><strong>Supervised Fine-Tuning (SFT)</strong> : Ajustement du modèle de base sur des données de dialogue structurées</li>
+
+    <li><strong>Modèle de récompense (RM)</strong> : Entraîné sur des préférences humaines (paires de réponses classées), via <em>rank loss</em>
+        <p>\[ \mathcal{L} = -\log \sigma(r_\theta(y_w) - r_\theta(y_l)) \]</p>
+    </li>
+
+    <li><strong>Fine-tuning RL</strong> : Utilise <strong>PPO</strong> pour maximiser
+        <p>\[ \mathbb{E} \left[ r_\theta(y) - \beta \cdot \text{KL}(\pi_\theta \| \pi_{\text{SFT}}) \right] \]</p>
+        avec pénalité KL pour éviter les dérives
+    </li>
+</ol>
+<p>La variante <strong>DPO</strong> (Direct Preference Optimization) optimise directement les préférences sans modèle de récompense via
+<p>\[ \mathcal{L}_{\text{DPO}} = -\log \sigma\left(\beta \log \frac{\pi_\theta(y_w)}{\pi_{\text{ref}}(y_w)} - \beta \log \frac{\pi_\theta(y_l)}{\pi_{\text{ref}}(y_l)}\right) \]</p>
+Son avantage principal est d'éviter PPO (coûteux) et le modèle de récompense. <a href="https://huggingface.co/blog/rlhf" target="_blank">Explication complète ici</a>.</p>
+
+<h3>RL Basique pour Jeux</h3>
+
+<p>Pour les applications de jeu, plusieurs algorithmes de base sont essentiels :</p>
+<ul>
+    <li><strong>Q-learning</strong> (hors politique) :
+        <p>Le Q-learning est un algorithme hors politique qui apprend une fonction \( Q(s,a) \) représentant la valeur d'une action dans un état :</p>
+        <p>\[ Q(s,a) \leftarrow Q(s,a) + \alpha \left[ r + \gamma \max_{a'} Q(s',a') - Q(s,a) \right] \]</p>
+        Converge vers \(Q^*\) si le taux d'apprentissage décroît.
+    </li>
+
+    <li><strong>DQN</strong> (Deep Q-Network) : Combine Q-learning avec <em>experience replay</em> (échantillonnage aléatoire des transitions) et <em>target network</em> (stabilise avec un réseau copié périodiquement). Utilisé pour Atari (ex. CNN + ε-greedy).
+    </li>
+
+    <li><strong>SARSA</strong> (en politique) :
+        <p>SARSA est une variante en politique qui met à jour \( Q(s,a) \) en utilisant l'action \( a' \) choisie par la politique courante, ce qui la rend plus prudente mais potentiellement moins optimiste.</p>
+        <p>\[ Q(s,a) \leftarrow Q(s,a) + \alpha \left[ r + \gamma Q(s',a') - Q(s,a) \right] \]</p>
+        où \(a'\) suit la politique courante (ex. ε-greedy). Plus prudent que Q-learning car il gère l'exploration dans la mise à jour.
+    </li>
+</ul>
+<p>Pour l'exploration, on utilise souvent :</p>
+<ul>
+    <li><strong>ε-greedy</strong> : Avec ε décroissant au fil du temps</li>
+    <li><strong>UCB</strong> (Upper Confidence Bound) pour les bandits :
+        <p>\[ a_t = \arg\max_a \left[ Q(a) + c \sqrt{\frac{\ln t}{N(a)}} \right] \]</p>
+    </li>
+</ul>
+<p><a href="https://mlu-explain.github.io/reinforcement-learning/" target="_blank">Guide interactif ici</a>.</p>
+
+<h3>Fondamentaux Sutton & Barto</h3>
+<p>Un MDP (Markov Decision Process) est défini par \( (S, A, P, R, \gamma) \). L'objectif est de trouver une politique \( \pi \) qui maximise l'espérance des récompenses cumulées.</p>
+<p>La programmation dynamique (policy/value iteration) résout exactement un MDP de petite taille. Le Monte Carlo estime la valeur par la moyenne des retours.</p>
+<p>Le TD Learning (ex. TD(0)) combine les idées de Monte Carlo et de programmation dynamique, en utilisant des estimations bootstrap. TD(λ) pondère les retours à n pas.</p>
+<p><a href="https://web.stanford.edu/class/psych209/Readings/SuttonBartoIPRLBook2ndEd.pdf" target="_blank">Reinforcement Learning: An Introduction</a>.</p>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=r0d7xLmPuaE&list=RDr0d7xLmPuaE&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+</body>
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</html>
