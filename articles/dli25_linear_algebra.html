@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Algèbre Linéaire: Fondements Essentiels pour le Machine Learning</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>L'Algèbre Linéaire : Fondements Essentiels pour le Machine Learning</h1>
+
+
+<p>Cet article s'inspire principalement d'une présentation issue du Deep Learning Indaba 2025 qui s'est tenu au Rwanda, organisée par Dr. Ismaila SECK, Géraud Nangue Tasse et l'équipe DLI.</p>
+<p>L'algèbre linéaire est l'un des piliers mathématiques fondamentaux en machine learning, comme l'illustre clairement cette présentation. Comprendre ces concepts vous permettra de:</p>
+<ul>
+    <li>Comprendre pourquoi une technique fonctionne ou ne fonctionne pas</li>
+    <li>Savoir ce que la technique fait réellement</li>
+    <li>Déterminer si une technique sera efficace pour votre problème spécifique</li>
+    <li>Connaître les hypothèses sous-jacentes de la technique</li>
+</ul>
+<p>Cet article constitue la première partie d'une série couvrant les fondements mathématiques du machine learning.</p>
+<p>Dans cet article, nous explorerons les bases de l'algèbre linéaire nécessaires pour débuter en machine learning, en nous concentrant sur les vecteurs, les matrices et leurs applications pratiques, y compris des techniques modernes comme Low-Rank Adaptation (LoRA).</p>
+
+<h2>1. Les Vecteurs: Plus qu'une Simple Flèche</h2>
+
+<h3>Définition formelle</h3>
+<p>Mathématiquement, un vecteur est défini comme tout élément d'un espace vectoriel. Un espace vectoriel réel \(V\) est un ensemble d'objets avec deux opérations:</p>
+<ul>
+    <li>L'addition vectorielle</li>
+    <li>La multiplication par un scalaire</li>
+</ul>
+
+<h3>Propriétés de l'addition vectorielle</h3>
+<p>Pour tous vecteurs \(a, b, c \in V\), l'addition vectorielle doit satisfaire:</p>
+<ul>
+    <li><strong>Clôture</strong>: \(a + b \in V\)</li>
+    <li><strong>Commutativité</strong>: \(a + b = b + a\)</li>
+    <li><strong>Associativité</strong>: \(a + (b + c) = (a + b) + c\)</li>
+    <li><strong>Élément neutre</strong>: Il existe un vecteur zéro \(0\) tel que \(a + 0 = a\)</li>
+    <li><strong>Inverse</strong>: Pour tout \(a \in V\), il existe \(-a \in V\) tel que \(a + (-a) = 0\)</li>
+</ul>
+
+<h3>Les Vecteurs dans le Contexte du Machine Learning</h3>
+<p>Dans le machine learning, les vecteurs sont omniprésents. Considérons un dataset immobilier typique:</p>
+<table border="1">
+    <tr>
+        <th>price</th>
+        <th>area</th>
+        <th>bedrooms</th>
+        <th>bathrooms</th>
+        <th>stories</th>
+        <th>mainroad</th>
+        <th>guestroom</th>
+    </tr>
+    <tr>
+        <td>13300000</td>
+        <td>7420</td>
+        <td>4</td>
+        <td>2</td>
+        <td>3</td>
+        <td>yes</td>
+        <td>no</td>
+    </tr>
+    <tr>
+        <td>12250000</td>
+        <td>8960</td>
+        <td>4</td>
+        <td>4</td>
+        <td>4</td>
+        <td>yes</td>
+        <td>no</td>
+    </tr>
+</table>
+
+<p>Chaque ligne représente un vecteur contenant les caractéristiques d'une maison. Si nous avons une maison qui coûte 13 300 000 FCFA, avec une superficie de 7420 m², 4 chambres et 2 salles de bain, nous pouvons représenter cette maison par le vecteur:</p>
+<p>\(Maison = [13300000, 7420, 4, 2]\)</p>
+
+<p>En notation mathématique, un vecteur peut être représenté verticalement:</p>
+<p>\[
+    a = \begin{bmatrix}
+    1 \\
+    2 \\
+    3 \\
+    4
+    \end{bmatrix}
+    \]</p>
+
+<p>Ou horizontalement: \(a = [1, 2, 3, 4]\)</p>
+
+<h3>Opérations de Base</h3>
+<p><strong>Addition de vecteurs</strong>: Si vous avez deux vecteurs \(a = [1, 2, 3, 4]\) et \(b = [5, 6, 7, 8]\), leur somme est:</p>
+<p>\(a + b = [1+5, 2+6, 3+7, 4+8] = [6, 8, 10, 12]\)</p>
+
+<p><strong>Multiplication par un scalaire</strong>: Multiplier un vecteur par un nombre (scalaire) étire ou rétrécit le vecteur. Par exemple:</p>
+<p>\(0.5 \times [1, 2, 3, 4] = [0.5, 1, 1.5, 2]\)</p>
+
+<p>Ces opérations sont essentielles dans les algorithmes de machine learning, où les vecteurs représentent souvent des caractéristiques de données ou des poids de modèles.</p>
+
+<h2>2. Le Produit Scalaire (Dot Product)</h2>
+
+<h3>Définition et Calcul</h3>
+<p>Le produit scalaire est une méthode de multiplication de vecteurs produisant un scalaire. Pour \(a, b \in \mathbb{R}^n\), leur produit scalaire est:</p>
+<p>\(a \cdot b = \sum_{i=1}^{n} (a_i b_i)\)</p>
+
+<p>C'est simplement la somme des produits des entrées respectives dans les vecteurs.</p>
+
+<p><strong>Exemple concret</strong>:
+    Soit \(a = [1, 2, 3, 4]\) et \(b = [5, 6, 7, 8]\)
+    \(a \cdot b = (1 \times 5) + (2 \times 6) + (3 \times 7) + (4 \times 8) = 5 + 12 + 21 + 32 = 70\)</p>
+
+<h3>Interprétation Géométrique</h3>
+<p>Le produit scalaire mesure à quel point deux vecteurs pointent dans la même direction. Plus le produit scalaire est grand, plus les vecteurs sont alignés.</p>
+<ul>
+    <li>Si le produit scalaire est positif: les vecteurs pointent dans des directions similaires</li>
+    <li>Si le produit scalaire est zéro: les vecteurs sont perpendiculaires (orthogonaux)</li>
+    <li>Si le produit scalaire est négatif: les vecteurs pointent dans des directions opposées</li>
+</ul>
+
+<h3>Propriétés importantes</h3>
+<ul>
+    <li><strong>Commutativité</strong>: \(a \cdot b = b \cdot a\)</li>
+    <li><strong>Positivité</strong>: \(a \cdot a \geq 0\)</li>
+    <li><strong>Définit positif</strong>: \(a \cdot a = 0\) si et seulement si \(a = 0\)</li>
+</ul>
+
+<h3>Applications en Machine Learning</h3>
+<p>Le produit scalaire est extrêmement courant en machine learning:</p>
+<ul>
+    <li><strong>Prédiction linéaire</strong>: La prédiction d'un modèle linéaire avec poids \(w\) et caractéristiques \(x\) est \(w^T x\)</li>
+    <li><strong>Réseaux de neurones</strong>: La sortie d'une couche de réseau de neurones avec activation \(\sigma\), poids \(w\), biais \(b\) et entrées \(x\) est \(\sigma(w^T x + b)\)</li>
+    <li><strong>Mécanisme d'attention</strong>: Dans les transformers, le mécanisme d'attention utilise le produit scalaire des vecteurs "key" et "value"</li>
+</ul>
+
+<p>Dans un modèle de recommandation de films, si vous avez un vecteur représentant les préférences d'un utilisateur et un vecteur représentant les caractéristiques d'un film, leur produit scalaire indiquera à quel point le film correspond aux préférences de l'utilisateur.</p>
+
+<h2>3. Normes Vectorielles</h2>
+
+<h3>Définition et Importance</h3>
+<p>Une norme mesure la "taille" ou la "longueur" d'un vecteur. C'est comme une règle qui mesure la distance d'un point à l'origine.</p>
+
+<h3>Norme Euclidienne (2-norm)</h3>
+<p>Pour un vecteur \(a = [1, 2, 3, 4]\):
+    \(\|a\|_2 = \sqrt{a \cdot a} = \sqrt{1^2 + 2^2 + 3^2 + 4^2} = \sqrt{30} \approx 5.477\)</p>
+
+<p>C'est la distance "à vol d'oiseau" depuis l'origine jusqu'au point représenté par le vecteur. Si vous imaginez un vecteur dans un espace 2D, c'est simplement le théorème de Pythagore: \(\sqrt{x^2 + y^2}\).</p>
+
+<h3>Types de Normes</h3>
+<ul>
+    <li><strong>1-norm (Manhattan Norm)</strong>: \(\|x\|_1 = \sum_{i=1}^{n} |x_i|\)
+        <ul>
+            <li>Distance parcourue dans une ville avec des rues en grille (comme à Manhattan)</li>
+            <li>Exemple: \(\|[1, 2, 3, 4]\|_1 = 1 + 2 + 3 + 4 = 10\)</li>
+        </ul>
+    </li>
+
+    <li><strong>2-norm (Euclidean Norm)</strong>: \(\|x\|_2 = \left(\sum_{i=1}^{n} (x_i)^2\right)^{1/2}\)
+        <ul>
+            <li>Distance "à vol d'oiseau"</li>
+            <li>Exemple: \(\|[1, 2, 3, 4]\|_2 = \sqrt{1+4+9+16} = \sqrt{30} \approx 5.477\)</li>
+        </ul>
+    </li>
+
+    <li><strong>p-norm</strong>: \(\|x\|_p = \left(\sum_{i=1}^{n} |x_i|^p\right)^{1/p}\)
+        <ul>
+            <li>Cas particulier: Quand \(p \rightarrow \infty\), on obtient la \(\infty\)-norm</li>
+        </ul>
+    </li>
+
+    <li><strong>\(\infty\)-norm</strong>: \(\|x\|_\infty = \max_{1 \leq i \leq n} |x_i|\)
+        <ul>
+            <li>La plus grande composante du vecteur</li>
+            <li>Exemple: \(\|[1, 2, 3, 4]\|_\infty = 4\)</li>
+        </ul>
+    </li>
+</ul>
+
+<h3>Propriétés importantes</h3>
+<ul>
+    <li><strong>Homogénéité</strong>: \(\|\lambda a\| = |\lambda| \times \|a\|\) pour tout scalaire \(\lambda\)</li>
+    <li><strong>Inégalité triangulaire</strong>: \(\|a + b\| \leq \|a\| + \|b\|\)</li>
+    <li><strong>Inégalité de Cauchy-Schwarz</strong>: \(|a \cdot b| \leq \|a\| \times \|b\|\)</li>
+</ul>
+
+<p>Un vecteur avec \(\|a\| = 1\) est appelé vecteur unitaire. Tout vecteur peut être normalisé en le divisant par sa norme: \(\frac{1}{\|a\|}a\).</p>
+
+<h3>Applications Pratiques</h3>
+<p>Les normes sont utilisées pour:</p>
+<ul>
+    <li><strong>Régularisation</strong>: Empêcher les modèles de devenir trop complexes (éviter le surapprentissage)</li>
+    <li><strong>Mesurer les erreurs</strong>: Calculer l'erreur entre les prédictions et les valeurs réelles</li>
+    <li><strong>Normalisation</strong>: Mettre toutes les caractéristiques à la même échelle</li>
+</ul>
+
+<p>Dans un modèle de prédiction de prix de maisons, si vous utilisez la norme L1 (1-norm) pour la régularisation, le modèle aura tendance à sélectionner uniquement les caractéristiques les plus importantes (comme la superficie et le nombre de chambres) et à ignorer les autres.</p>
+
+<h2>4. Les Matrices: Plus que des Tableaux de Nombres</h2>
+
+<h3>Définition et Représentation</h3>
+<p>Une matrice \(m \times n\) est simplement un tableau \(m \times n\) de nombres réels:</p>
+<p>\[
+    A = \begin{bmatrix}
+    a_{11} & a_{12} & \dots & a_{1n} \\
+    a_{21} & a_{22} & \dots & a_{2n} \\
+    \vdots & \vdots & \ddots & \vdots \\
+    a_{m1} & a_{m2} & \dots & a_{mn}
+    \end{bmatrix}
+    \]</p>
+
+<p>L'ensemble de toutes les matrices \(m \times n\) réelles est souvent noté \(\mathbb{R}^{m \times n}\).</p>
+
+<h3>Multiplication Matricielle: Une Explication Détaillée</h3>
+<p>La multiplication matricielle n'est pas simplement une multiplication élément par élément. C'est une opération qui combine les lignes de la première matrice avec les colonnes de la seconde.</p>
+
+<p>Soit \(A\) une matrice \(m \times k\) et \(B\) une matrice \(k \times n\), multiplier \(B\) par \(A\) produit une matrice \(m \times n\) \(C\):
+    \(C = AB\)</p>
+
+<p>Les composantes de \(C\) sont:
+    \(C_{ij} = A_{i\cdot}B_{\cdot j}\)</p>
+
+<p>où \(A_{i\cdot}\) désigne la i-ème ligne de \(A\) et \(B_{\cdot j}\) la j-ème colonne de \(B\).</p>
+
+<p><strong>Exemple concret</strong>:</p>
+<p>\[
+    A = \begin{bmatrix}
+    1 & 2 & 3 \\
+    4 & 5 & 6
+    \end{bmatrix}, \quad
+    B = \begin{bmatrix}
+    7 & 8 \\
+    9 & 10 \\
+    11 & 12
+    \end{bmatrix}
+    \]</p>
+
+<p>\(C_{11} = (1 \times 7) + (2 \times 9) + (3 \times 11) = 7 + 18 + 33 = 58\)</p>
+<p>\(C_{12} = (1 \times 8) + (2 \times 10) + (3 \times 12) = 8 + 20 + 36 = 64\)</p>
+<p>\(C_{21} = (4 \times 7) + (5 \times 9) + (6 \times 11) = 28 + 45 + 66 = 139\)</p>
+<p>\(C_{22} = (4 \times 8) + (5 \times 10) + (6 \times 12) = 32 + 50 + 72 = 154\)</p>
+
+<p>Donc:</p>
+<p>\[
+    C = \begin{bmatrix}
+    58 & 64 \\
+    139 & 154
+    \end{bmatrix}
+    \]</p>
+
+<h3>Interprétation Géométrique: Exemples Concrets</h3>
+<p>Une matrice peut représenter une transformation géométrique. Voici des exemples concrets de matrices de transformation:</p>
+
+<h4>1. Matrice de Rotation</h4>
+<p>Pour une rotation de \(\theta\) degrés dans le plan 2D:</p>
+<p>\[
+    R(\theta) = \begin{bmatrix}
+    \cos(\theta) & -\sin(\theta) \\
+    \sin(\theta) & \cos(\theta)
+    \end{bmatrix}
+    \]</p>
+
+<p>Exemple de rotation de 45° (\(\theta = \pi/4\)):</p>
+<p>\[
+    R(\pi/4) = \begin{bmatrix}
+    \sqrt{2}/2 & -\sqrt{2}/2 \\
+    \sqrt{2}/2 & \sqrt{2}/2
+    \end{bmatrix} \approx \begin{bmatrix}
+    0.707 & -0.707 \\
+    0.707 & 0.707
+    \end{bmatrix}
+    \]</p>
+
+<p><strong>Application</strong>: Si vous avez un point \((1, 0)\) et que vous appliquez cette matrice:</p>
+<p>\[
+    \begin{bmatrix}
+    0.707 & -0.707 \\
+    0.707 & 0.707
+    \end{bmatrix}
+    \begin{bmatrix}
+    1 \\
+    0
+    \end{bmatrix} = \begin{bmatrix}
+    0.707 \\
+    0.707
+    \end{bmatrix}
+    \]</p>
+
+<p>Le point est maintenant à \((0.707, 0.707)\), ce qui correspond à une rotation de 45°.</p>
+
+<h4>2. Matrice de Mise à l'Échelle (Étirement)</h4>
+<p>Pour étirer selon l'axe x par un facteur \(s_x\) et selon l'axe y par un facteur \(s_y\):</p>
+<p>\[
+    S = \begin{bmatrix}
+    s_x & 0 \\
+    0 & s_y
+    \end{bmatrix}
+    \]</p>
+
+<p>Exemple d'étirement horizontal par un facteur 2 (\(s_x = 2, s_y = 1\)):</p>
+<p>\[
+    S = \begin{bmatrix}
+    2 & 0 \\
+    0 & 1
+    \end{bmatrix}
+    \]</p>
+
+<p><strong>Application</strong>: Si vous avez un point \((1, 1)\) et que vous appliquez cette matrice:</p>
+<p>\[
+    \begin{bmatrix}
+    2 & 0 \\
+    0 & 1
+    \end{bmatrix}
+    \begin{bmatrix}
+    1 \\
+    1
+    \end{bmatrix} = \begin{bmatrix}
+    2 \\
+    1
+    \end{bmatrix}
+    \]</p>
+
+<p>Le point est maintenant à \((2, 1)\), ce qui signifie qu'il a été étiré horizontalement.</p>
+
+<h4>3. Matrice de Réflexion</h4>
+<p>Pour réfléchir par rapport à l'axe x:</p>
+<p>\[
+    F_x = \begin{bmatrix}
+    1 & 0 \\
+    0 & -1
+    \end{bmatrix}
+    \]</p>
+
+<p>Pour réfléchir par rapport à l'axe y:</p>
+<p>\[
+    F_y = \begin{bmatrix}
+    -1 & 0 \\
+    0 & 1
+    \end{bmatrix}
+    \]</p>
+
+<p>Exemple de réflexion par rapport à l'axe x:</p>
+<p>\[
+    F_x = \begin{bmatrix}
+    1 & 0 \\
+    0 & -1
+    \end{bmatrix}
+    \]</p>
+
+<p><strong>Application</strong>: Si vous avez un point \((2, 3)\) et que vous appliquez cette matrice:</p>
+<p>\[
+    \begin{bmatrix}
+    1 & 0 \\
+    0 & -1
+    \end{bmatrix}
+    \begin{bmatrix}
+    2 \\
+    3
+    \end{bmatrix} = \begin{bmatrix}
+    2 \\
+    -3
+    \end{bmatrix}
+    \]</p>
+
+<p>Le point est maintenant à \((2, -3)\), ce qui correspond à une réflexion par rapport à l'axe x.</p>
+
+<h4>4. Matrice de Cisaillement</h4>
+<p>Pour un cisaillement horizontal:</p>
+<p>\[
+    H_x = \begin{bmatrix}
+    1 & k \\
+    0 & 1
+    \end{bmatrix}
+    \]</p>
+
+<p>Pour un cisaillement vertical:</p>
+<p>\[
+    H_y = \begin{bmatrix}
+    1 & 0 \\
+    k & 1
+    \end{bmatrix}
+    \]</p>
+
+<p>Exemple de cisaillement horizontal avec \(k = 0.5\):</p>
+<p>\[
+    H_x = \begin{bmatrix}
+    1 & 0.5 \\
+    0 & 1
+    \end{bmatrix}
+    \]</p>
+
+<p><strong>Application</strong>: Si vous avez un point \((1, 1)\) et que vous appliquez cette matrice:</p>
+<p>\[
+    \begin{bmatrix}
+    1 & 0.5 \\
+    0 & 1
+    \end{bmatrix}
+    \begin{bmatrix}
+    1 \\
+    1
+    \end{bmatrix} = \begin{bmatrix}
+    1.5 \\
+    1
+    \end{bmatrix}
+    \]</p>
+
+<p>Le point est maintenant à \((1.5, 1)\), ce qui correspond à un décalage horizontal proportionnel à la coordonnée y.</p>
+
+<h4>5. Matrice de Projection</h4>
+<p>Pour projeter sur l'axe x:</p>
+<p>\[
+    P_x = \begin{bmatrix}
+    1 & 0 \\
+    0 & 0
+    \end{bmatrix}
+    \]</p>
+
+<p>Pour projeter sur l'axe y:</p>
+<p>\[
+    P_y = \begin{bmatrix}
+    0 & 0 \\
+    0 & 1
+    \end{bmatrix}
+    \]</p>
+
+<p>Exemple de projection sur l'axe x:</p>
+<p>\[
+    P_x = \begin{bmatrix}
+    1 & 0 \\
+    0 & 0
+    \end{bmatrix}
+    \]</p>
+
+<p><strong>Application</strong>: Si vous avez un point \((2, 3)\) et que vous appliquez cette matrice:</p>
+<p>\[
+    \begin{bmatrix}
+    1 & 0 \\
+    0 & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+    2 \\
+    3
+    \end{bmatrix} = \begin{bmatrix}
+    2 \\
+    0
+    \end{bmatrix}
+    \]</p>
+
+<p>Le point est maintenant à \((2, 0)\), ce qui correspond à une projection sur l'axe x.</p>
+
+<h4>Transformation Combinée</h4>
+<p>Les transformations peuvent être combinées en multipliant les matrices. Par exemple, pour d'abord faire une rotation puis une mise à l'échelle:</p>
+<p>\(T = S \times R(\theta)\)</p>
+
+<p><strong>Exemple</strong>:</p>
+<p>\[
+    S = \begin{bmatrix}
+    2 & 0 \\
+    0 & 1
+    \end{bmatrix}, \quad
+    R(\pi/4) = \begin{bmatrix}
+    0.707 & -0.707 \\
+    0.707 & 0.707
+    \end{bmatrix}
+    \]</p>
+
+<p>\[
+    T = \begin{bmatrix}
+    2 & 0 \\
+    0 & 1
+    \end{bmatrix} \times \begin{bmatrix}
+    0.707 & -0.707 \\
+    0.707 & 0.707
+    \end{bmatrix} = \begin{bmatrix}
+    1.414 & -1.414 \\
+    0.707 & 0.707
+    \end{bmatrix}
+    \]</p>
+
+<p>Si vous appliquez cette transformation combinée au point \((1, 0)\):</p>
+<p>\[
+    \begin{bmatrix}
+    1.414 & -1.414 \\
+    0.707 & 0.707
+    \end{bmatrix}
+    \begin{bmatrix}
+    1 \\
+    0
+    \end{bmatrix} = \begin{bmatrix}
+    1.414 \\
+    0.707
+    \end{bmatrix}
+    \]</p>
+
+<h3>Interprétation dans le Contexte du Machine Learning</h3>
+<p>Dans le machine learning, ces transformations matricielles sont utilisées dans divers contextes:</p>
+<ul>
+    <li><strong>PCA (Analyse en Composantes Principales)</strong>: Utilise des matrices de rotation pour aligner les données avec les axes principaux de variation</li>
+    <li><strong>Réseaux de neurones</strong>: Les couches entièrement connectées implémentent des transformations linéaires suivies de fonctions d'activation non linéaires</li>
+    <li><strong>Traitement d'images</strong>: Les transformations géométriques sont utilisées pour l'augmentation de données (rotation, mise à l'échelle, etc.)</li>
+</ul>
+
+<h3>Multiplication Matrice-Vecteur</h3>
+<p>Si \(v\) est un vecteur de dimension \(n\) et \(A\) une matrice \(m \times n\), alors \(u = Av\) est un vecteur de dimension \(m\) avec:
+    \(u_i = A_{i\cdot}v = \sum_{j=1}^{n} (A_{ij}v_j)\)</p>
+
+<p>Dans un réseau de neurones simple, si \(x\) est un vecteur d'entrée (caractéristiques) et \(W\) est une matrice de poids, alors \(Wx\) représente la transformation linéaire appliquée aux données d'entrée avant d'appliquer une fonction d'activation.</p>
+
+<h3>Produit de Hadamard</h3>
+<p>Le produit de Hadamard est une multiplication élément par élément. Si \(A\) et \(B\) sont deux matrices \(m \times n\), alors:
+    \(C = A \odot B\)</p>
+
+<p>où \(C_{ij} = A_{ij}B_{ij}\)</p>
+
+<p>Exemple:</p>
+<p>\[
+    A = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+    5 & 6
+    \end{bmatrix}, \quad
+    B = \begin{bmatrix}
+    1 & 4 \\
+    2 & 5 \\
+    3 & 6
+    \end{bmatrix}, \quad
+    C = A \odot B = \begin{bmatrix}
+    1 & 8 \\
+    6 & 20 \\
+    15 & 36
+    \end{bmatrix}
+    \]</p>
+
+<p>Le produit de Hadamard est utilisé en machine learning, notamment lors de l'application d'un masque sur les poids d'un réseau de neurones (comme dans l'hypothèse du "billet gagnant" où certains poids sont mis à zéro).</p>
+
+<h2>5. Concepts Avancés avec Applications Pratiques</h2>
+
+<h3>Transposition</h3>
+<p>Pour une matrice \(A \in \mathbb{R}^{m \times n}\), la matrice \(B \in \mathbb{R}^{n \times m}\) avec \(B_{ij} = A_{ji}\) est appelée la transposée de \(A\). On écrit \(B = A^T\).</p>
+<p>Exemple:</p>
+<p>\[
+    A = \begin{bmatrix}
+    1 & 2 \\
+    3 & 4 \\
+    5 & 6
+    \end{bmatrix}, \quad
+    A^T = \begin{bmatrix}
+    1 & 3 & 5 \\
+    2 & 4 & 6
+    \end{bmatrix}
+    \]</p>
+<p>Une matrice telle que \(A = A^T\) est appelée matrice symétrique.</p>
+<p>En traitement du langage naturel, la transposition est utilisée pour convertir entre représentations de documents-termes et termes-documents.</p>
+
+<h3>Matrice Inverse</h3>
+<p>Pour une paire de matrices carrées \(A\) et \(B\), on dit qu'elles sont inverses l'une de l'autre si \(AB = I = BA\), où \(I\) est la matrice identité.</p>
+<p>Les matrices qui ont un inverse sont appelées matrices inversibles.</p>
+<p>La résolution de systèmes d'équations linéaires est une application pratique de l'inverse. Si vous avez \(Ax = b\), alors \(x = A^{-1}b\).</p>
+
+<h3>Trace d'une Matrice</h3>
+<p>La trace d'une matrice carrée \(A \in \mathbb{R}^{n \times n}\) est définie comme la somme des éléments diagonaux de \(A\).</p>
+<p>Propriétés importantes:</p>
+<ul>
+    <li>\(\text{tr}(A+B) = \text{tr}(A) + \text{tr}(B)\)</li>
+    <li>\(\text{tr}(\alpha A) = \alpha \text{tr}(A)\)</li>
+    <li>\(\text{tr}(I_n) = n\)</li>
+    <li>\(\text{tr}(AB) = \text{tr}(BA)\)</li>
+</ul>
+<p>En optimisation, la trace est utilisée dans le calcul de la fonction de coût pour les modèles de réduction de dimensionnalité.</p>
+
+<h2>6. Décomposition de Rang et Low-Rank Adaptation (LoRA)</h2>
+
+<h3>Décomposition de Rang: Une Explication Intuitive</h3>
+<p>Imaginez que vous avez une image numérique. Une image de haute résolution nécessite beaucoup de mémoire pour être stockée. Cependant, beaucoup d'images ont des structures répétitives ou des motifs qui peuvent être représentés de manière plus compacte.</p>
+
+<p>Une matrice de rang-1 \(A\) est une matrice telle qu'il existe des vecteurs \(u\) et \(v\) où \(A = uv^T\).</p>
+
+<p><strong>Exemple concret</strong>: Si \(u = \begin{bmatrix} 1 \\ 2 \\ 3 \end{bmatrix}\) et \(v = [4, 5, 6]\), alors:</p>
+<p>\[
+    A = uv^T = \begin{bmatrix}
+    1 \\
+    2 \\
+    3
+    \end{bmatrix} \begin{bmatrix}
+    4 & 5 & 6
+    \end{bmatrix} = \begin{bmatrix}
+    4 & 5 & 6 \\
+    8 & 10 & 12 \\
+    12 & 15 & 18
+    \end{bmatrix}
+    \]</p>
+
+<p>Une matrice de rang-r peut s'écrire comme une somme pondérée de r matrices de rang-1:
+    \(A = \sum_{i=1}^{k} \sigma_i u_i v_i^T\)</p>
+
+<p>C'est ce qu'on appelle la décomposition en valeurs singulières (SVD).</p>
+
+<p>La compression d'images est une application pratique de cette décomposition. Une image originale (matrice) peut être approximée par une somme de quelques matrices de rang-1, réduisant ainsi considérablement la mémoire nécessaire pour la stocker.</p>
+
+
+<h3>Low-Rank Adaptation (LoRA): Une Technique Révolutionnaire</h3>
+
+<h4>Le Problème du Fine-Tuning</h4>
+<p>Lorsque vous voulez adapter un grand modèle de langage (comme GPT) à une tâche spécifique (par exemple, répondre à des questions médicales), vous avez deux options:</p>
+<ol>
+    <li><strong>Fine-tuning traditionnel</strong>: Mettre à jour tous les paramètres du modèle (des milliards de poids)</li>
+    <li><strong>Prompt engineering</strong>: Utiliser des prompts spécifiques sans modifier le modèle</li>
+</ol>
+
+<p>Le problème avec le fine-tuning traditionnel est qu'il est extrêmement coûteux en ressources et crée une copie complète du modèle pour chaque adaptation.</p>
+
+<h4>La Solution LoRA</h4>
+<p>LoRA (Low-Rank Adaptation) propose une approche intermédiaire intelligente. Au lieu de mettre à jour tous les poids, LoRA ajoute des mises à jour de faible rang aux poids existants.</p>
+
+<p>Mathématiquement, si \(W\) est une matrice de poids dans le modèle pré-entraîné, LoRA propose de la mettre à jour comme suit:
+    \(W + \Delta W = W + A \times B\)</p>
+
+<p>où \(A \in \mathbb{R}^{d \times r}\) et \(B \in \mathbb{R}^{r \times k}\) sont des matrices de rang \(r \ll \min(d,k)\), et \(r\) est le rang choisi pour l'adaptation.</p>
+
+<h4>Pourquoi ça fonctionne?</h4>
+<ol>
+    <li><strong>Efficacité mémoire</strong>: Plutôt que de stocker des mises à jour complètes pour chaque adaptation, on ne stocke que les petites matrices \(A\) et \(B\).
+        <ul>
+            <li>Si \(W\) a une taille de \(10^6 \times 10^6\) et \(r = 8\), LoRA réduit la mémoire requise de 99.9992%</li>
+        </ul>
+    </li>
+
+    <li><strong>Efficacité computationnelle</strong>: Les opérations avec des matrices de faible rang sont beaucoup plus rapides.</li>
+
+    <li><strong>Théorie sous-jacente</strong>: Comme l'illustre la présentation du Deep Learning Indaba, de nombreux phénomènes dans les données réelles ont une structure de faible rang intrinsèque.</li>
+</ol>
+
+
+
+
+
+<h4>Avantages Pratiques de LoRA</h4>
+<ol>
+    <li><strong>Économie de mémoire</strong>: Vous pouvez adapter un modèle à plusieurs tâches spécifiques sans multiplier la mémoire nécessaire par le nombre de tâches.</li>
+    <li><strong>Rapidité d'adaptation</strong>: Le fine-tuning avec LoRA est beaucoup plus rapide car il y a moins de paramètres à mettre à jour.</li>
+    <li><strong>Flexibilité</strong>: Vous pouvez combiner différentes adaptations (par exemple, pour différents domaines) en combinant les matrices \(A\) et \(B\) correspondantes.</li>
+    <li><strong>Applications réelles</strong>:
+        <ul>
+            <li>Adapter un modèle de langage général à un domaine spécifique (médical, juridique, etc.)</li>
+            <li>Créer des personnages virtuels avec des personnalités différentes à partir du même modèle de base</li>
+            <li>Personnaliser un modèle pour un utilisateur spécifique sans compromettre la vie privée</li>
+        </ul>
+    </li>
+</ol>
+
+
+
+<h2>Conclusion</h2>
+<p>L'algèbre linéaire est un outil indispensable pour comprendre et développer des algorithmes de machine learning. Les vecteurs et les matrices ne sont pas seulement des structures de données pratiques, mais elles représentent des concepts géométriques puissants qui nous aident à visualiser et à comprendre comment les données sont transformées par nos modèles.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://drive.google.com/file/d/1cNnrKeiTzNR64m7A2FchGDZuLYAvtM7J/view">Mathematical foundations of Deep Learning</a></li>
+    <li><a href="https://mml-book.github.io">Mathematics for Machine Learning</a></li>
+    <li><a href="https://www.3blue1brown.com/#lessons">Linear Algebra and Calculus</a></li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=PRrpGuzpJfo&list=RDPRrpGuzpJfo&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
