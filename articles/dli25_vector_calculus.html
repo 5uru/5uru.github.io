@@ -27,7 +27,7 @@
 <p>Dans le domaine de l'apprentissage automatique, nous optimisons presque toujours une fonction de perte scalaire L(W) sur des millions de paramètres W. Comprendre le calcul vectoriel est donc essentiel pour maîtriser les algorithmes d'apprentissage automatique. Sans cette compréhension, il est difficile d'innover véritablement dans le domaine.</p>
 
 <h2>1. Différentiation Scalaire \(f: \mathbb{R} \rightarrow \mathbb{R}\)</h2>
-<p>La différentiation scalaire est le point de départ de notre exploration. Elle concerne les fonctions qui prennent un nombre réel en entrée et produisent un nombre réel en sortie.</p>
+<p>La différentielle scalaire est le point de départ de notre exploration. Elle concerne les fonctions qui prennent un nombre réel en entrée et produisent un nombre réel en sortie.</p>
 
 <h3>Définition de la dérivée</h3>
 <p>La dérivée est définie comme la limite du quotient des différences :</p>
@@ -76,7 +76,7 @@
     <li>Comprendre ce concept de base nous aide à visualiser pourquoi la descente de gradient fonctionne</li>
 </ul>
 
-<h3>Règles de base de différentiation</h3>
+<h3>Règles de base de différentielle</h3>
 
 <h4>Règle de somme</h4>
 <p>$$ (f(x)+g(x))' = f'(x)+g'(x) = \frac{df(x)}{dx} + \frac{dg(x)}{dx} $$</p>
@@ -131,7 +131,7 @@
 <p>Cette dérivée simple est utilisée partout dans les réseaux de neurones pour la rétropropagation. Si vous comprenez cela, vous comprenez déjà une grande partie du fonctionnement des réseaux de neurones!</p>
 
 <h2>2. Différentiation Multivariée \(f: \mathbb{R}^N \rightarrow \mathbb{R}\)</h2>
-<p>Lorsque nous passons à des fonctions avec plusieurs variables d'entrée, nous entrons dans le domaine de la différentiation multivariée.</p>
+<p>Lorsque nous passons à des fonctions avec plusieurs variables d'entrée, nous entrons dans le domaine de la différentielle multivariée.</p>
 
 <h3>Dérivées partielles</h3>
 <p>La dérivée partielle mesure le taux de changement d'une fonction par rapport à une seule variable à la fois, en gardant toutes les autres variables constantes :</p>
@@ -145,7 +145,7 @@
 <h4>Interprétation géométrique</h4>
 <p>Le gradient pointe dans la direction de la plus forte augmentation de la fonction. Sa magnitude indique le taux de cette augmentation.</p>
 
-<h3>Exemple de différentiation multivariée</h3>
+<h3>Exemple de différentielle multivariée</h3>
 
 <h4>Fonction simple</h4>
 <ul>
@@ -164,7 +164,7 @@
 </ul>
 
 <h2>3. Différentiation de Champs Vectoriels \(f: \mathbb{R}^N \rightarrow \mathbb{R}^M\)</h2>
-<p>Lorsque notre fonction produit un vecteur en sortie plutôt qu'un scalaire, nous entrons dans le domaine de la différentiation de champs vectoriels.</p>
+<p>Lorsque notre fonction produit un vecteur en sortie plutôt qu'un scalaire, nous entrons dans le domaine de la différentielle de champs vectoriels.</p>
 
 <h3>La matrice jacobienne</h3>
 <p>La matrice jacobienne est la généralisation du gradient aux fonctions vectorielles. Elle regroupe toutes les dérivées partielles premières :</p>
