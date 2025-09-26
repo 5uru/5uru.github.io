@@ -1,85 +1,116 @@
 body {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
     line-height: 1.6;
-    color: #000;
-    background-color: #fff;
+    color: #0d0d0d; /* Noir très foncé, comme sur GitHub */
+    background-color: #fcfcfc; /* Blanc doux, presque imperceptible */
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    transition: padding 0.3s; /* Ajout d'une transition fluide */
+    transition: padding 0.3s;
 }
 
+/* Titres : un peu plus gras, mais toujours propres */
+h1, h2 {
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    color: #080808; /* Légèrement plus foncé que le texte */
+}
+
+/* Liens : même style que GitHub (soulignement au survol uniquement) */
+a {
+    color: #0969da; /* Bleu GitHub officiel — tu peux le garder ou revenir au noir si tu préfères */
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 2px;
+}
+
+
+a {
+    color: #0d0d0d;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 2px;
+}
+a:hover {
+    color: #000;
+    text-decoration: none;
+}
+
+
+/* Blocs de code : on garde la monospace, mais avec un style GitHub-like */
+.code-block {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    background-color: #f6f8fa; /* Fond de code GitHub */
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 20px 0;
+    overflow-x: auto;
+    line-height: 1.45;
+    font-size: 0.92em;
+    color: #24292f;
+}
+
+/* Reste du style — ajustements mineurs de contraste */
 header, footer {
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #0d0d0d;
     padding-bottom: 20px;
     margin-bottom: 20px;
-    transition: border-color 0.3s; /* Effet de survol subtil */
+    transition: border-color 0.3s;
 }
 
 header:hover, footer:hover {
-    border-color: #333;
+    border-color: #444;
 }
 
 footer {
-    border-top: 2px solid #000;
+    border-top: 2px solid #0d0d0d;
     border-bottom: none;
     padding-top: 20px;
     margin-top: 20px;
     text-align: center;
 }
 
-h1, h2 {
-    font-weight: normal;
-    letter-spacing: -0.5px; /* Meilleure lisibilité pour les titres */
-}
-
 main {
     flex-grow: 1;
-    padding: 15px 0; /* Espacement interne ajusté */
+    padding: 15px 0;
 }
 
 article {
     margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 1px dashed #999; /* Séparation discrète entre articles */
+    border-bottom: 1px dashed #ccc;
 }
 
 .project {
     margin-bottom: 40px;
     padding: 15px;
-    background: #f9f9f9; /* Fond très léger pour les projets */
+    background: #f9f9f9;
     border-radius: 4px;
     transition: transform 0.2s;
 }
 
 .project:hover {
-    transform: translateX(5px); /* Léger déplacement au survol */
+    transform: translateX(5px);
 }
 
 .project-title {
     display: flex;
     align-items: center;
-    gap: 12px; /* Espacement moderne entre éléments */
+    gap: 12px;
 }
 
 .project-hook {
     font-size: 1.2em;
-    color: #555; /* Ton sobre pour les hooks */
-}
-
-a {
-    color: #000;
-    text-decoration: underline;
-    text-decoration-thickness: 1.5px; /* Soulignement plus prononcé */
-    transition: color 0.3s;
-}
-
-a:hover {
-    text-decoration: none;
-    color: #333;
+    color: #444;
 }
 
 .copyleft {
@@ -92,51 +123,39 @@ a:hover {
 .publication-date {
     font-style: italic;
     margin-bottom: 20px;
-    color: #666; /* Ton secondaire pour les dates */
+    color: #555;
 }
 
 .music-suggestion {
-    border: 2px solid #000;
+    border: 2px solid #0d0d0d;
     padding: 15px;
-    margin: 30px -20px; /* Dépassement des bords pour effet */
+    margin: 30px -20px;
     text-align: center;
     border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Ombre légère */
+    background: #fcfcfc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .music-suggestion a {
     display: inline-block;
     margin-top: 10px;
     padding: 10px 20px;
-    background-color: #000;
+    background-color: #0d0d0d;
     color: #fff;
     text-decoration: none;
     transition: all 0.3s;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
 .music-suggestion a:hover {
-    background-color: #333;
-    transform: scale(1.05); /* Léger zoom au survol */
-}
-
-.code-block {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 20px 0;
-    overflow-x: auto;
-    font-family: 'Courier New', Courier, monospace;
-    line-height: 1.5;
-    box-shadow: inset 0 0 0 1px #eee; /* Bordure intérieure subtile */
+    background-color: #000;
+    transform: scale(1.05);
 }
 
 .article-list {
     margin-left: 20px;
     margin-bottom: 20px;
-    list-style: square; /* Puces plus visuelles */
+    list-style: square;
     color: #444;
 }
 
@@ -146,16 +165,17 @@ a:hover {
 }
 
 .article-list li:hover {
-    color: #000;
+    color: #0d0d0d;
 }
 
 .article-quote {
     font-style: italic;
-    border-left: 3px solid #000;
+    border-left: 3px solid #0d0d0d;
     padding-left: 15px;
     margin: 20px 0;
     position: relative;
     padding-right: 30px;
+    color: #333;
 }
 
 .article-quote::after {
@@ -164,6 +184,6 @@ a:hover {
     right: 10px;
     bottom: -10px;
     font-size: 3em;
-    color: #ddd;
+    color: #eaeaea;
     line-height: 0;
 }
