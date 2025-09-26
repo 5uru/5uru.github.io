@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Calcul Vectoriel: Fondements Essentiels pour le Machine Learning</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+
+    <h1>Retour aux sources : redécouvrir les modèles n-gram avec JAX et Molière</h1>
+
+    <p>Aujourd’hui, les grands modèles de langage (LLM) fascinent par leur capacité à écrire, raisonner, ou même imiter des styles littéraires avec une étonnante fluidité. Pourtant, avant les réseaux de neurones profonds, les milliards de paramètres et les mécanismes d’attention, la modélisation du langage reposait sur des idées bien plus simples — mais tout aussi fondamentales.</p>
+
+    <p>Parmi ces idées figurent les <strong>modèles n-gram</strong> : une approche purement statistique où la probabilité d’un mot ne dépend que des quelques mots qui le précèdent. Pas de mémoire longue, pas d’attention, pas de transformer — juste des comptages, des fréquences, et un peu de bon sens mathématique. Et pourtant, ces modèles ont longtemps été au cœur des systèmes de reconnaissance vocale, de correction automatique ou de traduction statistique.</p>
+
+    <p>Dans cet article, je propose un voyage aux origines en implémentant un modèle n-gram entièrement en <strong>JAX</strong>, sur un petit corpus littéraire : <strong>TinyMolière</strong>, composé d’extraits des œuvres du dramaturge français.</p>
+
+    <h2>Les unigrammes : le plus simple des modèles de langage</h2>
+
+    <p>Le <strong>modèle unigramme</strong> est la forme la plus élémentaire de modèle de langage. Il repose sur une hypothèse forte (et naïve) d’indépendance entre les mots : la probabilité d’une séquence \( w_1, w_2, \dots, w_T \) se factorise comme le produit des probabilités individuelles :</p>
+
+    <p>\[
+        P(w_1, w_2, \dots, w_T) = \prod_{t=1}^{T} P(w_t)
+        \]</p>
+
+    <p>Chaque probabilité \( P(w) \) est estimée à partir de la fréquence empirique du mot dans le corpus d’entraînement :</p>
+
+    <p>\[
+        P(w) = \frac{\text{count}(w)}{N}
+        \]</p>
+
+    <p>où \( \text{count}(w) \) est le nombre d’occurrences de \( w \), et \( N \) le nombre total de tokens observés.</p>
+
+    <p>Appliqué au corpus <strong>TinyMolière</strong>, ce modèle capture l’empreinte lexicale de Molière : ses mots les plus fréquents, ses tics de langage, ses préférences stylistiques. L’implémentation, entièrement réalisée en <strong>JAX</strong> (<a href="https://github.com/5uru/OpenLabs/tree/main/ngram">code sur GitHub</a>), permet de calculer ces probabilités de manière vectorisée et efficace.</p>
+
+    <p>Voici les <strong>20 mots les plus probables</strong> selon ce modèle unigramme :</p>
+
+    <table style="border-collapse: collapse; border: 1px solid #000;">
+        <thead>
+        <tr>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Mot</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Probabilité (%)</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Mot</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Probabilité (%)</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Mot</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Probabilité (%)</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Mot</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Probabilité (%)</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Mot</th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: center;">Probabilité (%)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">de</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">3.45</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">et</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">2.72</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">vous</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">2.38</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">que</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">2.27</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">je</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">2.14</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">la</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.50</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">le</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.45</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">l'</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.37</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">est</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.31</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">il</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.26</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">qu'</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.24</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">un</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.17</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">en</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.15</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">ne</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">1.10</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">d'</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">0.93</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">qui</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">0.93</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">les</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">0.90</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">ce</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">0.89</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">pour</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">0.89</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">me</td>
+            <td style="border: 1px solid #000; padding: 6px; text-align: center;">0.88</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <p>Ces résultats ne surprennent guère : ils reflètent la prédominance des mots grammaticaux (pronoms, déterminants, conjonctions) dans le langage théâtral classique. Bien sûr, ce modèle ignore complètement le contexte — il ne saura jamais que <em>« je vous salue »</em> est plus naturel que <em>« salue je vous »</em>. Mais il capture déjà, avec une simplicité remarquable, l’empreinte statistique d’un auteur.</p>
+
+    <h2>Évaluer un modèle de langage : la perplexité</h2>
+
+    <p>Pour comparer objectivement les modèles de langage, on utilise souvent la <strong>perplexité</strong> (<em>perplexity</em>). Intuitivement, elle mesure à quel point le modèle est « surpris » par un texte inconnu : plus la valeur est basse, mieux le modèle prédit les données.</p>
+
+    <p>Formellement, pour un corpus de validation contenant \( N \) tokens, la perplexité se calcule à partir de la log-vraisemblance moyenne :</p>
+
+    <p>\[
+        \text{Perplexity} = \exp\left( -\frac{1}{N} \sum_{t=1}^{N} \log P(w_t) \right)
+        \]</p>
+
+    <p>Lorsqu’on applique cette formule au corpus de validation de <strong>TinyMolière</strong> avec notre modèle unigramme non lissé, on obtient… <strong>l’infini</strong> (<code>inf</code>). Pourquoi ? Parce que certains mots du texte de validation n’apparaissent <strong>jamais</strong> dans le corpus d’entraînement — ce qu’on appelle des mots <em>out-of-vocabulary</em> (OOV). Le modèle leur attribue une probabilité nulle, ce qui conduit à \( \log(0) = -\infty \), et donc à une perplexité infinie.</p>
+
+    <p>Ce phénomène illustre une faiblesse majeure des modèles <strong>non lissés</strong> : ils sont incapables de gérer les mots nouveaux ou rares. Même dans un petit corpus, la moindre variation — un mot oublié, une forme verbale absente — suffit à briser complètement l’évaluation. C’est précisément ce qui motive l’introduction de techniques de <strong>lissage</strong>, comme le lissage de Laplace ou de Good-Turing, que nous allons maintenant explorer.</p>
+
+    <h2>Rendre le modèle plus robuste : le lissage de Laplace</h2>
+
+    <p>Face à l’échec du modèle non lissé, une solution classique consiste à appliquer un <strong>lissage additif</strong>, aussi appelé <strong>lissage de Laplace</strong>. L’idée est simple : plutôt que d’assigner une probabilité nulle aux mots inconnus, on « réserve » une petite part de probabilité à tous les mots du vocabulaire — y compris ceux jamais observés.</p>
+
+    <p>Cela revient à ajouter 1 à chaque comptage avant de normaliser :</p>
+
+    <p>\[
+        P_{\text{Laplace}}(w) = \frac{\text{count}(w) + 1}{N + V}
+        \]</p>
+
+    <p>où \( N \) est le nombre total de tokens dans le corpus d’entraînement, et \( V \) la taille du vocabulaire.</p>
+
+    <p>Grâce à cette correction, <strong>aucun mot n’a plus une probabilité nulle</strong>, ce qui permet au modèle de gérer les mots rares ou absents sans s’effondrer. Appliqué à <strong>TinyMolière</strong>, ce lissage ramène la perplexité sur le jeu de validation à une valeur finie : <strong>478.39</strong>.</p>
+
+    <p>Ce chiffre peut sembler élevé — et il l’est, comparé aux LLM modernes (qui atteignent souvent des perplexités inférieures à 10 sur des corpus larges). Mais il faut garder à l’esprit que nous travaillons avec un <strong>modèle sans contexte</strong>, sur un <strong>corpus très petit</strong> (quelques milliers de mots), et dans une langue riche en variations morphologiques. Dans ce contexte, une perplexité de ~478 signifie simplement que, en moyenne, le modèle hésite entre environ 478 mots possibles à chaque position — ce qui reste cohérent avec les limites d’un unigramme.</p>
+
+    <p>Maintenant que nous avons posé les bases, passons à un modèle légèrement plus expressif : les <strong>bigrammes</strong>, qui prennent en compte le mot précédent pour prédire le suivant.</p>
+
+    <h2>Au-delà du mot seul : les bigrammes</h2>
+
+    <p>Les unigrammes, aussi utiles soient-ils pour capturer la fréquence globale des mots, ignorent complètement l’ordre et la structure du langage. Pour aller un peu plus loin sans quitter le terrain de la simplicité statistique, on peut adopter les <strong>bigrammes</strong> — un modèle n-gram avec \( n = 2 \).</p>
+
+    <p>L’idée est intuitive : la probabilité d’un mot dépend du mot qui le précède immédiatement. Formellement, une séquence \( w_1, w_2, \dots, w_T \) est modélisée comme :</p>
+
+    <p>\[
+        P(w_1, \dots, w_T) = \prod_{t=1}^{T} P(w_t \mid w_{t-1})
+        \]</p>
+
+    <p>où l’on introduit des marqueurs de début (<code>&lt;s&gt;</code>) et de fin (<code>&lt;/s&gt;</code>) de phrase pour bien définir les bords. Chaque probabilité conditionnelle est estimée à partir des comptages observés :</p>
+
+    <p>\[
+        P(w_t \mid w_{t-1}) = \frac{\text{count}(w_{t-1}, w_t)}{\text{count}(w_{t-1})}
+        \]</p>
+
+    <p>Mais cette formule cache un piège classique : dans un corpus fini, de nombreuses paires de mots n’apparaissent jamais. Leur probabilité devient alors nulle, ce qui rend le modèle incapable de traiter la moindre nouveauté — y compris des tournures grammaticalement correctes mais absentes de l’entraînement.</p>
+
+    <p>Pour éviter cet écueil, on recourt au <strong>lissage additif</strong> :</p>
+
+    <p>\[
+        P_{\text{lissé}}(w_t \mid w_{t-1}) = \frac{\text{count}(w_{t-1}, w_t) + \alpha}{\text{count}(w_{t-1}) + \alpha \cdot V}
+        \]</p>
+
+    <p>où \( V \) est la taille du vocabulaire et \( \alpha > 0 \) un petit paramètre (ici, \( \alpha = 1 \)).</p>
+
+    <p>Mais avant même de parler de lissage, il faut construire un vocabulaire raisonnable. Dans un petit corpus comme <strong>TinyMolière</strong>, beaucoup de mots n’apparaissent qu’une ou deux fois — souvent des noms propres, des formes verbales rares, ou des erreurs de tokenisation. Si l’on inclut tous ces mots, on dilue la masse de probabilité sur des événements trop rares pour être fiables, et on augmente considérablement le risque de surapprentissage.</p>
+
+    <p>C’est pourquoi nous introduisons un <strong>seuil de fréquence minimale</strong> (<code>min_freq = 30</code>) : tout mot apparaissant moins de 30 fois dans le corpus d’entraînement est remplacé par un symbole générique <code>&lt;unk&gt;</code>. Ce choix n’est pas arbitraire ; il reflète un équilibre entre expressivité et stabilité. Trop de mots rares, et le modèle devient bruyant ; trop peu, et il perd la richesse lexicale propre à Molière. Le symbole <code>&lt;unk&gt;</code> joue alors un double rôle : il réduit la taille du vocabulaire, et sert de filet de sécurité pour les mots inconnus à l’évaluation.</p>
+
+    <p>Grâce à cette combinaison — vocabulaire filtré, symboles de phrase, et lissage additif — notre modèle bigramme devient non seulement utilisable, mais performant. Il atteint une <strong>perplexité de validation de 68.07</strong>, une nette amélioration par rapport aux 478 du modèle unigramme.</p>
+
+    <p>Cette baisse spectaculaire montre à quel point même une dépendance locale, aussi rudimentaire soit-elle, capture des régularités linguistiques essentielles.</p>
+
+    <h2>Les modèles n-gram : généralisation et limites</h2>
+
+    <p>Les unigrammes et bigrammes ne sont que des cas particuliers d’une famille plus large : les <strong>modèles n-gram</strong>. Leur principe repose sur l’<strong>hypothèse de Markov d’ordre \( n-1 \)</strong>, qui stipule que la probabilité d’un mot ne dépend que des \( n-1 \) mots qui le précèdent. Ainsi, pour une séquence \( w_1, w_2, \dots, w_T \), on approxime :</p>
+
+    <p>\[
+        P(w_1, \dots, w_T) \approx \prod_{t=1}^{T} P(w_t \mid w_{t-n+1}, \dots, w_{t-1})
+        \]</p>
+
+    <p>où, par convention, les positions avant le début de la phrase sont remplies de symboles spéciaux (<code>&lt;s&gt;</code>).</p>
+
+    <ul>
+        <li>Pour \( n = 1 \) : <strong>unigramme</strong> (indépendance totale).</li>
+        <li>Pour \( n = 2 \) : <strong>bigramme</strong> (dépendance au mot précédent).</li>
+        <li>Pour \( n = 3 \) : <strong>trigramme</strong>, et ainsi de suite.</li>
+    </ul>
+
+    <p>En pratique, chaque probabilité conditionnelle est estimée à partir de fréquences observées :</p>
+
+    <p>\[
+        P(w_t \mid w_{t-n+1}, \dots, w_{t-1}) = \frac{\text{count}(w_{t-n+1}, \dots, w_t)}{\text{count}(w_{t-n+1}, \dots, w_{t-1})}
+        \]</p>
+
+    <p>Comme pour les bigrammes, cette estimation brute est presque toujours complétée par une forme de <strong>lissage</strong> (Laplace, Good-Turing, Kneser-Ney, etc.) pour attribuer une probabilité non nulle aux séquences rares ou absentes.</p>
+
+    <p>Malgré leur simplicité et leur efficacité historique, les modèles n-gram souffrent de <strong>limites structurelles</strong> :</p>
+
+    <ul>
+        <li><strong>Horizon contextuel fixe</strong> : un trigramme ne « voit » que deux mots en arrière. Il est incapable de capturer des dépendances à longue portée, comme l’accord sujet-verbe dans une phrase complexe (<em>« Les avis des critiques, bien que contradictoires, <strong>sont</strong>… »</em> vs <em>« L’avis des critiques… <strong>est</strong>… »</em>).</li>
+        <li><strong>Sparsité exponentielle</strong> : le nombre de n-grams possibles croît exponentiellement avec \( n \). Même dans de grands corpus, la plupart des séquences de longueur \( n \geq 4 \) n’apparaissent jamais, ce qui rend les estimations très bruitées.</li>
+        <li><strong>Absence de généralisation sémantique</strong> : les n-gram traitent les mots comme des symboles discrets. Le modèle ne sait pas que <em>« chien »</em> et <em>« chat »</em> sont similaires, ni que <em>« Paris »</em> et <em>« Lyon »</em> jouent des rôles analogues dans une phrase.</li>
+        <li><strong>Incapacité à modéliser la compositionnalité</strong> : le sens d’une phrase n’est pas la somme de ses mots, ni même de ses n-grams. Les modèles n-gram ne comprennent ni la syntaxe, ni la logique, ni l’intention — ils ne font que reproduire des co-occurrences statistiques.</li>
+    </ul>
+
+    <p>Ces faiblesses expliquent pourquoi les n-gram, bien qu’encore utilisés dans des systèmes embarqués ou comme composants de base, ont été largement supplantés par les <strong>modèles neuronaux</strong>, capables d’apprendre des représentations continues, de raisonner sur de longues distances, et de généraliser au-delà des motifs observés.</p>
+
+    <p>Pourtant, leur <strong>transparence</strong>, leur <strong>simplicité</strong> et leur <strong>faible coût</strong> en font un excellent point de départ — et un rappel utile que parfois, comprendre le passé est la meilleure façon d’apprécier le présent.</p>
+
+    <h2>Et aujourd’hui, à quoi servent les n-gram ?</h2>
+
+    <p>Si les grands modèles de langage ont largement supplanté les n-gram dans les applications grand public, ces derniers ne sont pas pour autant obsolètes. Leur simplicité, leur transparence et leur faible coût computationnel en font encore des outils précieux dans plusieurs contextes :</p>
+
+    <ul>
+        <li><strong>Systèmes embarqués</strong> : claviers prédictifs sur mobile, assistants vocaux légers, où les ressources mémoire et énergétiques sont limitées.</li>
+        <li><strong>Composants hybrides</strong> : dans des pipelines de reconnaissance vocale ou de traduction automatique, notamment pour <em>rescoring</em> les hypothèses générées par des modèles neuronaux.</li>
+        <li><strong>Linguistique quantitative</strong> : analyse de style, détection de plagiat, études diachroniques, où l’interprétabilité prime sur la performance brute.</li>
+    </ul>
+
+
+    <h2>Conclusion</h2>
+
+
+    <p>En implémentant un unigramme puis un bigramme sur <strong>TinyMolière</strong> avec <strong>JAX</strong>, nous avons vu comment, à partir de simples fréquences et d’un peu de lissage, on peut déjà capturer l’empreinte statistique d’un auteur, générer des séquences plausibles, et obtenir une évaluation quantitative via la perplexité.</p>
+
+    <p>Bien sûr, ces modèles ont des limites — horizon contextuel étroit, incapacité à généraliser au-delà des co-occurrences, sensibilité aux données rares. Mais c’est justement en les confrontant à ces limites que l’on comprend mieux ce que les architectures modernes apportent : non pas une magie, mais une capacité à apprendre des représentations, à raisonner au-delà de la mémoire locale, et à généraliser sémantiquement.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://github.com/5uru/OpenLabs/tree/main/ngram">Mon code</a></li>
+    <li><a href="https://web.stanford.edu/~jurafsky/slp3/3.pdf">N-gram Language Models</a></li>
+    <li><a href="https://medium.com/@sinha.raunak/the-simplest-language-model-character-level-bigram-5ee548691892">The Simplest Language Model: Character Level Bigram</a></li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=a1OuJ5QbYSc&list=RDa1OuJ5QbYSc&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
