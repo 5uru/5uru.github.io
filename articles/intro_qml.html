@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction à l’apprentissage quantique (Quantum Machine Learning)</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+<h1>Introduction au Quantum Machine Learning</h1>
+<p><em>Cet article s’inspire du workshop « QML4Africa » que j’ai suivi lors du Deep Learning Indaba à Kigali, Rwanda. À travers des séances pratiques utilisant Qiskit et d’autres outils quantiques, ce workshop m’a ouvert les portes de l’informatique quantique et de l’apprentissage quantique (QML).</em></p>
+
+<h2>Les fondements du deep learning classique — et ses limites</h2>
+
+<p>L’apprentissage profond repose sur des <strong>réseaux de neurones artificiels</strong>, composés de couches successives de neurones interconnectés. Chaque neurone effectue une combinaison linéaire pondérée de ses entrées, suivie d’une <strong>fonction d’activation non linéaire</strong> :</p>
+
+<p>
+    \[
+    y = \sigma(\mathbf{w}^\top \mathbf{x} + b),
+    \]
+</p>
+
+<p>où \(\mathbf{x}\) est le vecteur d’entrée, \(\mathbf{w}\) les poids, \(b\) un biais, et \(\sigma\) une fonction comme ReLU ou la sigmoïde. Grâce au <strong>théorème d'approximation universelle</strong>, un réseau suffisamment profond peut approximer n’importe quelle fonction continue — ce qui explique en partie son succès spectaculaire dans des domaines aussi variés que la vision par ordinateur, le traitement du langage naturel ou la bioinformatique.</p>
+
+<p>L’entraînement de ces modèles s’appuie sur la <strong>descente de gradient</strong> : les poids sont ajustés pour minimiser une fonction de perte \(\mathcal{L}\), comme l’erreur quadratique moyenne ou l’entropie croisée. La <strong>rétropropagation</strong> (<em>backpropagation</em>), fondée sur la règle de la chaîne, permet de calculer efficacement les gradients, rendant possible l’optimisation de réseaux comptant des <strong>milliards de paramètres</strong>. En pratique, on utilise souvent des variantes stochastiques comme <strong>SGD</strong> (<em>Stochastic Gradient Descent</em>) ou <strong>Adam</strong>, qui opèrent sur des mini-lots de données pour équilibrer stabilité et efficacité.</p>
+
+<p>Pourtant, malgré ces succès, le deep learning classique bute sur des <strong>limites structurelles</strong> :</p>
+
+<ul>
+    <li><strong>Coût computationnel et énergétique</strong> : les modèles modernes (comme GPT-5 ou DeepSeek) nécessitent des centaines de milliards de paramètres, entraînant des besoins massifs en puissance de calcul et en énergie.</li>
+    <li><strong>Dépendance aux données étiquetées</strong> : l’apprentissage supervisé exige de vastes jeux de données annotés — une ressource rare dans des domaines critiques comme la médecine, l’agriculture ou la climatologie.</li>
+    <li><strong>Incapacité intrinsèque à capturer certaines structures</strong> : par exemple, un perceptron simple ne peut pas résoudre le problème <strong>XOR</strong>, car les classes ne sont pas linéairement séparables. Même avec des couches cachées, la solution devient coûteuse en paramètres et en profondeur.</li>
+</ul>
+
+<p>Ce constat ouvre la voie à l’exploration de <strong>paradigmes alternatifs</strong>, capables de mieux exploiter la structure intrinsèque des données.</p>
+
+<h2>Pourquoi le quantique ? Une nouvelle géométrie de l’apprentissage</h2>
+
+<p>Le deep learning classique opère dans un <strong>espace euclidien discret</strong>, où chaque dimension est indépendante et les interactions entre variables doivent être apprises couche après couche. Cette approche peine à modéliser naturellement des <strong>corrélations non locales</strong>, des <strong>symétries globales</strong> ou des <strong>structures topologiques complexes</strong>.</p>
+
+<p>C’est ici qu’intervient l’<strong>apprentissage quantique</strong> (<em>Quantum Machine Learning</em>, QML). En exploitant les principes fondamentaux de la mécanique quantique — notamment la <strong>superposition</strong> et l’<strong>intrication</strong> — les modèles quantiques représentent les données dans un <strong>espace de Hilbert continu</strong>, offrant une expressivité accrue avec potentiellement <strong>moins de ressources</strong>.</p>
+
+<blockquote>
+    <p><strong>Et si on remplaçait les neurones par des circuits quantiques ?</strong></p>
+</blockquote>
+
+<p>Cette question n’est plus purement spéculative. Elle ouvre la voie à une <strong>nouvelle génération de modèles d’intelligence artificielle</strong>, plus compacts, plus expressifs, et capables de résoudre des problèmes inaccessibles aux approches classiques.</p>
+
+<p>Mais pour comprendre cette révolution, il faut d’abord se familiariser avec les <strong>briques de base du calcul quantique</strong>.</p>
+
+<h2>Les outils du calcul quantique : qubits, portes et circuits</h2>
+
+<h3>Le qubit : au-delà du 0 et du 1</h3>
+
+<p>Dans un ordinateur classique, l’information est stockée dans des <strong>bits</strong> (0 ou 1).<br>
+    Dans un ordinateur quantique, on utilise des <strong>qubits</strong>. Un qubit peut être dans un état de <strong>superposition</strong> :</p>
+
+<p>
+    \[
+    |\psi\rangle = \alpha |0\rangle + \beta |1\rangle,
+    \quad \text{avec} \quad |\alpha|^2 + |\beta|^2 = 1.
+    \]
+</p>
+
+<p>Tant qu’on ne le mesure pas, le qubit « contient » les deux valeurs simultanément. À la mesure, il s’effondre en 0 (probabilité \(|\alpha|^2\)) ou en 1 (probabilité \(|\beta|^2\)).</p>
+
+<em>
+    <p><strong>Important</strong> : on ne peut pas connaître \(\alpha\) et \(\beta\) directement. On ne peut obtenir qu’un résultat aléatoire à chaque mesure. Pour estimer une quantité comme \(\langle Z \rangle = |\alpha|^2 - |\beta|^2\), il faut répéter la mesure plusieurs fois et faire une moyenne — c’est ce qu’on appelle une <strong>valeur moyenne</strong> (<em>expectation value</em>).</p>
+</em>
+
+<h3>Les portes quantiques : les opérations autorisées</h3>
+
+<p>Les <strong>portes quantiques</strong> sont des transformations réversibles appliquées aux qubits. Elles sont représentées par des matrices unitaires. Voici les plus utilisées en QML :</p>
+
+<h4>Porte Hadamard (H) – créer de la superposition</h4>
+
+<p>
+    \[
+    H = \frac{1}{\sqrt{2}}
+    \begin{bmatrix}
+    1 & 1 \\
+    1 & -1
+    \end{bmatrix}
+    \quad \Rightarrow \quad
+    H|0\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}}
+    \]
+</p>
+
+<p>Elle transforme un état classique en superposition égale.</p>
+
+<h4>Portes de rotation – ajuster finement l’état</h4>
+
+<ul>
+    <li>\(R_x(\theta)\), \(R_y(\theta)\), \(R_z(\theta)\) font tourner le qubit sur la <strong>sphère de Bloch</strong>.</li>
+    <li>En QML, <strong>les angles de rotation sont les paramètres entraînables</strong> (comme les poids dans un réseau de neurones).</li>
+</ul>
+
+<p>Par exemple, pour encoder une donnée \(x_i \in [0, \pi]\), on applique souvent la porte \(R_y(x_i)\) à un qubit initialement dans l’état \(|0\rangle\) :</p>
+
+<p>
+    \[
+    R_y(x_i)|0\rangle = \cos\left(\frac{x_i}{2}\right)|0\rangle + \sin\left(\frac{x_i}{2}\right)|1\rangle.
+    \]
+</p>
+
+<h4>Porte CNOT – créer de l’intrication</h4>
+
+<p>La porte <strong>CNOT</strong> (<em>Controlled-NOT</em>) agit sur <strong>deux qubits</strong> :</p>
+<ul>
+    <li>Si le <strong>qubit de contrôle</strong> est \(|1\rangle\), on inverse le <strong>qubit cible</strong>.</li>
+    <li>Sinon, on ne fait rien.</li>
+</ul>
+
+<p>Son action sur une superposition crée de l’<strong>intrication</strong> :</p>
+
+<p>
+    \[
+    \text{CNOT} \left( \frac{|0\rangle + |1\rangle}{\sqrt{2}} \otimes |0\rangle \right) = \frac{|00\rangle + |11\rangle}{\sqrt{2}}.
+    \]
+</p>
+
+<p>Cet état <strong>ne peut pas être séparé</strong> en deux qubits indépendants. L’intrication permet de modéliser des <strong>corrélations globales</strong> impossibles à capturer avec des neurones classiques indépendants.</p>
+
+<h3>Qu’est-ce qu’un circuit quantique ?</h3>
+
+<p>Un <strong>circuit quantique</strong> est une séquence d’opérations (portes) appliquées à un ou plusieurs qubits, suivie d’une <strong>mesure</strong>. On le représente comme un diagramme temporel :</p>
+
+<pre>
+q0: ──H──Ry(x1)──●──Rx(θ)──M──
+                 │
+q1: ─────Ry(x2)──X──────────M──
+</pre>
+
+<ul>
+    <li>Les lignes = qubits.</li>
+    <li>Les boîtes = portes.</li>
+    <li>●–X = porte CNOT.</li>
+    <li>M = mesure.</li>
+</ul>
+
+<p>En QML, on construit des <strong>circuits paramétrés</strong> : certaines portes contiennent des <strong>paramètres ajustables</strong> (\(\theta\)), que l’on va <strong>optimiser</strong> pendant l’entraînement.</p>
+
+<h2>Du neurone classique au « neurone quantique »</h2>
+
+<h3>Le neurone classique, rappel</h3>
+
+<p>Un neurone reçoit des entrées \(x_1, \dots, x_n\), les combine linéairement avec des poids \(w_i\), ajoute un biais \(b\), puis applique une activation non linéaire :</p>
+
+<p>
+    \[
+    y = \sigma\left( \sum_{i=1}^n w_i x_i + b \right) = \sigma(\mathbf{w}^\top \mathbf{x} + b).
+    \]
+</p>
+
+<p>Ce mécanisme fonctionne bien, mais il est <strong>intrinsèquement local</strong> et <strong>linéaire par morceaux</strong>. Pour capturer des dépendances complexes, il faut empiler des couches — ce qui conduit à des architectures massives.</p>
+
+<h3>Le neurone quantique : une unité d’information fondamentalement différente</h3>
+
+<p>Dans un modèle quantique, l’unité de base n’est plus le bit, mais le <strong>qubit</strong>. Grâce à la superposition, un petit nombre de qubits peut représenter <strong>exponentiellement plus d’informations</strong> qu’un nombre équivalent de bits classiques.</p>
+
+<h4>Encodage des données</h4>
+
+<p>La première étape consiste à <strong>encoder les données classiques</strong> dans un état quantique. L’<strong>encodage angulaire</strong> est une méthode courante : chaque caractéristique \(x_i \in [0, \pi]\) devient l’angle d’une rotation \(R_y(x_i)\).</p>
+
+<h4>Traitement quantique</h4>
+
+<p>On applique ensuite une <strong>séquence de portes paramétrées</strong> (rotations \(R_x, R_y, R_z\)) et des <strong>portes CNOT</strong> pour générer de l’intrication. Ces opérations permettent au circuit de capturer des <strong>corrélations non locales</strong>.</p>
+
+<h4>Lecture du résultat</h4>
+
+<p>À la fin, on ne lit pas un bit, mais une <strong>valeur moyenne</strong> mesurée sur un qubit de sortie. Par exemple, en mesurant l’observable de Pauli \(Z = \begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}\), on obtient :</p>
+
+<p>
+    \[
+    \langle Z \rangle = \langle \psi | Z | \psi \rangle = |\alpha|^2 - |\beta|^2 \in [-1, +1].
+    \]
+</p>
+
+<p>Cette valeur continue peut servir directement de prédiction (ex. +1 = « chien », –1 = « chat ») ou être combinée avec des couches classiques pour former des <strong>modèles hybrides</strong>.</p>
+
+<h2>Entraînement sans rétropropagation : la règle du décalage de paramètre</h2>
+
+<p>En QML, la <strong>rétropropagation n’est pas applicable</strong> : les mesures intermédiaires détruiraient la superposition, rendant impossible le calcul de gradients classiques.</p>
+
+<p>À la place, on utilise la <strong>règle du décalage de paramètre</strong> (<em>parameter-shift rule</em>). Pour une porte de la forme \(U(\theta) = e^{-i\theta G}\), où \(G\) est une matrice de Pauli (comme \(X\), \(Y\) ou \(Z\)), le gradient de la fonction de perte \(C(\theta)\) est :</p>
+
+<p>
+    \[
+    \frac{dC}{d\theta} = \frac{C\left(\theta + \frac{\pi}{2}\right) - C\left(\theta - \frac{\pi}{2}\right)}{2}.
+    \]
+</p>
+
+<p>Cette formule permet de calculer <strong>exactement</strong> le gradient en exécutant <strong>deux fois</strong> le même circuit — sans perturber l’état quantique. C’est une méthode élégante, robuste, et parfaitement adaptée aux simulateurs et aux processeurs quantiques actuels.</p>
+
+<h2>Illustration : résoudre XOR avec un seul qubit</h2>
+
+<p>Le problème <strong>XOR</strong> est un classique de l’apprentissage automatique :<br>
+    – Entrées : (0,0) → 0 ; (0,1) → 1 ; (1,0) → 1 ; (1,1) → 0.<br>
+    – Les points de même classe ne sont <strong>pas linéairement séparables</strong>.</p>
+
+<p>Un perceptron classique échoue. Il faut au moins <strong>deux couches</strong> pour résoudre ce problème.</p>
+
+<p>En QML, un <strong>circuit à un seul qubit</strong> suffit :</p>
+
+<ol>
+    <li><strong>Porte Hadamard</strong> \(H\) : crée une superposition égale :<br>
+        \[
+        H|0\rangle = \frac{1}{\sqrt{2}}(|0\rangle + |1\rangle).
+        \]</li>
+    <li><strong>Rotation \(R_z(\theta_1 x_1 + \alpha)\)</strong> : encode la première entrée via une <strong>phase</strong>.</li>
+    <li><strong>Rotation \(R_x(\theta_2 x_2 + \alpha)\)</strong> : encode la seconde entrée via une <strong>amplitude</strong>.</li>
+</ol>
+
+<p>Avec \(\theta_1 = \theta_2 = \pi\) et \(\alpha = -\pi/2\), ce circuit classe <strong>parfaitement</strong> les quatre cas. Le « secret » réside dans la <strong>phase quantique</strong> introduite par \(R_z\) : elle permet de distinguer les cas (0,0)/(1,1) des cas (0,1)/(1,0), même si leurs amplitudes sont identiques.</p>
+
+<blockquote>
+    <p><strong>Un seul « neurone quantique » remplace ici plusieurs neurones classiques.</strong></p>
+</blockquote>
+
+<p>Cet exemple illustre un avantage fondamental du QML : <strong>une expressivité accrue avec une empreinte paramétrique réduite</strong>.</p>
+
+<h2>Modèles hybrides et applications concrètes</h2>
+
+<p>Aujourd’hui, la plupart des systèmes QML utilisent des <strong>architectures hybrides</strong> :</p>
+<ul>
+    <li>Une <strong>partie quantique</strong> (le circuit) traite les données et génère une valeur moyenne.</li>
+    <li>Une <strong>partie classique</strong> (une petite couche linéaire ou un réseau léger) affine la prédiction.</li>
+</ul>
+
+<p>Ce paradigme permet de <strong>tirer parti du quantique là où il est utile</strong>, sans tout reconstruire depuis zéro. Des applications prometteuses émergent en :</p>
+<ul>
+    <li><strong>Chimie quantique</strong> (simulation de molécules),</li>
+    <li><strong>Finance</strong> (optimisation de portefeuille),</li>
+    <li><strong>Médecine</strong> (diagnostic à partir de données rares).</li>
+</ul>
+
+
+
+<p><strong>Expérimentez par vous-même !</strong> Vous n’avez pas besoin d’un ordinateur quantique pour commencer à explorer l’apprentissage quantique. Plusieurs outils open source, gratuits et bien documentés permettent de simuler des circuits quantiques sur votre propre machine :</p>
+<ul>
+    <li><strong>Qiskit</strong> (IBM) : une bibliothèque Python complète pour créer, simuler et exécuter des circuits quantiques — idéale pour les débutants comme pour les chercheurs.</li>
+    <li><strong>PennyLane</strong> (Xanadu) : conçue spécifiquement pour le <em>Quantum Machine Learning</em>, elle intègre nativement des frameworks classiques comme PyTorch et TensorFlow, et propose des circuits différentiables prêts à l’emploi.</li>
+    <li><strong>Google Cirq</strong> : une bibliothèque légère et flexible pour concevoir des algorithmes quantiques, particulièrement adaptée aux architectures matérielles de Google.</li>
+    <li><strong>Amazon Braket</strong> : une plateforme cloud qui permet non seulement de simuler des circuits, mais aussi d’exécuter du code sur des processeurs quantiques réels (IonQ, Rigetti, Oxford Quantum Circuits, etc.).</li>
+</ul>
+<p>Tous ces outils fonctionnent avec Python, disposent de tutoriels interactifs et de communautés actives. En quelques lignes de code, vous pouvez déjà encoder des données, entraîner un petit modèle hybride, et visualiser les résultats — le tout depuis un notebook Jupyter.</p>
+
+<h2>Conclusion</h2>
+
+<p>L’apprentissage quantique ne cherche pas à remplacer le deep learning, mais à <strong>compléter son arsenal</strong> là où celui-ci atteint ses limites. En combinant l’intuition géométrique du machine learning avec la puissance expressive de la mécanique quantique, le QML ouvre la voie à des modèles <strong>plus économes, plus intelligents, et mieux adaptés à des problèmes à données rares ou à structure complexe</strong>.</p>
+
+<p>Même si les ordinateurs quantiques universels restent à l’horizon, <strong>le moment d’explorer cette frontière est maintenant</strong>.</p>
+
+<p>Dans les prochains articles, je m’attacherai à <strong>reproduire des architectures classiques du deep learning</strong> (comme les perceptrons multicouches ou les réseaux convolutionnels) <strong>dans un cadre quantique</strong>, en les reformulant sous forme de circuits paramétrés. L’objectif sera de comprendre non seulement <em>comment</em> transposer ces modèles, mais surtout <em>quand</em> et <em>pourquoi</em> le quantique apporte un réel avantage.</p>
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://arxiv.org/abs/2402.14694">A Quick Introduction to Quantum Machine Learning for Non-Practitioners</a></li>
+    <li><a href="https://github.com/QML4Africa/QML4AFRICA/tree/main">QML4Africa Workshop</a></li>
+    <li><a href="https://quantumafrica.netlify.app">Quantum Africa</a></li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=sdnQpPHBDFQ&list=RDsdnQpPHBDFQ&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
