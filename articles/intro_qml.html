@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Introduction à l’apprentissage quantique (Quantum Machine Learning)</title>
+    <title>Introduction au Quantum Machine Learning</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="stylesheet" href="../styles.css">
@@ -18,7 +18,7 @@
     </nav>
 </header>
 
-<h1>Introduction au Quantum Machine Learning</h1>
+<h1>Introduction Au Quantum Machine Learning</h1>
 <p><em>Cet article s’inspire du workshop « QML4Africa » que j’ai suivi lors du Deep Learning Indaba à Kigali, Rwanda. À travers des séances pratiques utilisant Qiskit et d’autres outils quantiques, ce workshop m’a ouvert les portes de l’informatique quantique et de l’apprentissage quantique (QML).</em></p>
 
 <h2>Les fondements du deep learning classique — et ses limites</h2>
@@ -49,7 +49,7 @@
 
 <p>Le deep learning classique opère dans un <strong>espace euclidien discret</strong>, où chaque dimension est indépendante et les interactions entre variables doivent être apprises couche après couche. Cette approche peine à modéliser naturellement des <strong>corrélations non locales</strong>, des <strong>symétries globales</strong> ou des <strong>structures topologiques complexes</strong>.</p>
 
-<p>C’est ici qu’intervient l’<strong>apprentissage quantique</strong> (<em>Quantum Machine Learning</em>, QML). En exploitant les principes fondamentaux de la mécanique quantique — notamment la <strong>superposition</strong> et l’<strong>intrication</strong> — les modèles quantiques représentent les données dans un <strong>espace de Hilbert continu</strong>, offrant une expressivité accrue avec potentiellement <strong>moins de ressources</strong>.</p>
+<p>C’est ici qu’intervient l’<strong>apprentissage quantique</strong> (<em>Quantum Machine Learning</em>, QML). Grâce à la superposition et à l’intrication, le QML encode les données dans un espace plus riche que celui du deep learning classique — un espace dit de <strong>Hilbert</strong> — ce qui permet de capturer des structures complexes avec moins de ressources.</p>
 
 <blockquote>
     <p><strong>Et si on remplaçait les neurones par des circuits quantiques ?</strong></p>
@@ -74,10 +74,15 @@
 </p>
 
 <p>Tant qu’on ne le mesure pas, le qubit « contient » les deux valeurs simultanément. À la mesure, il s’effondre en 0 (probabilité \(|\alpha|^2\)) ou en 1 (probabilité \(|\beta|^2\)).</p>
-
 <em>
-    <p><strong>Important</strong> : on ne peut pas connaître \(\alpha\) et \(\beta\) directement. On ne peut obtenir qu’un résultat aléatoire à chaque mesure. Pour estimer une quantité comme \(\langle Z \rangle = |\alpha|^2 - |\beta|^2\), il faut répéter la mesure plusieurs fois et faire une moyenne — c’est ce qu’on appelle une <strong>valeur moyenne</strong> (<em>expectation value</em>).</p>
+    <p><strong>Analogie :</strong> une pièce lancée en l’air est « pile et face à la fois ». Ce n’est qu’en la rattrapant (mesure) qu’elle devient l’un ou l’autre.</p>
 </em>
+
+<h3>Mesure et valeur moyenne</h3>
+<p>On ne peut pas connaître \(\alpha\) et \(\beta\) directement. Mais on peut estimer la <strong>valeur moyenne</strong> (<em>expectation value</em>) d’un <strong>observable</strong>, comme l’opérateur de Pauli \(Z = \begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}\) :</p>
+<p>\[ \langle Z \rangle = \langle \psi | Z | \psi \rangle = |\alpha|^2 - |\beta|^2 \in [-1, +1]. \]</p>
+<p>Cette valeur continue est <strong>la sortie typique d’un circuit quantique</strong> en apprentissage.</p>
+<p><strong>Important :</strong> pour estimer \(\langle Z \rangle\), on exécute le circuit plusieurs fois et on fait la moyenne des résultats (0 ou 1). C’est ce qu’on appelle une estimation empirique.</p>
 
 <h3>Les portes quantiques : les opérations autorisées</h3>
 
@@ -100,11 +105,12 @@
 <p>Elle transforme un état classique en superposition égale.</p>
 
 <h4>Portes de rotation – ajuster finement l’état</h4>
+<p>Un qubit peut être vu comme un point sur la sphère de Bloch. Les portes de rotation permettent de le faire tourner autour des axes X, Y ou Z :</p>
+<p>\[ R_x(\theta) = \begin{bmatrix} \cos(\theta/2) & -i\sin(\theta/2) \\ -i\sin(\theta/2) & \cos(\theta/2) \end{bmatrix}, \quad R_y(\theta) = \begin{bmatrix} \cos(\theta/2) & -\sin(\theta/2) \\ \sin(\theta/2) & \cos(\theta/2) \end{bmatrix} \]</p>
+<p>\[ R_z(\theta) = \begin{bmatrix} e^{-i\theta/2} & 0 \\ 0 & e^{i\theta/2} \end{bmatrix} \]</p>
 
-<ul>
-    <li>\(R_x(\theta)\), \(R_y(\theta)\), \(R_z(\theta)\) font tourner le qubit sur la <strong>sphère de Bloch</strong>.</li>
-    <li>En QML, <strong>les angles de rotation sont les paramètres entraînables</strong> (comme les poids dans un réseau de neurones).</li>
-</ul>
+<p>En QML, <strong>les angles de rotation sont les paramètres entraînables</strong> (comme les poids dans un réseau de neurones).</p>
+
 
 <p>Par exemple, pour encoder une donnée \(x_i \in [0, \pi]\), on applique souvent la porte \(R_y(x_i)\) à un qubit initialement dans l’état \(|0\rangle\) :</p>
 
@@ -172,23 +178,18 @@ q1: ─────Ry(x2)──X──────────M──
 <h4>Encodage des données</h4>
 
 <p>La première étape consiste à <strong>encoder les données classiques</strong> dans un état quantique. L’<strong>encodage angulaire</strong> est une méthode courante : chaque caractéristique \(x_i \in [0, \pi]\) devient l’angle d’une rotation \(R_y(x_i)\).</p>
+<h5>Encodage angulaire</h5>
+<p>Chaque caractéristique \(x_i \in [0, \pi]\) devient l’angle d’une rotation :</p>
+<p>\[ R_y(x_i)|0\rangle = \cos\left(\frac{x_i}{2}\right)|0\rangle + \sin\left(\frac{x_i}{2}\right)|1\rangle. \]</p>
+
+<h5>Encodage par blocs</h5>
+<p>Pour les données de grande dimension, on empile des <strong>blocs de rotations</strong> (Rx, Rz, Rx…) sur plusieurs qubits, entrelacés avec des <strong>CNOT</strong> pour créer de l’intrication. Cela permet d’encoder des centaines de dimensions même avec peu de qubits.</p>
 
 <h4>Traitement quantique</h4>
 
 <p>On applique ensuite une <strong>séquence de portes paramétrées</strong> (rotations \(R_x, R_y, R_z\)) et des <strong>portes CNOT</strong> pour générer de l’intrication. Ces opérations permettent au circuit de capturer des <strong>corrélations non locales</strong>.</p>
 
-<h4>Lecture du résultat</h4>
-
-<p>À la fin, on ne lit pas un bit, mais une <strong>valeur moyenne</strong> mesurée sur un qubit de sortie. Par exemple, en mesurant l’observable de Pauli \(Z = \begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}\), on obtient :</p>
-
-<p>
-    \[
-    \langle Z \rangle = \langle \psi | Z | \psi \rangle = |\alpha|^2 - |\beta|^2 \in [-1, +1].
-    \]
-</p>
-
-<p>Cette valeur continue peut servir directement de prédiction (ex. +1 = « chien », –1 = « chat ») ou être combinée avec des couches classiques pour former des <strong>modèles hybrides</strong>.</p>
-
+<
 <h2>Entraînement sans rétropropagation : la règle du décalage de paramètre</h2>
 
 <p>En QML, la <strong>rétropropagation n’est pas applicable</strong> : les mesures intermédiaires détruiraient la superposition, rendant impossible le calcul de gradients classiques.</p>
@@ -228,8 +229,7 @@ q1: ─────Ry(x2)──X──────────M──
     <p><strong>Un seul « neurone quantique » remplace ici plusieurs neurones classiques.</strong></p>
 </blockquote>
 
-<p>Cet exemple illustre un avantage fondamental du QML : <strong>une expressivité accrue avec une empreinte paramétrique réduite</strong>.</p>
-
+<p>Cet exemple théorique montre le potentiel expressif du QML, mais en pratique, les avantages ne se manifestent que pour des problèmes bien spécifiques, et les circuits quantiques actuels restent limités par le bruit et le nombre de qubits.</p>
 <h2>Modèles hybrides et applications concrètes</h2>
 
 <p>Aujourd’hui, la plupart des systèmes QML utilisent des <strong>architectures hybrides</strong> :</p>
