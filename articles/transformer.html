@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprendre le Transformer, pas à pas</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+<h1>Comprendre le Transformer, pas à pas</h1>
+
+<p><em>Cet article s’inspire librement de <a href="https://goyalpramod.github.io/blogs/Transformers_laid_out/">« Transformers Laid Out »</a> de Pramod Goyal  une rareté : un guide qui mêle intuition, lecture fine du papier original <em>« Attention Is All You Need »</em>, et code exécutable. Ce format transforme la théorie en expérience.</em></p>
+
+<p>Aujourd’hui, les grands modèles de langage (LLMs) comme ChatGPT, Gemini ou Claude façonnent nos vies : ils rédigent des emails, aident à apprendre, génèrent du code, influencent des décisions. Mais ces systèmes ne sont pas neutres. Ils incarnent des choix techniques, des biais cachés, des limites invisibles.</p>
+
+<p>Et pour comprendre les LLMs, il faut commencer par leur cœur : le <strong>Transformer</strong>.</p>
+
+<p>Introduit en 2017 par des chercheurs de Google, le Transformer a révolutionné le traitement du langage. Conçu à l’origine pour la <strong>traduction automatique</strong>, il a vite été généralisé à presque toutes les tâches de langage  et au-delà. Son secret ? Un mécanisme élégant appelé <strong>attention</strong>, qui permet au modèle de « voir » l’ensemble d’une phrase d’un seul coup d’œil, plutôt que mot par mot.</p>
+
+<p>Pour en saisir l’essence, suivons la traduction de <strong>« I like Pizza »</strong> en <strong>« J’aime la pizza »</strong>, étape par étape.</p>
+
+<h3>Embeddings : transformer les mots en nombres</h3>
+
+<p>Un modèle ne lit pas du texte. Il manipule des nombres. Dès qu’il reçoit une phrase, chaque mot  « I », « like », « Pizza »  est converti en un <strong>vecteur dense</strong> de \( d_{\text{model}} = 512 \) dimensions, appelé <em>embedding</em>.</p>
+
+<p>Imaginez un espace mathématique à 512 dimensions. Chaque mot y occupe une position précise, définie par ses coordonnées (ex. : [0.45, -0.23, 0.88, …]). Ces positions ne sont pas aléatoires : elles sont apprises sur des milliards de phrases. Ainsi, des mots de sens proche  « like », « love », « enjoy »  se retrouvent <strong>proches dans cet espace</strong>, tandis que « like » et « hate » sont éloignés.</p>
+
+<p>Formellement, si \( x_i \) est le vecteur one-hot du mot \( i \), son embedding est :</p>
+\[
+e_i = x_i^\top W_{\text{emb}} \in \mathbb{R}^{d_{\text{model}}}
+\]
+<p>où \( W_{\text{emb}} \) est une matrice apprise. On empile ces vecteurs :</p>
+\[
+X = [e_1^\top, e_2^\top, e_3^\top]^\top \in \mathbb{R}^{3 \times 512}
+\]
+
+<em>Problème : à ce stade, <strong>l’ordre est perdu</strong>. Pour le modèle, « I like Pizza » et « Pizza like I » sont identiques ! Il faut donc ajouter une notion de position.</em>
+
+<h3>Encodage de position : donner un sens à l’ordre</h3>
+
+<p>Le Transformer traite tous les mots en parallèle il n’a donc aucune notion intrinsèque de séquence. Pour y remédier, on ajoute un <strong>encodage de position</strong> (Positional Encoding, PE) à chaque embedding.</p>
+
+<p>L’idée ? Utiliser des fonctions sinusoïdales de fréquences décroissantes :</p>
+\[
+\text{PE}_{(\text{pos}, 2i)} = \sin\left( \frac{\text{pos}}{10000^{2i / d_{\text{model}}}} \right), \quad
+\text{PE}_{(\text{pos}, 2i+1)} = \cos\left( \frac{\text{pos}}{10000^{2i / d_{\text{model}}}} \right)
+\]
+
+<p>Pourquoi sinus <em>et</em> cosinus ? Parce que cette paire permet d’exprimer un décalage de position (ex. : +3 mots) comme une <strong>transformation linéaire</strong> (une rotation). Cela aide le modèle à apprendre des relations relatives  même sur des phrases plus longues que celles vues à l’entraînement.</p>
+
+<p>L’entrée finale devient :</p>
+\[
+X_{\text{input}} = X + \text{PE}
+\]
+
+<p>Chaque mot porte désormais <strong>son sens + sa position</strong>  une condition indispensable pour comprendre la grammaire par exemple.</p>
+
+<h3>Auto-attention : comprendre le contexte, mot par mot</h3>
+
+<p>Le cœur du Transformer est l’<strong>auto-attention</strong> : un mécanisme qui permet à chaque mot de « regarder » tous les autres y compris lui-même pour construire une représentation enrichie par le contexte. Et tout cela, <strong>en une seule étape parallèle</strong>.</p>
+
+<p>Prenons « like » dans « I like Pizza ». Est-ce un verbe ? Un nom ? Seul le contexte le dit. L’auto-attention résout cela en posant une <strong>requête</strong> (<em>Query</em>) : « Quels mots m’aident à comprendre mon rôle ? ». En parallèle, chaque mot fournit :</p>
+<ul>
+    <li>une <strong>clé</strong> (<em>Key</em>) : « ce que je suis » (sujet, verbe, objet…),</li>
+    <li>une <strong>valeur</strong> (<em>Value</em>) : l’information sémantique à transmettre.</li>
+</ul>
+
+<p>On projette \( X_{\text{input}} \) dans trois espaces appris :</p>
+\[
+Q = X_{\text{input}} W_Q, \quad K = X_{\text{input}} W_K, \quad V = X_{\text{input}} W_V
+\]
+
+<p>On calcule ensuite la « compatibilité » entre chaque requête et chaque clé via un produit scalaire, normalisé par \( \sqrt{d_k} \) (pour stabiliser le softmax) :</p>
+\[
+\text{Attention}(Q, K, V) = \text{softmax}\left( \frac{Q K^\top}{\sqrt{d_k}} \right) V
+\]
+
+<p>Le résultat ? Une nouvelle représentation de chaque mot, où l’information pertinente est renforcée. Pour « like », cela pourrait être : 60 % de « I » (sujet), 30 % de « Pizza » (objet), 10 % de lui-même. Le modèle « sait » désormais que « like » est un verbe transitif  une clé pour traduire correctement.</p>
+
+<h3>Multi-têtes : voir sous plusieurs angles</h3>
+
+<p>Une seule « vue » du contexte ne suffit pas. Un mot peut jouer plusieurs rôles : grammatical, sémantique, stylistique… Le Transformer utilise donc <strong>8 têtes d’attention en parallèle</strong>.</p>
+
+<p>Chaque tête a ses propres matrices \( W_Q^{(h)}, W_K^{(h)}, W_V^{(h)} \), et peut se spécialiser par exemple :</p>
+<ul>
+    <li>Tête 1 : relations sujet-verbe (« I » → « like »),</li>
+    <li>Tête 2 : relations verbe-objet (« like » → « Pizza »),</li>
+    <li>Tête 3 : accord en nombre ou genre,</li>
+    <li>Tête 4 : nuances sémantiques (préférence vs. action).</li>
+</ul>
+
+<p>Les sorties sont concaténées, puis projetées dans l’espace original :</p>
+\[
+\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_8) \, W^O
+\]
+
+<p>Cette combinaison permet au modèle de capturer une <strong>compréhension riche et multifacette</strong>  essentielle pour choisir la traduction la plus naturelle.</p>
+
+<h3>Réseau feed-forward : réfléchir seul</h3>
+
+<p>L’auto-attention a permis aux mots d’« échanger ». Maintenant, chaque mot doit « réfléchir seul » à ce qu’il a entendu. C’est le rôle du <strong>FFN</strong> : un petit réseau à deux couches, appliqué <strong>indépendamment à chaque mot</strong>.</p>
+
+<p>Formellement :</p>
+\[
+\text{FFN}(x) = \max(0, x W_1 + b_1) W_2 + b_2
+\]
+
+<p>Avec :</p>
+<ul>
+    <li>\( W_1 \in \mathbb{R}^{512 \times 2048} \) : expansion dans un espace plus large,</li>
+    <li>ReLU : introduit la **non-linéarité** (sans quoi le modèle serait juste une moyenne pondérée),</li>
+    <li>\( W_2 \in \mathbb{R}^{2048 \times 512} \) : retour à la dimension originale.</li>
+</ul>
+
+<p>On combine le résultat avec l’entrée via une <strong>connexion résiduelle</strong>, puis on normalise :</p>
+\[
+x_{\text{out}} = \text{LayerNorm}\big( x + \text{FFN}(x) \big)
+\]
+
+<p>Cette étape permet d’extraire des motifs complexes que l’attention seule ne pourrait pas modéliser.</p>
+
+<h3>Le bloc encodeur : comprendre la phrase source</h3>
+
+<p>L’encodeur est composé de <strong>6 blocs identiques</strong>. Chaque bloc enchaîne :</p>
+<ol>
+    <li>Auto-attention multi-têtes → résidu + LayerNorm,</li>
+    <li>FFN → résidu + LayerNorm.</li>
+</ol>
+
+<p>À chaque passage, la représentation devient plus abstraite. À la fin, on obtient une matrice \( Z \in \mathbb{R}^{3 \times 512} \) qui encode :</p>
+<ul>
+    <li>le sens des mots,</li>
+    <li>leurs rôles grammaticaux,</li>
+    <li>leurs dépendances sémantiques,</li>
+    <li>leur ordre relatif.</li>
+</ul>
+
+<p>Cette matrice \( Z \) est la « mémoire » que le décodeur consultera pour traduire.</p>
+
+<h3>Le bloc décodeur : générer la traduction, un mot à la fois</h3>
+
+<p>Le décodeur est <strong>auto-régressif</strong> : il génère la phrase cible mot par mot, en utilisant ses propres prédictions précédentes.</p>
+
+<p>Chaque bloc décodeur contient <strong>trois sous-couches</strong> :</p>
+
+<p><strong>1. Auto-attention masquée</strong><br>
+    Le décodeur s’auto-interroge, mais <strong>ne doit pas voir l’avenir</strong>. Pour cela, on applique un <strong>masque triangulaire inférieur</strong> \( M \), défini par :</p>
+\[
+M_{ij} =
+\begin{cases}
+0 & \text{si } j \leq i \\
+-\infty & \text{si } j > i
+\end{cases}
+\]
+<p>L’attention devient alors :</p>
+\[
+\text{MaskedMHA}(X_{\text{dec}}) = \text{softmax}\left( \frac{Q K^\top}{\sqrt{d_k}} + M \right) V
+\]
+<p>Grâce à ce masque, quand le modèle prédit « aime », il ne voit que <sos> et « J’ », jamais « la » ou « pizza ». Cela garantit une génération <strong>causale</strong>.</p>
+
+<p><strong>2. Attention encodeur-décodeur (cross-attention)</strong><br>
+    Ici, le décodeur « consulte » la représentation encodée \( Z \) de la phrase source. Les <strong>requêtes</strong> (\( Q_{\text{dec}} \)) proviennent de la traduction partielle, tandis que les <strong>clés</strong> (\( K_{\text{enc}} \)) et <strong>valeurs</strong> (\( V_{\text{enc}} \)) proviennent directement de \( Z \) :</p>
+\[
+\text{CrossAttention}(x_{\text{dec}}, Z) = \text{softmax}\left( \frac{Q_{\text{dec}} K_{\text{enc}}^\top}{\sqrt{d_k}} \right) V_{\text{enc}}
+\]
+<p>Quand il génère « aime », sa requête trouve que « like » est la partie la plus pertinente de \( Z \). Quand il génère « pizza », il se concentre sur « Pizza ». C’est ce <strong>pont sémantique</strong> entre les langues qui rend la traduction fidèle.</p>
+
+<p><strong>3. FFN</strong><br>
+    Enfin, comme dans l’encodeur, chaque mot passe par un réseau feed-forward pour un traitement non linéaire individuel :</p>
+\[
+\text{FFN}(x) = \max(0, x W_1 + b_1) W_2 + b_2
+\]
+<p>suivi d’une <strong>connexion résiduelle</strong> et d’une <strong>normalisation par couche</strong> :</p>
+\[
+x_{\text{out}} = \text{LayerNorm}\big( x + \text{FFN}(x) \big)
+\]
+
+<p>Ce bloc complet — auto-attention masquée, cross-attention, FFN, avec résidus et normalisations — est répété <strong>6 fois</strong> dans le décodeur.</p>
+
+<h3>Du vecteur au mot : la couche de sortie</h3>
+
+<p>La sortie du dernier bloc décodeur est projetée dans le vocabulaire cible :</p>
+\[
+\text{logits}_t = y_t W_{\text{vocab}}^\top
+\]
+
+<p>On applique un <strong>softmax</strong> pour obtenir une distribution de probabilité sur les mots :</p>
+\[
+P(y_t = w) = \frac{\exp(\text{logits}_t[w])}{\sum_{w'} \exp(\text{logits}_t[w'])}
+\]
+
+<p>Le mot le plus probable est sélectionné. Ainsi, le modèle génère successivement : « J’ » → « aime » → « la » → « pizza »</p>
+
+<h3>Conclusion</h3>
+
+<p>Le Transformer n’est pas qu’un algorithme. C’est le fondement des systèmes qui influencent aujourd’hui nos décisions, nos apprentissages, nos conversations. Comprendre son fonctionnement  embeddings, attention, architecture  permet de :</p>
+<ul>
+    <li><strong>Évaluer la fiabilité</strong> d’une réponse générée,</li>
+    <li><strong>Repérer les biais</strong> cachés dans les représentations,</li>
+    <li><strong>Questionner les limites</strong> de ce que ces modèles peuvent ou ne peuvent pas faire.</li>
+</ul>
+
+<p>J’ai implémenté cette architecture en <strong>JAX/Flax</strong> <a href="https://github.com/5uru/OpenLabs/tree/main/transformers">ici</a>.</p>
+
+<p>En résumé, le Transformer excelle parce qu’il modélise les relations contextuelles de façon <strong>parallèle, expressive et modulaire</strong>. Conçu pour la traduction, il est devenu le socle de presque tous les modèles de langage modernes  une preuve que parfois, une idée simple (« l’attention suffit ») peut changer le monde.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://goyalpramod.github.io/blogs/Transformers_laid_out/">Transformers Laid Out</a></li>
+    <li><a href="https://nlp.seas.harvard.edu/annotated-transformer/">The Annotated Transformer</a></li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=3npC_24Iq9s" target="_blank">Écouter sur YouTube</a>
+</div>
+
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
