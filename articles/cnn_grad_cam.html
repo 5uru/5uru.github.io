@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grad-CAM : localiser l’attention d’un CNN grâce aux gradients</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+<h1>Grad-CAM : localiser l’attention d’un CNN grâce aux gradients</h1>
+
+<p>Dans un monde où les systèmes d’intelligence artificielle prennent des décisions critiques — en médecine, en justice, en finance ou en conduite autonome — il ne suffit plus qu’un modèle soit performant : il doit aussi être <strong>compréhensible</strong>. C’est l’objectif de l’<strong>IA explicable</strong> (<em>Explainable AI</em> ou <strong>XAI</strong>) : rendre les décisions des modèles transparentes, interprétables et dignes de confiance. Contrairement aux « boîtes noires » traditionnelles, les méthodes XAI cherchent à répondre à des questions essentielles : <em>Pourquoi ce diagnostic ? Sur quoi le modèle s’appuie-t-il ? Quels éléments de l’entrée ont influencé la prédiction ?</em> En vision par ordinateur, ces explications prennent souvent la forme de <strong>cartes de saillance</strong> qui mettent en évidence les régions d’une image pertinentes pour la décision. Grad-CAM s’inscrit précisément dans cette démarche.</p>
+
+<p>Depuis que je travaille avec les réseaux de neurones convolutionnels, j’ai cherché à mieux comprendre <strong>comment</strong> ces modèles prennent leurs décisions. Une prédiction correcte ne suffit pas : il faut aussi s’assurer qu’elle repose sur des <strong>indices pertinents</strong> dans l’image, et non sur des biais ou des artefacts.</p>
+<p>C’est dans cette optique que je me suis tourné vers l’<strong>XAI</strong> (<em>Explainable AI</em>), et plus précisément vers <strong>Grad-CAM</strong> (<em>Gradient-weighted Class Activation Mapping</em>). Cette méthode permet de générer une <strong>carte de chaleur</strong> indiquant quelles régions d’une image ont le plus contribué à la prédiction d’une classe donnée.</p>
+<p>Contrairement à des approches plus anciennes comme CAM, Grad-CAM fonctionne <strong>sans modification de l’architecture</strong> du réseau : il suffit d’avoir accès aux activations et aux gradients de la dernière couche convolutionnelle. Dans cet article, je détaille son fonctionnement <strong>étape par étape</strong>, en développant chaque idée avec des paragraphes explicatifs et les formules essentielles.</p>
+
+<h2>Pourquoi la dernière couche convolutionnelle ?</h2>
+<p>Un réseau de neurones convolutionnel transforme progressivement une image brute en une représentation de plus en plus abstraite. Les premières couches détectent des motifs simples (bords, textures), tandis que les couches profondes combinent ces motifs pour former des concepts sémantiques (yeux, roues, ailes, etc.).</p>
+<p>La <strong>dernière couche convolutionnelle</strong> occupe une position stratégique : elle est suffisamment profonde pour contenir des informations sémantiques riches, tout en conservant une <strong>structure spatiale</strong> sous forme de cartes d’activation. Contrairement aux couches entièrement connectées (fully connected), qui écrasent toute information de localisation, cette couche permet de savoir <strong>où</strong> dans l’image une caractéristique a été détectée.</p>
+<p>C’est pourquoi Grad-CAM se concentre sur les activations de cette couche : elles offrent le meilleur compromis entre <strong>sémantique</strong> et <strong>localisation</strong>.</p>
+
+<h2>Cadre mathématique de base</h2>
+<p>Soit \( x \in \mathbb{R}^{H \times W \times 3} \) une image d’entrée, et \( f \) un CNN pré-entraîné. Après propagation, la dernière couche convolutionnelle produit un tenseur d’activations :</p>
+\[
+A = \{ A^k \}_{k=1}^K \quad \text{où} \quad A^k \in \mathbb{R}^{u \times v}
+\]
+<p>Ici, \( K \) est le nombre de filtres (ou canaux) de la couche, et \( u \times v \) sa résolution spatiale (par exemple \( 7 \times 7 \) pour ResNet-50). Chaque \( A^k \) est une <strong>carte d’activation</strong> : elle indique, à chaque position \( (i,j) \), à quel point le filtre \( k \) a « réagi » à la présence d’une caractéristique apprise.</p>
+<p>Soit \( y^c \) le <strong>logit</strong> (score avant softmax) associé à la classe cible \( c \). Ce score est une fonction non linéaire des activations \( A \), passant généralement par un global average pooling suivi d’une ou plusieurs couches fully connected.</p>
+<p>L’objectif de Grad-CAM est de construire une carte \( L^c_{\text{Grad-CAM}} \in \mathbb{R}^{u \times v} \) qui reflète l’<strong>influence locale</strong> de chaque position dans \( A \) sur la valeur de \( y^c \).</p>
+
+<h2>Le rôle des gradients : mesurer la sensibilité</h2>
+<p>Pour quantifier l’impact d’une activation sur la prédiction, Grad-CAM utilise les <strong>gradients de \( y^c \) par rapport à \( A \)</strong>. Ces gradients sont calculés via la backpropagation et s’écrivent :</p>
+\[
+\frac{\partial y^c}{\partial A^k_{i,j}}
+\]
+<p>Intuitivement, cette dérivée partielle indique <strong>comment le score \( y^c \) changerait</strong> si l’on modifiait légèrement l’activation à la position \( (i,j) \) dans la carte \( k \). Un gradient positif signifie que cette activation <strong>soutient</strong> la classe \( c \) ; un gradient négatif, qu’elle la <strong>contredit</strong>.</p>
+<p>Ces gradients sont essentiels : ils relient la <strong>sortie globale</strong> du réseau (le score d’une classe) à des <strong>éléments locaux</strong> dans les représentations internes. C’est cette connexion entre global et local qui rend Grad-CAM si puissant.</p>
+<em>
+    <p><strong>Pourquoi utiliser le logit et non la probabilité softmax ?</strong><br>
+        La fonction softmax compresse les logits dans \([0,1]\) et introduit des interactions entre classes (à cause de la normalisation). Cela peut atténuer ou déformer les gradients. En restant au niveau du logit, on obtient des gradients plus directs et plus stables.</p>
+</em>
+
+<h2>Agrégation spatiale : des gradients aux poids scalaires</h2>
+<p>Si l’on utilisait les gradients pixel par pixel, la carte finale serait très bruitée et difficile à interpréter. Grad-CAM adopte une stratégie plus robuste : <strong>moyenner les gradients spatialement</strong> pour chaque canal \( k \). Cela donne un poids scalaire :</p>
+\[
+\alpha_k^c = \frac{1}{u v} \sum_{i=1}^{u} \sum_{j=1}^{v} \frac{\partial y^c}{\partial A^k_{i,j}}
+\]
+<p>Ce poids \( \alpha_k^c \) représente l’<strong>importance moyenne</strong> du canal \( k \) pour la classe \( c \). Il joue le rôle d’un <strong>coefficient d’attention</strong> : plus il est élevé, plus le filtre \( k \) est pertinent pour reconnaître la classe cible.</p>
+<p>Cette agrégation a deux avantages :</p>
+<ol>
+    <li>Elle <strong>réduit le bruit</strong> en lissant les variations locales des gradients.</li>
+    <li>Elle permet de <strong>traiter chaque canal comme une unité sémantique</strong> (par exemple, un canal qui détecte des « roues » aura un poids élevé pour la classe « voiture »).</li>
+</ol>
+
+<h2>Combinaison pondérée et seuillage par ReLU</h2>
+<p>Une fois les poids \( \alpha_k^c \) calculés, on construit une carte composite en combinant linéairement les cartes d’activation :</p>
+\[
+L^c(i,j) = \sum_{k=1}^{K} \alpha_k^c \cdot A^k_{i,j}
+\]
+<p>Cette somme pondérée agrège, à chaque position \( (i,j) \), la contribution de tous les canaux, pondérée par leur pertinence pour la classe \( c \). Le résultat est une carte qui reflète <strong>l’activation globale utile</strong> à la prédiction.</p>
+<p>Cependant, certaines régions peuvent avoir une influence <strong>négative</strong> sur \( y^c \) — par exemple, la présence d’un ciel bleu pourrait réduire la probabilité de « sous-marin ». Puisque l’on souhaite visualiser <strong>ce qui justifie</strong> la prédiction (et non ce qui la contredit), on applique la fonction <strong>ReLU</strong> :</p>
+\[
+L^c_{\text{Grad-CAM}}(i,j) = \text{ReLU} \left( \sum_{k=1}^{K} \alpha_k^c \cdot A^k_{i,j} \right)
+\]
+<p>La fonction ReLU, définie par \( \text{ReLU}(z) = \max(0, z) \), <strong>élimine toutes les contributions négatives</strong>. Cela garantit que la heatmap ne met en évidence que les régions qui ont <strong>positivement activé</strong> la classe cible — une exigence fondamentale pour une explication fidèle.</p>
+
+<h2>Mise à l’échelle et visualisation finale</h2>
+<p>La carte \( L^c_{\text{Grad-CAM}} \) est de taille \( u \times v \), bien plus petite que l’image originale \( H \times W \). Pour la superposer visuellement, on effectue un <strong>upsampling</strong> (généralement bilinéaire) :</p>
+\[
+\hat{L}^c = \text{Upsample}\left(L^c_{\text{Grad-CAM}}, \text{size}=(H, W)\right)
+\]
+<p>Ensuite, on normalise la carte entre 0 et 1 pour faciliter l’affichage :</p>
+\[
+\hat{L}^c_{\text{norm}} = \frac{\hat{L}^c - \min(\hat{L}^c)}{\max(\hat{L}^c) - \min(\hat{L}^c)}
+\]
+<p>La carte normalisée est ensuite superposée en transparence sur l’image d’origine, souvent avec une colormap « hot » (noir → rouge → jaune). Le résultat est une visualisation intuitive : plus une zone est claire/chaude, plus elle a contribué à la décision.</p>
+
+<h2>Formule synthétique et interprétation globale</h2>
+<p>L’ensemble du processus peut être résumé par la formule suivante :</p>
+\[
+\boxed{
+L^c_{\text{Grad-CAM}} = \text{ReLU} \left( \sum_{k=1}^{K} \left( \frac{1}{u v} \sum_{i=1}^{u} \sum_{j=1}^{v} \frac{\partial y^c}{\partial A^k_{i,j}} \right) A^k \right)
+}
+\]
+<p>Cette expression incarne une idée puissante : <strong>l’explication d’une décision globale peut être construite à partir de contributions locales pondérées</strong>. Les gradients fournissent la pondération (sensibilité), les activations fournissent le support (représentation), et ReLU garantit la cohérence sémantique (seulement les contributions positives).</p>
+
+<h2>Limites et bonnes pratiques</h2>
+<p>Bien que Grad-CAM soit robuste et largement applicable, il convient de garder à l’esprit quelques limites :</p>
+<ul>
+    <li><strong>Résolution spatiale limitée</strong> : la heatmap hérite de la faible résolution de la dernière couche conv. Pour des objets fins (contours précis), la localisation peut être imprécise.</li>
+    <li><strong>Sensibilité au bruit</strong> : dans certains cas, les gradients peuvent être bruités, surtout si le modèle est peu confiant. Des variantes comme <strong>Smooth Grad-CAM</strong> (moyenne sur des entrées perturbées) améliorent la stabilité.</li>
+    <li><strong>Interprétation causale abusive</strong> : Grad-CAM montre une <strong>corrélation fonctionnelle</strong>, pas une causalité. Une région mise en évidence est <strong>utile</strong> pour la prédiction, mais pas nécessairement <strong>déterminante</strong>.</li>
+</ul>
+<p>En pratique, il est recommandé de :</p>
+<ul>
+    <li>Vérifier la heatmap sur plusieurs exemples,</li>
+    <li>Comparer avec d’autres méthodes (comme les Saliency Maps),</li>
+    <li>Toujours interpréter la heatmap <strong>dans le contexte</strong> de la tâche et des données.</li>
+</ul>
+
+<h2>Conclusion</h2>
+<p>Grad-CAM est bien plus qu’un outil de visualisation : c’est une <strong>fenêtre sur le raisonnement spatial</strong> d’un CNN. En combinant de manière élégante les gradients (sensibilité) et les activations (représentation), il permet de transformer une décision opaque en une explication visuelle claire et exploitable.</p>
+
+<p>Pour tout praticien du deep learning en vision, Grad-CAM constitue une <strong>première étape incontournable vers des systèmes plus transparents et fiables</strong>.</p>
+<p>Dans le cadre de mon exploration, j’ai implémenté et testé Grad-CAM dans un environnement <strong>JAX/Flax</strong>, en l’appliquant à un classifieur CNN entraîné sur <strong>CIFAR-10</strong>.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://arxiv.org/abs/1610.02391">https://arxiv.org/abs/1610.02391</a></li>
+    <li><a href="https://github.com/5uru/OpenLabs/tree/main/cnn_with_grad_cam">Mon Code</a></li>
+    <li><a href="https://arxiv.org/abs/1610.02391">Introduction: Advanced Explainable AI for computer vision</a></li>
+</ul>
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=kx20-CnJDwo" target="_blank">Écouter sur YouTube</a>
+</div>
+
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
