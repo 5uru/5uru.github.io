@@ -95,12 +95,10 @@ article {
     padding: 15px;
     background: #f9f9f9;
     border-radius: 4px;
-    transition: transform 0.2s;
+
 }
 
-.project:hover {
-    transform: translateX(5px);
-}
+
 
 .project-title {
     display: flex;
@@ -186,4 +184,18 @@ article {
     font-size: 3em;
     color: #eaeaea;
     line-height: 0;
+}
+
+/* --- Étiquettes --- */
+.tags {
+    margin-top: 8px;
+    font-size: 0.85em;
+}
+.tag {
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 2px 6px;
+    margin-right: 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
 }

@@ -4,60 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Projets - Jonathan Suru</title>
-    <style>
-        body {
-            font-family: 'Courier New', Courier, monospace;
-            line-height: 1.6;
-            color: #000;
-            background-color: #fff;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header, footer {
-            border-bottom: 2px solid #000;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-        footer {
-            border-top: 2px solid #000;
-            border-bottom: none;
-            padding-top: 20px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        h1, h2, h3 {
-            font-weight: normal;
-        }
-        main {
-            flex-grow: 1;
-        }
-        .project {
-            margin-bottom: 40px;
-        }
-        .project-title {
-            display: flex;
-            align-items: center;
-        }
-        .project-hook {
-            margin-right: 10px;
-            font-size: 1.2em;
-        }
-        a {
-            color: #000;
-            text-decoration: underline;
-        }
-        a:hover {
-            text-decoration: none;
-        }
-        .copyleft {
-            display: inline-block;
-            transform: rotate(180deg);
-        }
-    </style>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -71,15 +17,82 @@
 </header>
 <main>
     <h2>Mes Projets</h2>
+
+    <!-- === GRAD-CAM === -->
     <div class="project">
         <div class="project-title">
-            <h3>l'Hackathon Meta</h3>
+            <h3>Grad-CAM : localiser l’attention d’un CNN grâce aux gradients</h3>
+            <a href="https://jonathansuru.me/articles/grad-cam-explained.html" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Dans un monde où les systèmes d’intelligence artificielle prennent des décisions critiques — en médecine, en justice, en finance ou en conduite autonome — il ne suffit plus qu’un modèle soit performant : il doit aussi être compréhensible. C’est l’objectif de l’IA explicable (Explainable AI ou XAI). Grad-CAM (Gradient-weighted Class Activation Mapping) permet de générer une carte de chaleur indiquant quelles régions d’une image ont le plus contribué à la prédiction d’une classe donnée. J’ai implémenté cette méthode en JAX/Flax sur un classifieur CIFAR-10, en détaillant chaque étape : du rôle des gradients à l’agrégation pondérée, en passant par le seuillage ReLU et la visualisation finale. Une plongée technique dans la transparence des CNNs.
+        </p>
+        <div class="tags">
+            <span class="tag">XAI</span>
+            <span class="tag">Computer Vision</span>
+            <span class="tag">Grad-CAM</span>
+            <span class="tag">JAX</span>
+            <span class="tag">Flax</span>
+            <span class="tag">Interpretability</span>
+        </div>
+    </div>
+
+    <div class="project">
+        <div class="project-title">
+            <h3>Transformers without Normalization : implémentation de DyT en JAX/Flax</h3>
+            <a href="https://github.com/5uru/OpenLabs/tree/main/transformer_dyt" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Inspiré par l’article <em>“Transformers without Normalization”</em> (CVPR 2025) de Zhu et al. (Meta FAIR, NYU, MIT), j’ai implémenté <strong>Dynamic Tanh (DyT)</strong> — une alternative élégante aux couches de normalisation (LayerNorm, RMSNorm) dans les Transformers. DyT remplace ces couches par une opération élémentaire basée sur une fonction tanh dynamique, paramétrée par des poids appris. Mon implémentation en <strong>JAX/Flax</strong> reproduit fidèlement l’architecture proposée et montre que, même sans normalisation, un Transformer peut atteindre des performances comparables, voire supérieures, tout en simplifiant l’architecture et en réduisant la dépendance aux hyperparamètres. Ce projet remet en question un dogme du deep learning moderne et explore les mécanismes sous-jacents de stabilité et de propagation du signal dans les réseaux profonds.
+        </p>
+        <div class="tags">
+            <span class="tag">Transformer</span>
+            <span class="tag">Normalization-Free</span>
+            <span class="tag">DyT</span>
+            <span class="tag">JAX</span>
+            <span class="tag">Flax</span>
+            <span class="tag">From Scratch</span>
+            <span class="tag">CVPR 2025</span>
+        </div>
+    </div>
+
+    <!-- === HACKATHON META === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>L’Hackathon Meta</h3>
             <a href="https://jonathansuru.me/articles/meta-hackaton-indaba2024.html" class="project-hook"> [lien]</a>
         </div>
         <p>
             Lors du <strong>Deep Learning Indaba 2024</strong> à Dakar, mon équipe et moi avons relevé le défi lancé par <strong>Meta</strong> : créer un modèle de traduction anglais-twi malgré des données extrêmement limitées (4 800 phrases). En binôme, nous avons exploité le modèle <strong>NLLB-200</strong> de Meta, en combinant <strong>augmentation des données</strong> (paraphrase via WordNet, équilibrage à 75 %) et optimisation de la mémoire GPU via le <em>gradient checkpointing</em> et l’accumulation de gradients. Malgré les contraintes, notre collaboration a porté ses fruits : un <strong>score BLEU de 26,4</strong> et une <strong>4<sup>e</sup> place finale</strong>, illustrant comment l’IA peut surmonter les défis linguistiques africains tout en valorisant la diversité culturelle. Une réussite collective qui prouve qu’une technologie inclusive est possible, même avec des ressources restreintes.
         </p>
+        <div class="tags">
+            <span class="tag">NLP</span>
+            <span class="tag">Machine Translation</span>
+            <span class="tag">Low-Resource</span>
+            <span class="tag">Hackathon</span>
+            <span class="tag">HuggingFace</span>
+        </div>
     </div>
+
+    <!-- === TRANSFORMER FROM SCRATCH === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Transformer from Scratch avec JAX/Flax</h3>
+            <a href="https://github.com/5uru/OpenLabs/tree/main/transformers" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Implémentation complète d’une architecture Transformer (encodeur-décodeur) depuis zéro, fidèle à l’article fondateur <em>“Attention Is All You Need”</em>. Ce projet explore les mécanismes fondamentaux de l’attention multi-têtes, du position encoding, de l’attention masquée et des couches feed-forward, le tout en utilisant les bibliothèques JAX et Flax pour une exécution efficace et fonctionnelle. Un exercice de rigueur théorique et de programmation qui renforce ma compréhension des fondations des grands modèles modernes.
+        </p>
+        <div class="tags">
+            <span class="tag">Transformer</span>
+            <span class="tag">JAX</span>
+            <span class="tag">Flax</span>
+            <span class="tag">From Scratch</span>
+            <span class="tag">Deep Learning</span>
+        </div>
+    </div>
+
+    <!-- === MEDIAN === -->
     <div class="project">
         <div class="project-title">
             <h3>Median</h3>
@@ -88,7 +101,16 @@
         <p>
             Median est une application de flashcards avancée et open-source qui s'appuie sur des algorithmes de répétition espacée et sur l'intelligence artificielle pour améliorer le processus d'apprentissage. En analysant les performances de l'utilisateur, Median crée des programmes d'étude personnalisés et adapte la difficulté du contenu, ce qui améliore considérablement la rétention et la mémorisation des informations. Ce système intelligent transforme la mémorisation traditionnelle par cœur en une expérience d'apprentissage efficace, interactive et attrayante.
         </p>
+        <div class="tags">
+            <span class="tag">EdTech</span>
+            <span class="tag">LLM</span>
+            <span class="tag">Spaced Repetition</span>
+            <span class="tag">Streamlit</span>
+            <span class="tag">Open Source</span>
+        </div>
     </div>
+
+    <!-- === DISCUTE === -->
     <div class="project">
         <div class="project-title">
             <h3>Discute</h3>
@@ -97,12 +119,162 @@
         <p>
             Discute est une plateforme d'apprentissage des langues de pointe qui utilise l'intelligence artificielle pour simuler des conversations immersives dans le monde réel. En engageant les utilisateurs dans des dialogues dynamiques et contextuels, Discute accélère l'acquisition des langues et améliore la fluidité des conversations. L'application s'adapte au niveau de compétence de chaque utilisateur, offrant une expérience d'apprentissage sur mesure qui se concentre sur l'utilisation pratique de la langue et les nuances culturelles, comblant ainsi le fossé entre l'apprentissage traditionnel des langues et la communication dans le monde réel.
         </p>
+        <div class="tags">
+            <span class="tag">NLP</span>
+            <span class="tag">Conversational AI</span>
+            <span class="tag">Language Learning</span>
+            <span class="tag">LLM</span>
+            <span class="tag">Open Source</span>
+        </div>
     </div>
+
+    <!-- === VISION TRANSFORMER (ViT) === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Vision Transformer (ViT) pour MNIST</h3>
+            <a href="https://github.com/5uru/Implementation/blob/main/vit.ipynb" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Adaptation de l’architecture Vision Transformer (ViT) au problème de classification de chiffres manuscrits (MNIST). Inspiré par l’article <em>“An Image is Worth 16x16 Words”</em>, ce projet démontre que les Transformers, conçus initialement pour le langage, peuvent être efficacement transférés à la vision. En découpant les images en “patches” et en les traitant comme des tokens, le modèle atteint <strong>88,13 % de précision</strong> après seulement 20 époques — une preuve convaincante de la polyvalence de l’architecture Transformer.
+        </p>
+        <div class="tags">
+            <span class="tag">Computer Vision</span>
+            <span class="tag">Vision Transformer</span>
+            <span class="tag">JAX</span>
+            <span class="tag">Flax</span>
+            <span class="tag">MNIST</span>
+        </div>
+    </div>
+
+    <!-- === N-GRAM === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Modèles N-gram avec JAX</h3>
+            <a href="https://github.com/5uru/OpenLabs/tree/main/ngram" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Implémentation d’un modèle de langage statistique (unigramme et bigramme) en JAX, entraîné sur des extraits des œuvres de Molière. Le projet inclut la gestion des mots rares via le token <code><unk></code> et l’application du lissage de Laplace pour éviter les probabilités nulles. Une exploration élégante des fondements historiques du traitement du langage, revisitée avec des outils modernes de calcul accéléré.
+        </p>
+        <div class="tags">
+            <span class="tag">NLP</span>
+            <span class="tag">Statistical Language Model</span>
+            <span class="tag">JAX</span>
+            <span class="tag">From Scratch</span>
+        </div>
+    </div>
+
+    <!-- === CNNs avec TinyGrad === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>AlexNet & VGG simplifiés avec TinyGrad</h3>
+            <a href="https://github.com/5uru/Stream/tree/main/alexnet" class="project-hook"> [AlexNet]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/vgg" class="project-hook"> [VGG]</a>
+        </div>
+        <p>
+            Réimplémentation de deux architectures classiques de réseaux convolutifs — AlexNet et une version allégée de VGG (8 couches) — en utilisant <strong>TinyGrad</strong>, un framework minimaliste de deep learning. Entraînés sur CIFAR-10, ces modèles atteignent tous deux <strong>75 % de précision</strong> après 7 000 pas d’entraînement. Ce projet illustre ma capacité à recréer des architectures fondatrices avec des outils expérimentaux, tout en comprenant les compromis entre complexité et performance.
+        </p>
+        <div class="tags">
+            <span class="tag">Computer Vision</span>
+            <span class="tag">CNN</span>
+            <span class="tag">TinyGrad</span>
+            <span class="tag">CIFAR-10</span>
+            <span class="tag">From Scratch</span>
+        </div>
+    </div>
+
+    <!-- === RBM === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Restricted Boltzmann Machine (RBM) pour recommandation</h3>
+            <a href="https://github.com/5uru/Stream/tree/main/rbm" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Développement d’une RBM avec TinyGrad pour recommander des livres à partir du jeu de données GoodBooks-10k (150 000 évaluations). Le modèle réduit l’erreur moyenne de 0,029 à 0,005 et augmente l’énergie libre de 150 à 280, signe d’une meilleure modélisation des préférences utilisateurs. Une plongée dans les méthodes génératives et non supervisées, souvent négligées au profit des architectures modernes, mais toujours pertinentes pour des tâches de recommandation explicites.
+        </p>
+        <div class="tags">
+            <span class="tag">Recommendation System</span>
+            <span class="tag">RBM</span>
+            <span class="tag">TinyGrad</span>
+            <span class="tag">Unsupervised Learning</span>
+        </div>
+    </div>
+
+    <!-- === OPTIMISEURS === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Optimiseurs personnalisés avec TinyGrad</h3>
+            <a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer" class="project-hook"> [AdamW]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/lion_optimizer" class="project-hook"> [Lion]</a>
+        </div>
+        <p>
+            Implémentation manuelle de deux optimiseurs avancés — <strong>AdamW</strong> et <strong>Lion</strong> — dans TinyGrad, puis application à l’entraînement d’un CNN sur MNIST. Les deux convergent rapidement : perte initiale de 2,0 à 0,02 en 5 000 pas, avec une précision de <strong>99 %</strong> en quelques centaines d’itérations. Ce travail montre ma maîtrise des mécanismes d’optimisation, cœur du deep learning moderne, même dans des environnements minimalistes.
+        </p>
+        <div class="tags">
+            <span class="tag">Optimization</span>
+            <span class="tag">AdamW</span>
+            <span class="tag">Lion</span>
+            <span class="tag">TinyGrad</span>
+            <span class="tag">MNIST</span>
+        </div>
+    </div>
+
+    <!-- === GCN === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Graph Convolutional Network (GCN)</h3>
+            <a href="https://github.com/5uru/Stream/tree/main/gcn" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Construction d’un réseau de convolution sur graphe (GCN) avec TinyGrad pour détecter les communautés dans le célèbre jeu de données Zachary Karate Club. Le modèle atteint <strong>100 % de précision</strong> dès la 20<sup>e</sup> époque, démontrant la puissance des GNNs pour capturer la structure topologique des réseaux sociaux, même avec des outils légers.
+        </p>
+        <div class="tags">
+            <span class="tag">GNN</span>
+            <span class="tag">Graph Neural Network</span>
+            <span class="tag">TinyGrad</span>
+            <span class="tag">Community Detection</span>
+        </div>
+    </div>
+
+    <!-- === LSTM === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>RNN avec LSTM pour classification de texte</h3>
+            <a href="https://github.com/5uru/lstm-text-classification" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Développement d’un RNN basé sur des cellules LSTM (via TinyGrad) pour classifier le sentiment (positif/négatif) de phrases. Le modèle utilise des embeddings pré-entraînés (spaCy) et une gestion dynamique du padding pour généraliser efficacement sur des données textuelles variées. Un hommage aux architectures séquentielles, encore utiles dans des contextes à faible ressource ou à interprétabilité contrôlée.
+        </p>
+        <div class="tags">
+            <span class="tag">NLP</span>
+            <span class="tag">LSTM</span>
+            <span class="tag">Text Classification</span>
+            <span class="tag">TinyGrad</span>
+            <span class="tag">Sentiment Analysis</span>
+        </div>
+    </div>
+
+    <!-- === AUTOENCODER === -->
+    <div class="project">
+        <div class="project-title">
+            <h3>Autoencoder sur MNIST</h3>
+            <a href="https://github.com/5uru/Stream/tree/main/AutoEncodeur" class="project-hook"> [lien]</a>
+        </div>
+        <p>
+            Implémentation d’un autoencodeur minimaliste en TinyGrad, entraîné sans supervision sur MNIST. Le modèle produit des reconstructions propres et un espace latent structuré : une visualisation T-SNE révèle une séparation nette entre les classes de chiffres. Ce projet explore l’apprentissage non supervisé et la compression de représentations, fondements de nombreuses techniques modernes en IA générative.
+        </p>
+        <div class="tags">
+            <span class="tag">Autoencoder</span>
+            <span class="tag">Unsupervised Learning</span>
+            <span class="tag">TinyGrad</span>
+            <span class="tag">MNIST</span>
+            <span class="tag">Representation Learning</span>
+        </div>
+    </div>
+
 </main>
 <footer>
-    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
 </footer>
-<!-- 100% privacy-first analytics -->
 <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
 </body>
