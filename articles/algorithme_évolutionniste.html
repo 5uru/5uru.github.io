@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithmes évolutionnaires</title>
+
+    <!-- Polyfill pour compatibilité ES6 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- MathJax pour les formules mathématiques -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Feuille de style externe -->
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+<h1>Algorithmes évolutionnaires</h1>
+
+
+<p>Vous avez déjà observé comment la nature résout des problèmes d’une complexité étonnante ? Les ailes des oiseaux, les racines des plantes ou la forme des coquillages ne sont pas le fruit d’un plan préétabli, mais le résultat d’un long processus d’essais, d’erreurs et de sélection. Rien n’a été conçu par un ingénieur : tout s’est affiné petit à petit, génération après génération.</p>
+
+<p>Les algorithmes évolutionnaires s’inspirent exactement de cette logique. Plutôt que de chercher la meilleure solution d’un seul coup, ils font évoluer simultanément de nombreuses tentatives. Ils gardent ce qui fonctionne, combinent les bonnes idées entre elles, et introduisent parfois un peu de hasard pour explorer de nouvelles directions. Cette approche, bien que simple en apparence, se révèle extrêmement puissante, surtout lorsque les méthodes classiques d’optimisation échouent face à la complexité du problème.</p>
+
+<h2>Partir d’un problème d’optimisation</h2>
+
+<p>Tout algorithme évolutionnaire commence par une question fondamentale : comment trouver la meilleure solution parmi un espace souvent gigantesque de possibilités ? Ce type de problème apparaît dans de nombreux domaines : concevoir une aile d’avion qui minimise la traînée, retrouver la structure géologique d’un sous-sol à partir de mesures sismiques, ou apprendre à un robot à marcher sans tomber.</p>
+
+<p>Dans tous ces cas, l’objectif est de maximiser ou minimiser une fonction appelée fonction d’adaptation, ou <em>fitness</em>. Contrairement aux méthodes analytiques, on ne suppose pas que cette fonction soit continue, dérivable ou même connue sous forme explicite. La seule exigence est de pouvoir évaluer la qualité de n’importe quelle solution proposée, par simulation, mesure ou calcul.</p>
+
+<h2>Créer une population initiale</h2>
+
+<p>Au lieu de chercher une solution unique, l’algorithme travaille sur un ensemble de solutions candidates appelé population. Chaque élément de cette population, appelé individu, représente une proposition concrète : un jeu de paramètres numériques, une forme géométrique, voire un petit programme informatique.</p>
+
+<p>La population initiale est généralement générée de manière aléatoire, de façon à couvrir le plus largement possible l’espace des solutions. Cette diversité initiale est cruciale : elle permet à l’algorithme d’explorer plusieurs régions du problème dès le départ, évitant ainsi de se coincer trop tôt dans une solution médiocre. Sans cette diversité, l’algorithme risquerait de converger prématurément vers un optimum local, c’est-à-dire une solution qui semble bonne localement, mais qui est loin d’être la meilleure globalement.</p>
+
+<h2>Évaluer la qualité de chaque individu</h2>
+
+<p>Une fois la population créée, chaque individu est évalué à l’aide de la fonction d’adaptation. Cette fonction attribue à chaque solution un score numérique qui reflète sa performance. Par exemple, si l’objectif est de minimiser la consommation énergétique d’un moteur, on peut définir la fonction d’adaptation comme l’opposé de cette consommation, de sorte que maximiser la fitness revienne à minimiser la consommation :</p>
+
+\[
+F(\mathbf{x}) = -\text{consommation}(\mathbf{x})
+\]
+
+<p>Cette étape est souvent la plus coûteuse en temps de calcul, car elle dépend entièrement du problème réel : simulation physique, expérience en laboratoire, ou exécution d’un programme. Pourtant, elle est indispensable : c’est elle qui fournit l’information nécessaire pour guider l’évolution vers de meilleures solutions.</p>
+
+<h2>Sélectionner les meilleurs pour se reproduire</h2>
+
+<p>Une fois toutes les performances connues, l’algorithme sélectionne les individus les plus performants pour participer à la reproduction. Cette sélection peut être déterministe  on garde strictement les meilleurs, ce qu’on appelle l’élitisme  ou stochastique, où les meilleurs ont plus de chances d’être choisis, mais où les autres conservent une petite probabilité d’être retenus.</p>
+
+<p>La sélection par tournoi est une méthode très utilisée : on choisit au hasard un petit groupe d’individus, puis on garde le meilleur de ce groupe. Une autre approche, la sélection par rang, attribue à chaque individu une probabilité de sélection proportionnelle à son classement dans la population, indépendamment des valeurs absolues de la fonction d’adaptation. Ces méthodes permettent de maintenir un équilibre entre exploitation des bonnes solutions et préservation d’une diversité suffisante pour continuer à explorer l’espace de recherche.</p>
+
+<h2>Créer de nouvelles solutions par croisement et mutation</h2>
+
+<p>Les individus sélectionnés deviennent des parents. À partir d’eux, l’algorithme génère de nouveaux individus, appelés enfants, à l’aide de deux opérateurs fondamentaux : le croisement et la mutation.</p>
+
+<p>Le croisement consiste à combiner les caractéristiques de deux (ou plusieurs) parents pour créer un ou plusieurs enfants. Dans le cas de vecteurs de nombres réels, une méthode courante est le croisement arithmétique, où l’enfant est une combinaison linéaire des parents :</p>
+
+\[
+\mathbf{z} = \alpha \mathbf{x} + (1 - \alpha) \mathbf{y}, \quad \alpha \in [0,1]
+\]
+
+<p>Dans le cas de représentations binaires, on échange simplement des segments de bits entre deux parents à une ou plusieurs positions aléatoires.</p>
+
+<p>La mutation, quant à elle, introduit de petites modifications aléatoires dans un individu. Pour un vecteur réel, cela revient souvent à ajouter un bruit gaussien :</p>
+
+\[
+\mathbf{x}' = \mathbf{x} + \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \sigma^2)
+\]
+
+<p>Pour une chaîne binaire, on inverse quelques bits choisis au hasard. Ces opérations sont appliquées avec des probabilités contrôlées  typiquement, une probabilité élevée de croisement (par exemple 70 %) et une probabilité faible de mutation (par exemple 5 à 10 %)  afin d’ajuster le compromis entre exploration de nouvelles régions et exploitation des solutions prometteuses.</p>
+
+<h2>Former la nouvelle génération</h2>
+
+<p>Les enfants générés remplacent tout ou une partie de la population précédente, selon un schéma d’évolution bien défini. Dans un schéma générationnel, la population entière est remplacée à chaque itération. Dans un schéma stationnaire, seuls un ou deux individus sont mis à jour à la fois. Les stratégies d’évolution utilisent souvent des schémas notés \((\mu + \lambda)\) ou \((\mu, \lambda)\), où \(\mu\) est le nombre de parents et \(\lambda\) le nombre d’enfants. Dans le premier cas, on conserve les \(\mu\) meilleurs individus parmi l’ensemble des parents et des enfants ; dans le second, seuls les enfants sont pris en compte pour la génération suivante.</p>
+
+<p>Ce choix influence profondément la dynamique de l’algorithme : un remplacement trop agressif peut accélérer la convergence mais au risque de perdre de la diversité ; un remplacement trop conservateur peut préserver la diversité mais ralentir la progression vers l’optimum.</p>
+
+<h2>Répéter jusqu’à convergence</h2>
+
+<p>Le cycle d’évaluation, de sélection, de croisement et de mutation se répète génération après génération. À chaque itération, la qualité moyenne de la population tend à s’améliorer, tandis que la diversité diminue progressivement. Les solutions convergent vers des régions de plus en plus performantes de l’espace de recherche.</p>
+
+<p>L’algorithme s’arrête lorsqu’un critère d’arrêt est atteint. Ce peut être un nombre maximal de générations, l’atteinte d’une performance cible, ou une stagnation prolongée  c’est-à-dire l’absence d’amélioration significative de la meilleure solution sur un certain nombre de générations. Ce dernier critère est particulièrement utile pour éviter des calculs inutiles une fois que l’algorithme semble avoir trouvé une solution satisfaisante.</p>
+
+<h2>Interpréter la solution finale</h2>
+
+<p>À la fin du processus, on obtient un ou plusieurs individus très performants. Contrairement à certaines méthodes d’intelligence artificielle dites « boîtes noires », les solutions issues des algorithmes évolutionnaires sont souvent interprétables. Elles peuvent prendre la forme d’un ensemble de paramètres physiques, d’une formule mathématique explicite, ou d’une architecture de réseau de neurones clairement définie.</p>
+
+<p>Dans le cadre des problèmes inverses  comme l’identification de structures géologiques à partir de données sismiques  la solution finale représente une hypothèse plausible sur la réalité cachée, compatible avec les observations disponibles. Cette interprétabilité est un atout majeur dans les domaines scientifiques et industriels, où il est essentiel de comprendre non seulement <em>quoi</em> fonctionne, mais aussi <em>pourquoi</em>.</p>
+
+<h2>Adapter le codage au problème : génotype et phénotype</h2>
+
+<p>Un aspect souvent sous-estimé, mais crucial, est le choix de la représentation des solutions. L’individu manipulé par l’algorithme, appelé génotype, n’est pas toujours identique à la solution réellement évaluée, appelée phénotype. Ce découplage permet d’adapter la représentation au problème, plutôt que de forcer le problème à s’adapter à une représentation rigide.</p>
+
+<p>Par exemple, en prospection pétrolière, au lieu de stocker des milliers de valeurs pour décrire un champ de vitesses sismiques, on peut coder ce champ par une poignée de points de Voronoï. Chaque point porte une valeur de vitesse, et le sous-sol complet est reconstruit à la volée en attribuant à chaque position la vitesse du point de Voronoï le plus proche. Le génotype est ainsi très compact, tandis que le phénotype respecte les contraintes physiques du milieu (continuité par morceaux, régularité). Cette approche réduit considérablement la dimension du problème et accélère la convergence de l’algorithme.</p>
+
+<h2>Choisir la bonne variante selon le contexte</h2>
+
+<p>Il existe plusieurs grandes familles d’algorithmes évolutionnaires, chacune ayant émergé dans un contexte historique et applicatif différent. Les algorithmes génétiques, introduits par John Holland, utilisent traditionnellement des chaînes binaires et sont particulièrement adaptés aux problèmes combinatoires. Les stratégies d’évolution, développées en Allemagne pour l’optimisation numérique, travaillent sur des vecteurs réels et intègrent souvent des mécanismes d’auto-adaptation des paramètres de mutation.</p>
+
+<p>La programmation génétique, popularisée par John Koza, évolue des programmes informatiques représentés sous forme d’arbres, ce qui la rend idéale pour la découverte symbolique de formules ou de règles. L’évolution différentielle, plus récente, se distingue par une mutation basée sur les différences entre individus, ce qui la rend très efficace sur les fonctions numériques continues. Enfin, les algorithmes memétiques combinent l’évolution globale avec une recherche locale fine, ce qui les rend particulièrement performants sur les problèmes d’optimisation difficiles où la qualité de la solution finale dépend fortement de l’ajustement local.</p>
+
+<p>Le choix d’une variante dépend moins de considérations théoriques que de la nature du problème, du coût de l’évaluation de la fonction d’adaptation, et des exigences en termes d’interprétabilité et de robustesse.</p>
+
+<h2>Applications en intelligence artificielle</h2>
+
+<p>Les algorithmes évolutionnaires jouent un rôle croissant en intelligence artificielle, notamment dans les domaines où les méthodes classiques rencontrent des limites. La neuroévolution, par exemple, consiste à entraîner des réseaux de neurones en faisant évoluer directement leurs poids, sans recourir à la rétropropagation du gradient. Cette approche est particulièrement utile dans les environnements non différentiables, bruités ou discrets, comme les simulateurs robotiques ou les jeux vidéo.</p>
+
+<p>L’apprentissage par renforcement évolutionnaire permet d’optimiser des politiques de décision en les évaluant directement par simulation, sans avoir besoin d’un modèle explicite de l’environnement ni d’hypothèses markoviennes. La programmation génétique, quant à elle, permet de faire évoluer des programmes complets capables de résoudre des tâches symboliques, comme retrouver une loi physique à partir de données expérimentales.</p>
+
+<p>Enfin, la recherche d’architectures neuronales (Neural Architecture Search, ou NAS) utilise des principes évolutionnaires pour découvrir automatiquement les meilleures structures de réseaux de neurones. Des entreprises comme Google ou Uber ont montré que ces méthodes peuvent rivaliser avec les approches basées sur le gradient, tout en offrant une plus grande flexibilité et une meilleure interprétabilité.</p>
+
+<h2>Une implémentation concrète</h2>
+
+<p>Pour illustrer concrètement les principes décrits précédemment, j'ai implémenté un algorithme évolutionnaire simple dont l’objectif est d’écrire une chaîne de caractères cible  par exemple, votre nom. L’expérience est à la fois visuelle, intuitive, et parfaitement adaptée à une première approche de l’évolution artificielle.</p>
+
+<h3>Objectif et encodage</h3>
+
+<p>L’algorithme cherche à maximiser la ressemblance entre une chaîne candidate \( \mathbf{x} = (x_1, x_2, \dots, x_L) \) et une chaîne cible \( \mathbf{t} = (t_1, t_2, \dots, t_L) \), où \( L \) est la longueur du nom (ici, \( L = 13 \) pour <code>"Jonathan Suru"</code>). Chaque caractère est encodé par son code ASCII, de sorte que \( x_i, t_i \in \mathbb{N} \).</p>
+
+<h3>Fonction d’adaptation (fitness)</h3>
+
+<p>La fitness mesure la qualité d’un individu. Dans ce cas, elle compte simplement le nombre de caractères corrects à la bonne position :</p>
+
+\[
+F(\mathbf{x}) = \sum_{i=1}^{L} \mathbb{1}_{\{x_i = t_i\}}
+\]
+
+<p>où \( \mathbb{1}_{\{x_i = t_i\}} \) vaut 1 si les caractères coïncident, 0 sinon. Ainsi, la fitness maximale est \( F_{\text{max}} = L \). Dans la génération 9 de notre exemple, la chaîne <code>"JonaWhon A.ru"</code> obtient \( F = 9 \), ce qui signifie que 9 positions sont déjà correctes.</p>
+
+<h3>Sélection des parents</h3>
+
+<p>Pour éviter la convergence prématurée, nous utilisons une <strong>sélection par tournoi</strong> de taille 3. À chaque sélection, trois individus sont tirés uniformément au hasard dans la population. Celui ayant la fitness la plus élevée est choisi comme parent. Cette méthode ne dépend pas des valeurs absolues de \( F \), seulement de l’ordre relatif des individus, ce qui la rend robuste et facile à calibrer.</p>
+
+<h3>Croisement (recombinaison)</h3>
+
+<p>Deux parents \( \mathbf{p}^{(1)} \) et \( \mathbf{p}^{(2)} \) produisent un enfant \( \mathbf{c} \) par croisement à un point. Un indice \( k \) est tiré uniformément dans \( \{0, 1, \dots, L\} \), puis :</p>
+
+\[
+c_i =
+\begin{cases}
+p^{(1)}_i & \text{si } i < k \\
+p^{(2)}_i & \text{si } i \geq k
+\end{cases}
+\]
+
+<p>Ce mécanisme permet de combiner des segments corrects provenant de deux parents différents  par exemple, le préfixe <code>"Jona"</code> d’un parent et le suffixe <code>"han Suru"</code> d’un autre.</p>
+
+<h3>Mutation</h3>
+
+<p>Chaque caractère de l’enfant a une probabilité \( \mu = 0{,}05 \) (5 %) d’être modifié. Formellement, pour chaque position \( i \), on génère un nombre aléatoire \( u_i \sim \mathcal{U}(0,1) \). Si \( u_i < \mu \), alors :</p>
+
+\[
+c_i \leftarrow a_j \quad \text{où } j \sim \mathcal{U}\{1, \dots, |\mathcal{A}|\}
+\]
+
+<p>et \( \mathcal{A} \) est l’alphabet autorisé (lettres, chiffres, espace, ponctuation), de taille \( |\mathcal{A}| = 70 \). Cette mutation introduit de la nouveauté et permet de corriger les positions encore erronées, même si aucun parent ne les possède correctement.</p>
+
+<h3>Dynamique de convergence observée</h3>
+
+<p>La sortie du programme illustre clairement l’efficacité de ce processus :</p>
+
+<ul>
+    <li><strong>Génération 0</strong> : <code>"c0Oaxho5 g Eq"</code>, \( F = 3 \). La population est entièrement aléatoire.</li>
+    <li><strong>Génération 6</strong> : <code>"JonaxhBq3LuPu"</code>, \( F = 7 \). Le préfixe <code>"Jona"</code> émerge et se stabilise.</li>
+    <li><strong>Génération 16</strong> : <code>"JonathaC Luru"</code>, \( F = 11 \). Seuls deux caractères restent incorrects.</li>
+    <li><strong>Génération 31</strong> : <code>"Jonathan Suru"</code>, \( F = 13 \). La cible est atteinte.</li>
+</ul>
+
+<p>On observe que les caractères corrects, une fois acquis, sont rarement perdus  grâce à la pression sélective et au croisement. La mutation, quant à elle, agit localement pour « réparer » les erreurs résiduelles.</p>
+
+<h3>Pourquoi cette méthode est-elle efficace ?</h3>
+
+<p>Contrairement à une recherche exhaustive (de complexité \( |\mathcal{A}|^L \approx 70^{13} \approx 10^{24} \)), l’algorithme évolutionnaire <strong>accumule de l’information utile au fil des générations</strong>. La fitness agit comme un signal de rétroaction qui guide la population vers des régions de plus en plus performantes de l’espace de recherche. Le croisement permet de réutiliser les bonnes sous-structures, tandis que la mutation assure une exploration locale suffisante pour atteindre l’optimum global.</p>
+
+<h2>Conclusion : la sagesse du tâtonnement</h2>
+
+<p>Les algorithmes évolutionnaires ne « pensent » pas au sens humain du terme. Ils n’ont pas de plan, pas de vision d’ensemble, pas de raisonnement déductif. Ils se contentent d’expérimenter, de comparer, de combiner et de recommencer. Et c’est précisément cette simplicité qui fait leur force.</p>
+
+<p>Ils n’ont pas besoin de comprendre le problème pour le résoudre. Ils le résolvent par persévérance, exactement comme la nature façonne la vie : sans intention, mais avec une obstination remarquable. Pour un débutant, l’idée essentielle à retenir est la suivante : quand un problème est trop complexe pour être résolu d’un seul coup, il suffit parfois de laisser les solutions évoluer… un essai à la fois.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://medium.com/@EliasWalyBa/introduction-aux-algorithmes-évolutionnaires-429bc2c79652"> Introduction aux algorithmes évolutionnaires</a> de Elias W. BA </li>
+    <li><a href="https://www.enseignement.polytechnique.fr/profs/informatique/Eric.Goubault/poly/cours009.html">Chapter 8    Algorithmes évolutionnaires et problèmes inverses</a> </li>
+    <li><a href="https://github.com/5uru/OpenLabs/tree/main/algorithme_evolusioniste">Mon Code</a></li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=9PukqhfMxfc" target="_blank">Écouter sur YouTube</a>
+</div>
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
