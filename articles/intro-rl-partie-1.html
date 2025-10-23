@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+    <meta property="og:image:alt" content="Code Learn Share" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <title>Introduction au Reinforcement Learning (Partie 1)</title>
+
+    <!-- Polyfill pour compatibilité ES6 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- MathJax pour les formules mathématiques -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Feuille de style externe -->
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+
+<main>
+    <section>
+        <h1>Introduction Au Reinforcement Learning </h1>
+        <p>Après avoir suivi la formation Hors-Série sur le Deep Reinforcement Learning proposée par FIDLE, j'ai décidé de compiler et de structurer ici les concepts fondamentaux de l'apprentissage par renforcement. L'objectif de cet article est de présenter de manière claire et ordonnée les bases théoriques et les premiers algorithmes qui constituent le socle de cette discipline.</p>
+    </section>
+    <section>
+        <h3>Qu'est-ce que l'Apprentissage par Renforcement ?</h3>
+        <p>L'<strong>Apprentissage par Renforcement</strong> (Reinforcement Learning, RL) est un paradigme d'apprentissage automatique où un agent apprend à prendre des décisions en interagissant avec un environnement. L'objectif est de maximiser une récompense cumulée au fil du temps. Ce processus est souvent résumé par la maxime : "You Win or You Learn!" (Soit vous gagnez, soit vous apprenez).</p>
+        <p>Imaginez un écureuil qui se déplace sur une grille. À chaque pas, elle doit choisir une action : aller à gauche, à droite, en haut ou en bas. Si elle atteint une case contenant de la nourriture, elle reçoit une récompense. Si elle tombe sur la case du loup, elle subit une pénalité. Sans carte ni instructions, l’écureuil apprend progressivement, par essais et erreurs, à éviter le danger et à maximiser ses chances de trouver de la nourriture. C’est exactement ce que fait un agent en apprentissage par renforcement : il affine sa politique en fonction des récompenses et des punitions reçues lors de ses interactions avec l’environnement.</p>    </section>
+
+    <section>
+        <h3>Vocabulaire Fondamental du RL</h3>
+        <p>Pour comprendre le RL, il est crucial de maîtriser son vocabulaire. Ces termes ne sont pas indépendants ; ils décrivent les différentes facettes d'une boucle d'apprentissage continue. L'agent observe son <strong>état</strong> actuel dans l'<strong>environnement</strong>, choisit une <strong>action</strong> à effectuer, et reçoit en retour une <strong>récompense</strong> et un nouvel état. Sa stratégie pour choisir les actions est sa <strong>politique</strong>. L'objectif ultime est de trouver la politique qui maximise le <strong>retour</strong> total sur le long terme.</p>
+        <p>Voici les briques de base de tout problème de RL :</p>
+        <ul>
+            <li><strong>Agent</strong> : Le preneur de décision (le programme, le robot). Il observe et agit.</li>
+            <li><strong>Environnement</strong> : Le monde avec lequel l'agent interagit. Il fournit des états et des récompenses à l'agent.</li>
+            <li><strong>État (State, noté s)</strong> : Une représentation complète et instantanée de la situation de l'agent dans l'environnement.</li>
+            <li><strong>Action (Action, notée a)</strong> : Un choix ou un mouvement que l'agent peut effectuer. L'ensemble des actions possibles depuis un état est appelé <strong>l'espace d'actions</strong>.</li>
+            <li><strong>Récompense (Reward, notée R)</strong> : Un signal scalaire envoyé par l'environnement à l'agent après chaque action. Une récompense positive indique que l'action a été bénéfique, une pénalité (récompense négative) qu'elle a été néfaste. La fonction de récompense est le guide principal de l'agent.</li>
+            <li><strong>Politique (Policy, notée π)</strong> : La stratégie de l'agent. C'est une fonction qui associe un état à une action (ou à une distribution de probabilités sur les actions). L'objectif du RL est de trouver la politique optimale \( \pi^{*} \).</li>
+            <li><strong>Retour (Return, noté Gₜ)</strong> : La récompense totale cumulée future, souvent escomptée par un facteur <code>γ</code>. C'est la quantité que l'agent cherche à maximiser.
+                <blockquote>$$ G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + ... $$</blockquote>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h3>Le Cadre Théorique : Le Contrôle Optimal et les Équations de Bellman</h3>
+        <p>Le <strong>Contrôle Optimal</strong> est une branche des mathématiques qui s'intéresse au problème de trouver une commande ou une politique qui optimise un certain critère de performance. Dans le cadre de l'apprentissage par renforcement, cela se traduit par une situation idéale où l'agent a une connaissance parfaite de son environnement.</p>
+        <p>Cela signifie qu'il connaît deux choses fondamentales : les probabilités de transition d'un état à un autre pour chaque action (\(P(s' \mid s, a)\)) et la fonction de récompense (\(R(s, a)\)). Contrairement à l'apprentissage par renforcement où l'agent doit découvrir ces règles par essais et erreurs, le contrôle optimal permet de <strong>calculer</strong> directement la meilleure stratégie possible. C'est donc un problème de <strong>planification</strong> et non d'apprentissage. Ce modèle théorique est crucial car il définit la solution parfaite, l'objectif vers lequel les algorithmes d'apprentissage vont tendre à s'approcher.</p>
+        <p>Pour modéliser un problème de RL, on utilise le <strong>Processus de Décision Markovien (MDP)</strong>. Un MDP est un cadre mathématique qui décrit un environnement où les conséquences des actions sont partiellement aléatoires et où l'état futur ne dépend que de l'état présent et de l'action choisie (propriété de Markov).</p>
+
+        <h4>Les Fonctions de Valeur</h4>
+        <p>Pour évaluer la qualité d'un état ou d'une action, on utilise des fonctions de valeur. Ce sont des outils de prédiction qui nous disent à quoi s'attendre dans le futur.</p>
+        <ul>
+            <li><strong>V(s) - La fonction de valeur d'état</strong> : Représente le retour attendu si l'agent commence à l'état <em>s</em> et suit ensuite une politique donnée. Elle répond à la question : "À quel point cet état est-il bon ?".</li>
+            <li><strong>\(Q(S, A)\) - La fonction de valeur d'action-état</strong> : Représente le retour attendu si l'agent est à l'état <em>s</em>, effectue l'action <em>a</em>, puis suit la politique. Elle répond à la question : "À quel point est-ce une bonne idée de faire cette action ici ?". C'est souvent la fonction la plus utile en pratique.</li>
+        </ul>
+
+        <h4>Les Équations de Bellman</h4>
+        <p>La révolution théorique vient avec les <strong>Équations de Bellman</strong>. Elles expriment une idée intuitive mais puissante : la valeur d'une situation est égale à la récompense immédiate que l'on obtient, plus la valeur de la situation future dans laquelle on se retrouve. C'est une relation de récurrence qui permet de calculer la valeur de n'importe quel état ou action.</p>
+        <p><strong>Équation de Bellman pour V(s) :</strong></p>
+        <blockquote>$$ V(s) = \max_{a}  \left( R(s,a) + \gamma \sum_{s'} P(s'|s,a) V(s') \right) $$</blockquote>
+        <p>Dans cette équation, le terme <strong>γ (gamma)</strong> est le <strong>taux d'escompte</strong>. C'est un nombre compris entre 0 et 1 qui détermine l'importance que l'accorde aux récompenses futures par rapport aux récompenses immédiates. Un <code>γ</code> proche de 1 rend l'agent très patient, car il valorise fortement les récompenses lointaines. À l'inverse, un <code>γ</code> proche de 0 rend l'agent "avide", car il se concentre presque exclusivement sur les récompenses immédiates. Le choix de <code>γ</code> est donc crucial pour définir le comportement de l'agent.</p>
+        <p><strong>Équation de Bellman pour \(Q(S, A)\) :</strong></p>
+        <blockquote>$$ Q(S, A) = R(s,a) + \gamma \sum_{s'} P(s'|s,a) \max_{a'} Q(s',a') $$</blockquote>
+        <p>Pour une politique optimale \( \pi^{*} \), la relation entre V et Q est simple : \( V^{*}(s) = \max_{a} Q^{*}(s,a) \).</p>    </section>
+
+    <section>
+        <h3>L'Apprentissage dans un Environnement Inconnu</h3>
+        <p>Le monde du contrôle optimal est un idéal. Dans la réalité, l'agent ne connaît pas les règles du jeu. Il ne sait pas quelle récompense il obtiendra ni où il atterrira après une action. Il doit tout apprendre par lui-même, en interagissant. C'est là que le véritable <strong>Reinforcement Learning</strong> commence.</p>
+
+        <h4>Le Dilemme Exploration vs. Exploitation</h4>
+        <p>Cette situation crée un dilemme fondamental pour l'agent. Doit-il <strong>exploiter</strong> ses connaissances actuelles en choisissant l'action qui lui a rapporté le plus de récompenses jusqu'à présent ? Ou doit-il <strong>explorer</strong> en essayant de nouvelles actions qui pourraient s'avérer encore meilleures, mais qui pourraient aussi être désastreuses ?</p>
+        <p>C'est comme choisir un restaurant. L'exploitation, c'est aller à votre restaurant préféré, vous êtes sûr d'y passer un bon moment. L'exploration, c'est essayer ce nouveau restaurant qui vient d'ouvrir. Il pourrait être génial, ou décevant. Pour maximiser votre satisfaction sur le long terme, vous devez trouver le bon équilibre.</p>
+        <p>Une stratégie courante est la <strong>politique ε-greedy</strong> : avec une probabilité <code>ε</code>, l'agent explore (action aléatoire), et avec une probabilité <code>1-ε</code>, il exploite (meilleure action connue).</p>
+
+        <h4>Méthodes d'Apprentissage</h4>
+        <p>Pour estimer les fonctions de valeur sans connaître l'environnement, l'agent doit apprendre de son expérience. Mais comment ? Faut-il attendre la fin d'une tâche pour juger, ou peut-on apprendre à chaque instant ? Plusieurs approches existent, chacune avec sa propre "personnalité".</p>
+
+        <h4>1. Méthode Monte Carlo</h4>
+        <p>La méthode Monte Carlo est celle de l'historien patient. Elle attend la fin d'un épisode (un "game over") pour juger de la valeur des actions. Elle regarde la séquence complète des récompenses (le retour <code>Gₜ</code> réel) et attribue cette valeur à chaque état-action qui a été visité.</p>
+        <p><strong>Étapes :</strong></p>
+        <ol>
+            <li>Initialiser la table \(Q(S, A)\).</li>
+            <li>Pour chaque épisode :
+                <ol type="a">
+                    <li>Générer un épisode complet en suivant une politique (ex: ε-greedy), en stockant chaque transition \( (S_t, A_t, R_{t+1}) \).</li>
+                    <li>Lorsque l'épisode se termine à l'étape T, calculer le retour \( G_t \) pour chaque étape <code>t</code>.</li>
+                    <li>Pour chaque paire état-action  \( (S_t, A_t) \) visitée, mettre à jour \( Q(S_t, A_t) \) en fonction du retour \( G_t \).</li>
+                </ol>
+            </li>
+        </ol>
+        <p>Elle est <strong>sans biais</strong> (car basée sur des retours réels) mais à <strong>forte variance</strong> (un seul épisode chanceux ou malchanceux peut fausser l'estimation).</p>
+
+        <h4>2. Apprentissage par Différence Temporelle (TD)</h4>
+        <p>La méthode TD est celle du réaliste impatient. Elle n'attend pas la fin de l'épisode. Elle met à jour ses estimations à chaque étape, en utilisant une estimation pour la récompense future. C'est ce qu'on appelle le <strong>bootstrap</strong> : on met à jour une estimation avec une autre estimation.</p>
+        <p><strong>Étapes :</strong></p>
+        <ol>
+            <li>Initialiser la table \(Q(S, A)\).</li>
+            <li>Pour chaque étape :
+                <ol type="a">
+                    <li>Observer l'état \(S\), choisir une action \(A\) (ε-greedy).</li>
+                    <li>Exécuter \(A\), observer \(R\) et \(S'\).</li>
+                    <li>Mettre à jour : \(Q(S, A) \leftarrow Q(S, A) + \alpha \cdot [R + \gamma \cdot Q(S', A') - Q(S, A)]\).</li>
+                    <li>Mettre à jour l'état : \(S \leftarrow S'\).</li>
+                </ol>
+            </li>
+        </ol>
+        <p>Elle est <strong>biaisée</strong> (car l'estimation \(Q(S', A')\) peut être fausse) mais à <strong>faible variance</strong>, ce qui la rend beaucoup plus stable et rapide à apprendre.</p>
+
+        <h4>3. Apprentissage N-step Temporal Difference : Le Juste Milieu</h4>
+        <p>Si Monte Carlo est trop patient et TD est trop impatient, l'apprentissage <strong>N-step TD</strong> offre un compromis intelligent. Au lieu de regarder seulement 1 pas dans le futur ou d'attendre la fin de l'épisode, il regarde <code>n</code> pas en avant.</p>
+        <p>Pensez à un analyste financier. L'approche 1-step TD ne regarde que le prix d'une action demain pour prédire sa valeur aujourd'hui. L'approche Monte Carlo attend la fin du mois pour voir le profit total. L'approche N-step TD (avec n=5, par exemple) regarde l'évolution des prix sur les 5 prochains jours avant de faire une prédiction. C'est plus informatif qu'un seul jour, mais plus rapide que d'attendre la fin du mois.</p>
+        <p>La <strong>cible N-step TD</strong> est calculée en additionnant les <code>n-1</code> premières récompenses réelles, puis en ajoutant une estimation de la valeur à l'étape <code>n</code>.</p>
+        <blockquote>$$ Cible\_TD = R_{t+1} + \gamma R_{t+2} + ... + \gamma^{n-1}R_{t+n} + \gamma^n Q(s_{t+n}, a_{t+n}) $$</blockquote>
+        <p><strong>Étapes :</strong></p>
+        <ol>
+            <li>Initialiser la table \(Q(S, A)\).</li>
+            <li>Pour chaque étape :
+                <ol type="a">
+                    <li>Observer l'état \(S\), choisir une action \(A\) (ε-greedy).</li>
+                    <li>Exécuter \(A\), observer \(R\) et \(S'\).</li>
+                    <li>Stocker la transition \((S, A, R, S')\) dans un buffer temporaire.</li>
+                    <li>Si \(n\) étapes se sont écoulées depuis la transition \((S_t, A_t)\) stockée :
+                        <ol type="i">
+                            <li>Calculer la cible N-step TD en utilisant les \(n\) récompenses et l'état \(S_{t+n}\).</li>
+                            <li>Mettre à jour \(Q(S_t, A_t)\) avec cette cible.</li>
+                        </ol>
+                    </li>
+                </ol>
+            </li>
+        </ol>
+        <p>La beauté de N-step TD est qu'il permet de contrôler le compromis biais-variance. Plus \(n\) est grand, plus on se rapproche de Monte Carlo (moins de biais, plus de variance). Plus \(n\) est petit, plus on se rapproche de TD (plus de biais, moins de variance). En choisissant \(n\) on peut trouver l'équilibre parfait pour un problème donné.</p>
+    </section>
+
+    <section>
+        <h3>Les Algorithmes d'Apprentissage : SARSA et Q-Learning</h3>
+        <p>Les méthodes TD nous donnent un principe de mise à jour. SARSA et Q-Learning sont deux algorithmes concrets qui appliquent ce principe. Ils sont tous deux extrêmement populaires, mais ils diffèrent fondamentalement dans leur manière d'apprendre, une distinction cruciale entre <em>on-policy</em> et <em>off-policy</em>.</p>
+
+        <h3>SARSA (On-Policy) : L'Apprenti Prudent</h3>
+        <p>SARSA est un algorithme <strong>on-policy</strong> : il apprend la valeur de la politique qu'il est en train d'exécuter, avec toutes ses imperfections et ses phases d'exploration. Sa cible TD utilise l'action \(a'\) que l'agent a <strong>réellement</strong> choisie dans l'état suivant \(s'\).</p>
+        <blockquote>$$ Q(S, A) \leftarrow Q(S, A) + \alpha \times [R + \gamma Q(s', a') - Q(S, A)] $$</blockquote>
+        <p><strong>Étapes :</strong></p>
+        <ol>
+            <li>Initialiser \(Q\).</li>
+            <li>Pour chaque épisode :
+                <ol type="a">
+                    <li>Initialiser \(S\), choisir \(A\) (ε-greedy).</li>
+                    <li>Répéter :
+                        <ol type="i">
+                            <li>Exécuter \(A\), observer \(R\) et \(S'\).</li>
+                            <li>Choisir \(A'\) depuis \(S'\) (ε-greedy).</li>
+                            <li>Mettre à jour \(Q(S, A)\) avec la formule ci-dessus.</li>
+                            <li>\(S \leftarrow S'\), \(A \leftarrow A'\).</li>
+                        </ol>
+                    </li>
+                </ol>
+            </li>
+        </ol>
+        <p>SARSA est <strong>prudent</strong>. Il apprend à naviguer en tenant compte du fait qu'il peut faire des erreurs d'exploration.</p>
+
+        <h3>Q-Learning (Off-Policy) : Le Visionnaire Audacieux</h3>
+        <p>Q-Learning est un algorithme <strong>off-policy</strong> : il apprend la valeur de la politique optimale tout en suivant une politique exploratoire. Sa cible TD utilise la meilleure action possible depuis l'état <code>s'</code>, quelle que soit l'action qu'il a réellement choisie.</p>
+        <blockquote>$$ Q(S, A) \leftarrow Q(S, A) + \alpha \times [R + \gamma \times \max_{a'} Q(s', a') - Q(S, A)] $$</blockquote>
+        <p><strong>Algorithme (étapes) :</strong></p>
+        <ol>
+            <li>Initialiser \(Q\).</li>
+            <li>Pour chaque épisode :
+                <ol type="a">
+                    <li>Initialiser \(S\).</li>
+                    <li>Répéter :
+                        <ol type="i">
+                            <li>Choisir \(A\) depuis \(S\) (ε-greedy).</li>
+                            <li>Exécuter \(A\), observer \(R\) et \(S'\).</li>
+                            <li>Mettre à jour \(Q(S, A)\) avec la formule ci-dessus.</li>
+                            <li>\(S \leftarrow S'\).</li>
+                        </ol>
+                    </li>
+                </ol>
+            </li>
+        </ol>
+        <p>Q-Learning est plus <strong>audacieux</strong>. Il apprend le chemin optimal en supposant qu'il finira par toujours choisir les meilleures actions. Sa nature <em>off-policy</em> le rend aussi très efficace, car il peut apprendre de n'importe quelle expérience passée.</p>
+    </section>
+
+    <section>
+        <h3>Limites de l'Approche Tabulaire et Perspective</h3>
+        <p>Les méthodes que nous avons vues sont incroyablement puissantes, mais elles ont un talon d'Achille : leur mémoire. Elles sont dites <strong>tabulaires</strong>, car elles stockent les valeurs Q dans une table. Cette approche fonctionne parfaitement pour des mondes simples comme un labyrinthe, mais elle se heurte à un mur infranchissable dès que l'on s'attaque à des problèmes réels.</p>
+        <ul>
+            <li><strong>La Malédiction de la Dimensionnalité</strong> : Le nombre d'états possibles explose pour des environnements réels. Si l'état de votre agent est une image de 84x84 pixels, le nombre d'états possibles est supérieur au nombre d'atomes dans l'univers. Une table Q devient impossible à stocker.</li>
+            <li><strong>Incapacité à Généraliser</strong> : Un agent tabulaire est un "idiot-savant". Il ne connaît que ce qu'il a littéralement expérimenté. S'il apprend qu'une position est bonne, il n'a aucune idée qu'une position presque identique est probablement aussi bonne. Il ne transfère pas son savoir.</li>
+            <li><strong>Espaces d'Actions Continus</strong> : Comment gérer une action comme "tourner le volant de 15.7 degrés" ? Avec une table, vous êtes obligé de <strong>discrétiser</strong>, ce qui est une approximation grossière.</li>
+        </ul>
+
+        <h3>Le Deep Reinforcement Learning</h3>
+        <p>Pour surmonter ces limites, le <strong>Deep Reinforcement Learning</strong> a marqué un tournant majeur. L'idée est géniale dans sa simplicité : remplacer la table Q rigide par un réseau de neurones profond, une fonction souple capable d'<strong>approximer</strong> la valeur Q pour n'importe quel état. Le réseau de neurones apprend à généraliser à partir des exemples qu'il voit, lui permettant d'évaluer des situations nouvelles mais similaires.</p>
+    </section>
+
+    <section>
+        <h3>Conclusion</h3>
+        <p>Dans cet article, nous avons établi les fondations de l'apprentissage par renforcement. Nous sommes partis du cadre théorique idéal du contrôle optimal et des équations de Bellman, qui décrivent comment raisonner sur la valeur à long terme si l'environnement est parfaitement connu.</p>
+        <p>Nous avons ensuite brisé cette hypothèse pour entrer dans le véritable apprentissage, où un agent doit découvrir la politique optimale par lui-même. Nous avons vu comment il doit gérer le dilemme exploration/exploitation et comment des méthodes comme Monte Carlo et les différences temporelles lui permettent d'apprendre de son expérience.</p>
+        <p>Enfin, nous avons détaillé les deux algorithmes pionniers, SARSA et Q-Learning, en soulignant la distinction cruciale entre les approches <em>on-policy</em> (prudente) et <em>off-policy</em> (audacieuse et efficace).</p>
+        <p>Cependant, nous avons également mis en lumière les limites de ces méthodes tabulaires, qui sont inadaptées aux problèmes complexes du monde réel à cause de la malédiction de la dimensionnalité et de leur incapacité à généraliser.</p>
+        <p>C'est précisément pour surmonter ces obstacles que le <strong>Deep Reinforcement Learning</strong> a été conçu. En remplaçant la table rigide par un réseau de neurones souple, il a ouvert la voie à des applications autrefois inimaginables. <strong>Dans un prochain article, nous explorerons cette révolution et des algorithmes comme le Deep Q-Network (DQN).</strong></p>
+
+        <div class="pack-cta">
+            🎁 <strong>AI Prototype Pack Vol.1</strong> — Gratuit, sans carte bancaire.
+            <a href="https://openlabs.mychariow.shop/prd_5re50b" target="_blank" rel="noopener">Télécharger</a>
+        </div>
+
+        <h3>Liens Utiles</h3>
+        <p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+        <ul>
+            <li><a href="https://www.youtube.com/playlist?list=PLlI0-qAzf2SZ1rdZVFljMWsmZrEvax8bg"> Hors Série - Deep Reinforcement Learning</a> (Playlist) </li>
+            <li><a href="https://huggingface.co/learn/deep-rl-course/unit0/introduction">Deep Reinforcement Learning Course</a> de HuggingFace</li>
+            <li><a href="https://github.com/deep-learning-indaba/indaba-pracs-2025/tree/main/practicals/Reinforcement_Learning">Reinforcement Learning</a>: Tutoriel DLI25</li>
+        </ul>
+
+        <div class="music-suggestion">
+            <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+            <a href="https://www.youtube.com/watch?v=9PukqhfMxfc" target="_blank">Écouter sur YouTube</a>
+        </div>
+    </section>
+</main>
+
+
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
