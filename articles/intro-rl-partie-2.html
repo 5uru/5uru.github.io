@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+    <meta property="og:image:alt" content="Code Learn Share" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <title>Introduction Au Reinforcement Learning - Partie 2</title>
+
+    <!-- Polyfill pour compatibilité ES6 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- MathJax pour les formules mathématiques -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Feuille de style externe -->
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<h1>Introduction Au Reinforcement Learning - Partie 2</h1>
+
+
+<p>Dans <a href="https://jonathansuru.me/articles/intro-rl-partie-1.html">mon précédent article</a>, j'ai posé les fondations de l'apprentissage par renforcement. Nous y avons vu comment un agent, tel un écureuil malin, pouvait apprendre à naviguer dans un monde simple en utilisant des tables de valeurs (Q-tables). Cependant, nous avons également mis en lumière leur talon d'Achille : la "malédiction de la dimensionnalité". Face à un monde complexe comme un jeu vidéo ou la conduite d'une voiture, une table devient inutilisable.</p>
+
+<p>Vous voilà au bord d'une révolution. Celle qui a propulsé le reinforcement learning sur le devant de la scène de l'intelligence artificielle. L'idée est géniale dans sa simplicité : remplacer la table rigide et limitée par un cerveau souple et puissant, un réseau de neurones profond. C'est la naissance du <strong>Deep Reinforcement Learning (DRL)</strong>.</p>
+
+<p>Cet article est votre guide pour comprendre cette transition. Nous partirons de l'algorithme qui a tout changé, le Deep Q-Network (DQN), pour ensuite explorer comment le domaine a su s'adapter pour maîtriser des actions continues et devenir plus stable et efficace que jamais.</p>
+
+<hr>
+
+<h2>Le Deep Q-Network (DQN)</h2>
+
+<p>Imaginez que vous ne vouliez plus seulement apprendre une grille de \(10\times10\), mais maîtriser un jeu comme <em>Breakout</em> ou <em>Space Invaders</em>, où l'état n'est plus une simple coordonnée, mais une image entière de \(84\times84\) pixels en couleurs. Le nombre d'états possibles est \(256^{(84\times84\times3)}\), un nombre si grand qu'il dépasse l'entendement. Une Q-table est non seulement inutilisable, elle est une absurdité conceptuelle.</p>
+
+<p>Le <strong>Deep Q-Network (DQN)</strong>, introduit en 2013 par DeepMind dans leur article fondateur "Playing Atari with Deep Reinforcement Learning", a résolu ce problème en mariant deux mondes : l'apprentissage par renforcement et l'apprentissage profond. La solution repose sur deux innovations majeures.</p>
+
+<h3>1. La Fonction d'Approximation : Un Réseau de Neurones à la place de la Table</h3>
+
+<p>Au lieu d'une table, DQN utilise un réseau de neurones convolutif (CNN), un type de réseau particulièrement doué pour comprendre les images. Ce réseau prend en entrée l'état (l'image du jeu) et sort en direct les valeurs Q pour chaque action possible (gauche, droite, tirer...).</p>
+
+<h3>2. L'Experience Replay : Apprendre du Passé pour Mieux Agir dans le Futur</h3>
+
+<p>Un agent qui apprend en ligne, pas à pas, est confronté à un problème insidieux : les expériences successives sont fortement corrélées. Si l'agent vient de se déplacer à droite, son prochain état sera probablement aussi un état où il est un peu plus à droite. Apprendre à partir de cette séquence continue, c'est comme essayer d'apprendre une nouvelle matière en ne lisant que la même page d'un livre encore et encore. On risque de sur-spécialiser notre apprentissage à une situation très récente et passagère.</p>
+
+<p>DQN introduit une mémoire tampon, l'<strong>Experience Replay Buffer</strong>.</p>
+
+<ul>
+    <li>À chaque étape, l'agent stocke sa transition \( (\text{état},\, \text{action},\, \text{récompense},\, \text{nouvel état},\, \text{terminé}) \) dans ce buffer. Le buffer a une taille finie (par exemple, 1 million d'expériences) et, lorsqu'il est plein, il commence à écraser les plus anciennes expériences.</li>
+    <li>Pour s'entraîner, l'agent ne prend pas la dernière expérience. Au lieu de cela, il <strong>échantillonne au hasard un mini-lot (par exemple, 32 expériences) de son passé</strong> dans ce buffer.</li>
+</ul>
+
+<p>C'est une révolution ! Cela brise la corrélation des données, un principe fondamental de l'apprentissage automatique. L'agent peut réapprendre de ses anciennes erreurs et succès, encore et encore. Une expérience rare mais cruciale (par exemple, perdre une vie) peut être ré-échantillonnée de nombreuses fois, s'assurant que l'agent en tire bien la leçon.</p>
+
+<h3>L'Algorithme DQN en Bref :</h3>
+<ol>
+    <li>Initialiser le réseau de neurones \(Q\) (appelé "Online Network" et un réseau cible gelé \( \hat{Q} \) ("Target Network", avec les poids qui sont une copie de \(Q\)).</li>
+    <li>Initialiser un buffer de mémoire \(D\).</li>
+    <li>Pour chaque étape :
+        <ol type="a">
+            <li>Choisir une action avec une politique ε-greedy (exploration vs exploitation).</li>
+            <li>Exécuter l'action et observer la récompense \(r\) et le nouvel état \(s'\).</li>
+            <li>Stocker la transition \((s, a, r, s', done)\) dans le buffer \(D\).</li>
+            <li><strong>Échantillonner un mini-lot aléatoire de transitions depuis D.</strong></li>
+            <li>Calculer la "cible" \(y\) pour l'apprentissage en utilisant le <strong>Target Network</strong> pour stabiliser l'apprentissage :
+                $$                     y = \begin{cases}
+                r & \text{si l'épisode est terminé} \\
+                r + \gamma \max_{a'} Q(s', a') & \text{sinon}
+                \end{cases}
+                $$                 </li>
+            <li>Entraîner le <strong>Online Network</strong> sur ce mini-lot pour minimiser l'erreur quadratique moyenne (la <em>loss</em>) entre sa prédiction \(Q(s, a)\) et la cible \(y\) :
+                $$                     \text{Loss} = \mathbb{E} \left[ (y - Q(s, a))^2 \right]
+                $$                 </li>
+            <li>Tous les \(C\) pas (par exemple, 1000), copier les poids de \(Q\) vers \( \hat{Q} \) pour mettre à jour le réseau cible.</li>
+        </ol>
+    </li>
+</ol>
+
+<hr>
+
+<h2>Le DQN : Une Révolution avec ses Limites</h2>
+
+<p>Le Deep Q-Network a été une véritable bombe. Pour la première fois, un agent pouvait apprendre directement à partir de pixels bruts, atteignant des performances surhumaines sur une multitude de jeux classiques d'Atari. Le grand mérite du DQN est d'avoir résolu le problème de la "malédiction de la dimensionnalité" en utilisant un réseau de neurones comme fonction d'approximation, et d'avoir introduit l'Experience Replay pour un apprentissage stable et efficace.</p>
+
+<p>Cependant, le DQN n'était pas parfait. Loin de là. Les chercheurs ont rapidement identifié plusieurs faiblesses fondamentales :</p>
+
+<ul>
+    <li><strong>La limite des actions discrètes :</strong> C'est la plus grande limitation. Le DQN ne peut que choisir parmi un nombre fini d'actions (gauche, droite, tirer...). Il est totalement incapable de gérer des actions continues, comme "tourner le volant de 15.7 degrés" ou "accélérer avec une force de 0.8". Cette restriction le rend inutile pour de nombreux problèmes du monde réel comme la robotique ou le contrôle de véhicules.</li>
+    <li><strong>L'instabilité de l'apprentissage :</strong> Même avec ses innovations, l'entraînement du DQN pouvait être délicat. La "cible" qu'il cherchait à atteindre bougeait à chaque mise à jour, un peu comme un chien qui court après sa propre queue, ce qui pouvait rendre l'apprentissage chaotique.</li>
+    <li><strong>Le biais de surestimation :</strong> Le DQN avait tendance à être trop optimiste, à croire que la valeur des actions était meilleure qu'elle ne l'est en réalité.</li>
+</ul>
+
+<h3>La Famille DQN : Des Améliorations Successives</h3>
+
+<p>Face à ces défauts, la communauté de la recherche n'a pas abandonné le DQN. Elle l'a amélioré, créant toute une famille d'algorithmes de plus en plus performants, tous basés sur l'idée originale du DQN. Voici les plus célèbres, présentées sans jargon technique :</p>
+
+<ul>
+    <li><strong>Double DQN (DDQN) :</strong> Pour corriger le biais de l'ami trop optimiste, DDQN a introduit une astuce simple : dissocier le choix de l'action de son évaluation. Cela a permis de réduire drastiquement la surestimation et de rendre l'apprentissage plus fiable.</li>
+    <li><strong>Dueling DQN :</strong> Pour mieux comprendre une situation, cet algorithme a appris à répondre à deux questions : "Est-ce que cet état est globalement bon ?" (valeur de l'état) et "Quelle action est la meilleure *dans* cet état ?" (valeur d'avantage). Cela a permis à l'agent d'apprendre beaucoup plus efficacement.</li>
+    <li><strong>Prioritized Experience Replay (PER) :</strong> Au lieu de réviser ses expériences au hasard, l'agent avec PER devient un étudiant plus intelligent : il passe plus de temps à étudier les cas où il s'est le plus trompé (les expériences "surprenantes"), ce qui accélère son apprentissage.</li>
+    <li><strong>Rainbow DQN :</strong> Le summum. Imaginez que vous prenez toutes les meilleures améliorations ci-dessus et que vous les combinez en un seul algorithme surpuissant. C'est exactement ce qu'est Rainbow DQN, qui a dominé tous les précédents sur les jeux Atari.</li>
+</ul>
+
+<p>Malgré toute cette ingéniosité, toute la famille DQN se heurte à un mur infranchissable : <strong>elle ne peut pas gérer les actions continues</strong>. Pour relever ce défi, il fallait une philosophie complètement différente. C'est là que commence l'histoire des méthodes de <em>Policy Gradient</em>.</p>
+
+
+<h2>Les Méthodes de Policy Gradient </h2>
+
+<p>Pour piloter un robot, contrôler un bras robotique ou conduire une voiture, il faut une approche capable de gérer des actions continues (par exemple, un angle de volant ou une force d'accélération). C'est précisément là qu'interviennent les <strong>méthodes de Policy Gradient</strong>.</p>
+
+<p>Ces méthodes adoptent une philosophie radicalement différente de celle du value-based learning (comme DQN). Au lieu d'apprendre une fonction de valeur (Q) pour ensuite en déduire la meilleure action, elles apprennent <strong>directement à optimiser la politique</strong> (le réseau de neurones qui prend les décisions).</p>
+
+<h3>Apprentissage "On-Policy" : Apprendre sur le Tas</h3>
+
+<p>Une caractéristique essentielle des méthodes de Policy Gradient est leur nature <strong>"on-policy"</strong>. Cela signifie qu'elles apprennent directement à partir des expériences générées par la politique actuelle. Contrairement à DQN, <strong>il n'y a pas de Experience Replay Buffer</strong>. L'agent collecte des trajectoires, les utilise pour mettre à jour sa politique, puis les jette. C'est un apprentissage plus direct, mais qui peut sembler moins efficient en termes de données.</p>
+
+<h3>La Fondation : L'Algorithme REINFORCE</h3>
+
+<p>L'algorithme le plus simple et le plus fondamental de cette famille est <strong>REINFORCE</strong>. Son principe est intuitif : il ajuste les poids \(θ\) du réseau de neurones de la politique \(π\) pour augmenter la probabilité des actions qui ont mené à de bonnes récompenses.</p>
+
+<p>La mise à jour s'effectue via une <strong>montée de gradient</strong> (Gradient Ascent) sur un objectif de performance. La formule de mise à jour est :</p>
+
+$$     \nabla_\theta J(\theta) \approx \mathbb{E} \left[ \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t|s_t) G_t \right]
+$$
+<p>Décortiquons cette formule :</p>
+<ul>
+    <li>\(\nabla_\theta \log \pi_\theta(a_t|s_t)\) : C'est le "score" de la politique. Il indique la direction dans laquelle changer les poids \(θ\) pour <strong>rendre l'action \(a\) plus probable</strong> dans l'état \(s\).</li>
+    <li>\(G_t\) : C'est le <strong>retour cumulé</strong> (la somme des récompenses futures escomptées) à partir de l'étape `t`.</li>
+</ul>
+
+<p>En multipliant le score par le retour \(G_t\), on applique le principe du "carotte et du bâton" :</p>
+<ul>
+    <li>Si \(G_t\) est élevé (une bonne séquence d'actions), on augmente la probabilité des actions qui y ont mené.</li>
+    <li>Si \(G_t\) est faible (une mauvaise séquence), on diminue la probabilité des actions correspondantes.</li>
+</ul>
+
+<p><strong>Le Problème Majeur de REINFORCE : La Variance</strong><br>
+    Le problème de REINFORCE est sa <strong>variance énorme</strong>. Le signal \(G_t\) n'est connu qu'à la fin de l'épisode. Une seule récompense aléatoire à la fin d'une longue trajectoire peut fausser complètement le jugement sur toutes les actions qui l'ont précédée, rendant l'apprentissage très bruité et inefficace.</p>
+
+<h3>La Solution : L'Architecture Actor-Critic</h3>
+
+<p>Pour réduire cette variance, la solution a été d'introduire un <strong>Critic</strong>. L'architecture <strong>Actor-Critic</strong> combine le meilleur des deux mondes :</p>
+<ul>
+    <li><strong>L'Actor</strong> : C'est le réseau de neurones de la politique (comme dans REINFORCE) qui choisit les actions. Il est entraîné par <strong>montée de gradient</strong>.</li>
+    <li><strong>Le Critic</strong> : C'est un second réseau de neurones qui apprend une fonction de valeur, typiquement \(V(s)\) (la valeur d'un état). Il est entraîné par <strong>descente de gradient</strong> (comme un réseau de régression) pour minimiser l'erreur entre ses prédictions et les retours réels.</li>
+</ul>
+
+<p>Le Critic fournit à l'Actor un signal beaucoup plus précis et moins bruité que le retour final \(G_t\). Il ne dit pas juste "c'était bien" ou "c'était mal", mais "<strong>c'était mieux/moins bien que prévu</strong> pour cette situation". Ce signal est appelé <strong>"Advantage"</strong> (avantage) :</p>
+
+$$     A(s,a) = Q(s,a) - V(s)
+$$
+<p>L'avantage mesure à quel point une action est meilleure (ou pire) que la moyenne des actions possibles depuis cet état. La mise à jour de l'Actor devient alors beaucoup plus stable, en remplaçant \(G_t\) par l'avantage \(A(s,a)\) :</p>
+
+$$     \nabla_\theta J(\theta) \approx \mathbb{E} \left[ \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t|s_t) A(s_t, a_t) \right]
+$$
+<p>On ne récompense plus une action pour son résultat final, mais parce qu'elle a été <strong>meilleure que ce à quoi on s'attendait à cet instant</strong>.</p>
+
+<p><strong>Le Grand Avantage des Policy Gradients :</strong> Ils peuvent gérer nativement les <strong>espaces d'actions continues</strong>. Le réseau de neurones peut directement sortir une valeur (par exemple, entre -1 et 1 pour un volant) en utilisant des fonctions d'activation comme \(tanh\), ou une distribution de probabilités sur un intervalle continu.</p>
+
+<h2>Les Champions Modernes : A2C et PPO</h2>
+
+<p>Les méthodes Actor-Critic représentaient une avancée significative, mais des défis subsistaient. L'apprentissage "on-policy" est souvent inefficace en termes d'échantillonnage (chaque donnée n'est utilisée qu'une seule fois) et peut souffrir d'une variance élevée. De plus, la mise à jour de la politique elle-même restait un processus délicat, où une seule mauvaise étape pouvait déstabiliser tout l'entraînement. C'est pour répondre à ces problèmes que des algorithmes plus sophistiqués comme A2C et PPO ont été développés.</p>
+
+<h3>A2C : La Stabilité par la Parallélisation</h3>
+
+<p>Pour améliorer l'efficacité et la stabilité de l'apprentissage on-policy, la solution a été de paralléliser la collecte de données. L'algorithme <strong>A2C (Advantage Actor-Critic)</strong> est une version synchrone et stable de cette approche.</p>
+
+<p><strong>Le Principe des Multi-Workers :</strong><br>
+    Au lieu d'un seul agent interagissant avec un seul environnement, A2C déploie plusieurs agents, appelés <strong>"workers"</strong>, qui fonctionnent en parallèle. Chaque worker possède une copie de la politique actuelle et interagit avec sa propre instance de l'environnement.</p>
+
+<p><strong>Le Processus d'Entraînement :</strong></p>
+<ol>
+    <li><strong>Collecte Parallèle :</strong> Tous les workers exécutent la politique simultanément pendant un nombre défini de pas (\(n\)-steps). Chaque worker collecte ainsi une petite trajectoire d'expériences \( (\text{état},\, \text{action},\, \text{récompense},\, \text{nouvel état}) \).</li>    <li><strong>Agrégation des Données :</strong> À la fin de cette phase de collecte, toutes les trajectoires de tous les workers sont regroupées et envoyées à un agent central.</li>
+    <li><strong>Calcul de l'Avantage :</strong> L'agent central utilise cet ensemble de données pour calculer les estimations d'avantage. Souvent, un mécanisme appelé <strong>GAE (Generalized Advantage Estimation)</strong> est utilisé. Le GAE est une technique sophistiquée qui calcule une estimation de l'avantage en faisant un compromis entre le biais (comme dans le TD(1)) et la variance (comme dans Monte Carlo), en pondérant les avantages à plusieurs pas dans le futur.</li>
+    <li><strong>Mise à Jour Unique :</strong> Une seule mise à jour agrégée est effectuée sur les réseaux centraux (Actor et Critic) en utilisant toutes les données collectées.</li>
+    <li><strong>Synchronisation :</strong> Les poids des réseaux mis à jour sont ensuite redistribués à tous les workers pour la prochaine phase de collecte.</li>
+</ol>
+
+<p>
+    Cette approche brise la corrélation des données, car les workers explorent des états différents de manière non séquentielle. Elle accélère considérablement la collecte d'expériences et réduit la variance de l'estimation du gradient, rendant l'entraînement global plus stable et rapide qu'un agent on-policy mono-thread.</p>
+
+<h3>PPO : La Robustesse par la Contrainte</h3>
+
+<p>Même avec une collecte de données améliorée grâce à A2C, le risque des <strong>"destructively large policy updates"</strong> (mises à jour destructrices de la politique) demeurait. L'objectif de la politique pouvait changer si radicalement d'une mise à jour à l'autre que les performances s'effondraient.</p>
+
+<p><strong>Proximal Policy Optimization (PPO)</strong> a été conçu pour résoudre ce problème fondamental en introduisant une contrainte directe sur la magnitude des mises à jour de la politique.</p>
+
+<p>
+    L'innovation centrale de PPO est sa fonction objectif "clippée". Au lieu de maximiser directement la performance attendue, PPO maximise un <strong>objectif substitut (surrogate objective)</strong> qui approxime la performance réelle tout en pénalisant les grands changements de politique.</p>
+
+<p>Cette fonction objectif repose sur plusieurs éléments clés :</p>
+
+<ol>
+    <li><strong>Le Ratio de Probabilité :</strong>
+        $$             r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}
+        $$             Ce ratio mesure à quel point la nouvelle politique \(π_θ\) a changé par rapport à l'ancienne politique \( \pi_{\theta_{\mathrm{old}}} \) pour une action spécifique \(a_t\) qui a été prise. Un ratio de 1 signifie aucun changement, un ratio supérieur à 1 signifie que l'action est devenue plus probable, et inversement.</li>
+    <li><strong>La Fonction "Clip" :</strong>
+        $$             \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)
+        $$             Cette fonction contraint le ratio \(r_t(θ)\) à rester dans un petit intervalle \([1-ε, 1+ε]\). Si le ratio dépasse cette borne, il est "coupé" (clipped) à la valeur la plus proche de la borne.</li>
+    <li><strong>L'Objectif Final :</strong>
+        $$             L^{CLIP}(\theta) = \mathbb{E}_t \left[ \min\left( r_t(\theta) \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]
+        $$             L'opérateur \(min()\) est crucial. Il crée une borne pour l'objectif.
+    </li>
+</ol>
+
+<p>
+    Cette astuce mathématique force l'algorithme à faire des mises à jour de politique petites et prudentes. Il ignore les changements qui seraient trop importants, même s'ils semblent prometteurs sur le lot de données actuel. Cette robustesse intrinsèque est ce qui a fait de PPO l'algorithme de choix par défaut pour une vaste gamme de problèmes, y compris des applications complexes comme l'alignement des LLM, où la stabilité est primordiale.</p>
+
+<hr>
+
+<h2>Aligner les LLMs avec le RLHF</h2>
+
+<p>Et maintenant, comment un algorithme conçu pour contrôler un robot finit-il par enseigner la politesse à un modèle de langage ? C'est là que l'histoire devient fascinante.</p>
+
+<p>Un LLM, comme GPT, peut être vu comme un agent de RL.</p>
+<ul>
+    <li><strong>L'état (State)</strong> : C'est la conversation, le prompt que vous lui donnez.</li>
+    <li><strong>L'action (Action)</strong> : C'est le prochain mot (ou "token") qu'il génère.</li>
+    <li><strong>La politique (Policy)</strong> : C'est le réseau de neurones du LLM lui-même, qui calcule les probabilités de chaque mot suivant.</li>
+</ul>
+
+<p>Le problème est : comment définir une récompense ? Est-ce que la réponse "Le ciel est bleu" vaut +10 ou +5 ? C'est impossible à modéliser avec une simple fonction. C'est là qu'intervient le <strong>Reinforcement Learning from Human Feedback (RLHF)</strong>, la technique qui a rendu des modèles comme ChatGPT si utiles.</p>
+
+<p>Le processus se déroule en deux temps :</p>
+
+<ol>
+    <li><strong>Entraîner un Modèle de Récompense :</strong> On demande à des humains de comparer deux réponses du LLM à un même prompt et de dire laquelle est la meilleure (plus utile, plus honnête, moins nocive, etc.). Avec des milliers de ces comparaisons, on entraîne un <em>autre</em> modèle de langage, appelé <strong>Modèle de Récompense</strong>. Le seul but de ce modèle est de noter une réponse sur une échelle, en imitant les préférences humaines.</li>
+    <li><strong>Affiner le LLM avec PPO :</strong> On utilise ensuite PPO pour affiner notre LLM initial.
+        <ul>
+            <li>L'<strong>Actor</strong> est le LLM que nous voulons aligner.</li>
+            <li>L'<strong>Environnement</strong> est l'interaction avec l'utilisateur.</li>
+            <li>La <strong>Récompense</strong> est donnée par notre Modèle de Récompense fraîchement entraîné !</li>
+        </ul>
+    </li>
+</ol>
+
+<p>PPO va alors générer des réponses, les faire noter par le modèle de récompense, et ajuster ses propres poids pour maximiser cette note. Grâce à sa nature prudente, il améliore le LLM sans le "casser", en l'orientant progressivement vers des comportements que les humains jugent désirables. C'est ainsi que l'on apprend à une IA à être plus qu'un simple prédicteur de mots, mais un assistant utile et sûr.</p>
+
+<iframe data-tally-src="https://tally.so/embed/3lo6WV?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="299" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter"></iframe>
+<script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);}</script>
+
+<h2>Conclusion</h2>
+
+<p>Notre voyage théorique touche à sa fin. Vous avez maintenant une compréhension complète de l'écosystème du Deep Reinforcement Learning :</p>
+<ul>
+    <li><strong>DQN</strong> pour les problèmes à actions discrètes où l'efficacité d'échantillonnage est reine.</li>
+    <li><strong>A2C</strong> comme une base solide pour l'apprentissage on-policy parallélisé.</li>
+    <li><strong>PPO</strong> comme l'algorithme de référence, robuste et polyvalent, qui alimente certaines des applications IA les plus critiques d'aujourd'hui.</li>
+</ul>
+
+<p>Plus important encore, vous comprenez la philosophie derrière ces outils : le dilemme exploration-exploitation, le compromis biais-variance, et l'importance de la stabilité.</p>
+
+<div class="pack-cta">
+    🎁 <strong>AI Prototype Pack Vol.1</strong> — Gratuit, sans carte bancaire.
+    <a href="https://openlabs.mychariow.shop/prd_5re50b" target="_blank" rel="noopener">Télécharger</a>
+</div>
+
+<h3>Liens Utiles</h3>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://www.youtube.com/playlist?list=PLlI0-qAzf2SZ1rdZVFljMWsmZrEvax8bg"> Hors Série - Deep Reinforcement Learning</a> (Playlist) </li>
+    <li><a href="https://huggingface.co/learn/deep-rl-course/unit0/introduction">Deep Reinforcement Learning Course</a> de HuggingFace</li>
+    <li><a href="https://github.com/deep-learning-indaba/indaba-pracs-2025/tree/main/practicals/Reinforcement_Learning">Reinforcement Learning</a>: Tutoriel DLI25</li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=9PukqhfMxfc" target="_blank">Écouter sur YouTube</a>
+</div>
+
+
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
