@@ -40,18 +40,19 @@
 <h1>HealthBox : Bâtir une souveraineté du diagnostic médical en Afrique</h1>
 
 <p>Comme promis à la fin de mon récit sur le <a href="https://jonathansuru.me/articles/bootcamp_ia_2025.html">bootcamp IA du PNUD</a>, je vous emmène aujourd'hui au cœur du projet qui a captivé mon attention et une grande partie de mes nuits durant cette aventure guinéenne. HealthBox, le projet que j'ai développé pendant le bootcamp, est le fruit d'une vision mûrie bien avant cette expérience. C'est grâce à l'environnement stimulant de l'UNIPOD et aux échanges enrichissants avec des experts de dix pays africains que j'ai pu transformer cette idée en un prototype fonctionnel et l'améliorer de manière significative. Ce projet, né dans le cadre du bootcamp, représente une étape cruciale dans ma quête pour révolutionner le diagnostic médical en Afrique.</p>
+
 <hr>
 
-<h2>Le silence diagnostique : Une réalité humaine</h2>
+<h2>Le défi du diagnostic médical en zones rurales</h2>
 <p>Imaginons Koffi, un agriculteur vivant dans une zone rurale isolée. Depuis des semaines, une toux persistante l'épuise. Il se rend au dispensaire local. Le médecin généraliste, seul pour des milliers d'habitants, suspecte une tuberculose ou une pneumonie sévère. Il dispose d'un appareil de radiographie rudimentaire, mais n'a pas l'expertise d'un radiologue pour interpréter les zones d'ombre sur le cliché.</p>
-<p>Dans le système actuel, le médecin hésite. Dans le doute, il réfère Koffi à l'hôpital régional, à 200 km de là. Pour Koffi, c'est un voyage coûteux et incertain qu'il ne fera peut-être jamais. C’est ce moment précis, ce "silence diagnostique", que HealthBox vient briser en apportant l'expertise là où elle fait défaut.</p>
+<p>Dans le système actuel, le médecin hésite. Dans le doute, il réfère Koffi à l'hôpital régional, à 200 km de là. Pour Koffi, c'est un voyage coûteux et incertain qu'il ne fera peut-être jamais. C'est ce moment précis que HealthBox vient transformer en apportant l'expertise là où elle fait défaut.</p>
 
 <hr>
 
 <h2>Les trois défis majeurs du diagnostic en Afrique</h2>
 <p>Le déploiement de l'IA médicale en Afrique est confronté à trois défis majeurs que HealthBox relève avec brio :</p>
 <ol>
-    <li><strong>L'Infrastructure :</strong> La majorité des solutions dépendent du Cloud. Sans connexion internet stable, elles sont inutilisables en zone rurale. HealthBox fonctionne <strong>100% hors ligne</strong>, garantissant un accès ininterrompu aux services de diagnostic.</li>
+    <li><strong>L'Infrastructure :</strong> La majorité des solutions dépendent du Cloud. Sans connexion internet stable, elles sont inutilisables en zone rurale. HealthBox fonctionne <strong>100% hors ligne</strong> pour l'utilisation courante, garantissant un accès ininterrompu aux services de diagnostic. Les mises à jour, l'évaluation, la collecte des données et d'autres fonctions avancées peuvent être programmées pour minimiser les interruptions et optimiser l'utilisation de la bande passante disponible.</li>
     <li><strong>Le Coût :</strong> Les licences propriétaires coûtent des milliers d'euros, mettant ces technologies hors de portée des centres de santé ruraux. HealthBox repose sur une philosophie <strong>Open Source</strong> pour garantir l'accessibilité à tous.</li>
     <li><strong>Le Biais de Données :</strong> Les modèles actuels sont entraînés sur des populations occidentales, ce qui limite leur efficacité pour les réalités épidémiologiques africaines. HealthBox permet de créer des outils adaptés à nos réalités locales.</li>
 </ol>
@@ -61,21 +62,24 @@
 <h2>L'Architecture HealthBox : L'Intelligence Frugale et Modulaire</h2>
 
 <h3>1. Le HealthBox Device : Le Pouvoir du Local</h3>
-<p>Le cœur matériel de HealthBox est un boîtier compact basé sur un Raspberry Pi. Pour moins de 300 euros, nous créons un serveur de diagnostic autonome. L'intelligence est dans la boîte : l'analyse commence dès que l'image est transférée, sans dépendre d'un seul octet de connexion. Cette approche permet de surmonter les défis d'infrastructure et de connectivité qui sont courants dans les zones rurales.</p>
+<p>Le cœur matériel de HealthBox est un boîtier compact basé sur un Raspberry Pi. Ce dispositif autonome permet de surmonter les défis d'infrastructure et de connectivité qui sont courants dans les zones rurales. L'intelligence est dans la boîte : l'analyse commence dès que l'image est transférée, sans dépendre d'un seul octet de connexion.</p>
 
 <h3>2. Les "Grappes d'Experts" : La force de la spécialisation</h3>
-<p>Techniquement, HealthBox rejette l'idée d'une IA unique et lourde. À la place, nous utilisons une approche modulaire avec des experts spécialisés. Par exemple, dans le <strong>Module de Radiologie Thoracique</strong>, chaque image est analysée par une série de modèles experts, chacun spécialisé dans une pathologie spécifique :</p>
+<p>Techniquement, HealthBox utilise une approche modulaire avec des modèles généralistes et des experts spécialisés. Dans un premier temps, des modèles généralistes sont utilisés pour détecter et différencier plusieurs pathologies. Ensuite, des modèles experts, chacun spécialisé dans une pathologie spécifique, viennent compléter l'analyse pour une précision accrue et une évolutivité facilitée.</p>
+<p>Par exemple, dans le <strong>Module de Radiologie Thoracique</strong> :</p>
 <ul>
+    <li><strong>Modèle Généraliste :</strong> Capable de détecter et de différencier plusieurs pathologies, offrant une première analyse rapide et efficace.</li>
     <li><strong>Expert Tuberculose :</strong> Focalisé sur les signes caverneux, il identifie les caractéristiques spécifiques de cette maladie.</li>
     <li><strong>Expert Pneumonie :</strong> Identifie les opacités et consolidations, permettant un diagnostic rapide et précis.</li>
     <li><strong>Expert Pneumothorax :</strong> Traque les signes d'urgence vitale, assurant une intervention rapide en cas de besoin.</li>
     <li><strong>Expert Oncologie :</strong> Détecte les nodules et masses suspectes, offrant une première ligne de défense contre le cancer.</li>
     <li><strong>Expert Cardiomégalie :</strong> Mesure l'élargissement du cœur, aidant à identifier les problèmes cardiovasculaires.</li>
 </ul>
-<p>Cette spécialisation réduit drastiquement la taille des modèles, les rendant ultra-performants sur un matériel à faibles ressources tout en étant plus précis qu'un modèle généraliste.</p>
+<p>Cette approche modulaire permet de commencer avec des modèles généralistes et d'ajouter des experts spécialisés au fur et à mesure des besoins et des ressources disponibles.</p>
 
 <h3>3. Système de Recommandation et Aide à la Décision</h3>
-<p>Une image ne raconte qu'une partie de l'histoire. HealthBox intègre un système de recommandation qui croise l'image avec les <strong>paramètres cliniques</strong> (âge, fièvre, perte de poids). Si l'IA voit une opacité et que le médecin note une forte fièvre, le système recommandera une pneumonie. Si la même opacité est liée à une perte de poids sans fièvre, il orientera vers la tuberculose. Cette approche renforce l'explicabilité : le médecin comprend la logique derrière chaque suggestion grâce à des "cartes de chaleur" (heatmaps) surlignant les zones suspectes.</p>
+<p>Une image ne raconte qu'une partie de l'histoire. HealthBox intègre un système de recommandation multimodal qui croise l'image avec les <strong>paramètres cliniques</strong> (âge, fièvre, perte de poids). Si l'IA voit une opacité et que le médecin note une forte fièvre, le système recommandera une pneumonie. Si la même opacité est liée à une perte de poids sans fièvre, il orientera vers la tuberculose.</p>
+<p>Cette approche renforce l'explicabilité (XAI) : le médecin comprend la logique derrière chaque suggestion grâce à des "cartes de chaleur" (heatmaps) surlignant les zones suspectes. De plus, HealthBox fournit des explications détaillées pour chaque diagnostic, mettant en évidence les caractéristiques spécifiques de l'image qui ont conduit à la conclusion. Cela permet aux médecins de comprendre le raisonnement de l'IA, d'évaluer la confiance du modèle et de prendre des décisions éclairées. Les heatmaps visuelles aident à localiser les anomalies, tandis que les explications textuelles fournissent un contexte clinique, rendant le système transparent et fiable.</p>
 
 <h3>4. Le Système d'Alerte Instantané</h3>
 <p>Dès que le technicien envoie l'image sur le device, le système d'alerte s'active immédiatement. Si une pathologie critique est détectée, le boîtier déclenche une alerte sonore et visuelle. Il peut même envoyer un SMS automatisé au spécialiste référent le plus proche, même avec un signal mobile minimal. Cette fonctionnalité est cruciale pour les urgences médicales où chaque seconde compte.</p>
@@ -85,7 +89,7 @@
 <h2>Un Impact Profond pour les Acteurs Clés</h2>
 
 <h3>Pour le Patient : L'Équité par la Proximité</h3>
-<p>Imaginez un patient dans une zone rurale, obtenant un diagnostic précis et rapide sans avoir à voyager des centaines de kilomètres. HealthBox rend cela possible en apportant l'expertise médicale directement dans les centres de santé locaux.</p>
+<p>HealthBox est conçu pour les populations rurales et périurbaines qui ont un accès limité aux services de santé spécialisés. En apportant l'expertise médicale directement dans les centres de santé locaux, HealthBox permet aux patients d'obtenir un diagnostic précis et rapide sans avoir à voyager des centaines de kilomètres.</p>
 <ul>
     <li><strong>Accès universel :</strong> Le patient obtient un avis expert dans son centre de santé local, sans frais de transport ruineux vers les villes.</li>
     <li><strong>Gain de survie :</strong> Un diagnostic posé en 60 secondes au lieu de plusieurs jours change radicalement le pronostic vital pour les urgences.</li>
@@ -99,10 +103,10 @@
 </ul>
 
 <h3>Pour les Instituts de Recherche : Le "Laboratoire Vivant"</h3>
-<p>HealthBox permet de bâtir le premier corpus médical réellement africain via des campagnes de collecte éthiques et ciblées. Les chercheurs peuvent tester leurs nouveaux modèles en conditions réelles (chaleur, poussière) et obtenir un feedback clinique immédiat. Les instituts nationaux deviennent propriétaires de leurs outils, capables d'auditer le code et d'adapter les modules aux besoins du pays sans dépendre de licences étrangères.</p>
+<p>HealthBox permet de bâtir le premier corpus médical réellement africain via des campagnes de collecte éthiques et ciblées. Les chercheurs peuvent tester leurs nouveaux modèles en conditions réelles et obtenir un feedback clinique immédiat. Les instituts nationaux deviennent propriétaires de leurs outils, capables d'auditer le code et d'adapter les modules aux besoins du pays sans dépendre de licences étrangères.</p>
 <ul>
     <li><strong>Collecte de données souveraine :</strong> HealthBox permet de bâtir le premier corpus médical réellement africain via des campagnes de collecte éthiques et ciblées.</li>
-    <li><strong>Évaluation en temps réel :</strong> Les chercheurs peuvent tester leurs nouveaux modèles en conditions réelles (chaleur, poussière) et obtenir un feedback clinique immédiat.</li>
+    <li><strong>Évaluation en temps réel :</strong> Les chercheurs peuvent tester leurs nouveaux modèles en conditions réelles et obtenir un feedback clinique immédiat.</li>
     <li><strong>Indépendance Open Source :</strong> Les instituts nationaux deviennent propriétaires de leurs outils, capables d'auditer le code et d'adapter les modules aux besoins du pays sans dépendre de licences étrangères.</li>
 </ul>
 
@@ -120,7 +124,6 @@
 
 <h2>Conclusion</h2>
 <p>HealthBox est le fruit d'une conviction : le diagnostic de qualité ne doit être ni un luxe géographique, ni un privilège financier. En mariant la puissance de l'IA à la frugalité matérielle et à la philosophie Open Source, nous posons les bases d'une médecine africaine souveraine et profondément humaine. Rejoignez-nous pour faire de cette vision une réalité et transformer le paysage de la santé en Afrique.</p>
-
 <h3>Liens Utiles</h3>
 <ul>
     <li><a href="https://github.com/5uru/HealthBox">Repo GitHub.</a></li>
