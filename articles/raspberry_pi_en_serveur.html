@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apprenez à transformer un Raspberry Pi en serveur avec ce guide complet. Découvrez les étapes pour choisir l'OS, configurer le réseau, sécuriser votre serveur et bien plus encore.">
+    <meta name="keywords" content="Raspberry Pi, serveur, configuration serveur, SSH, sécurité serveur, IP statique, automatisation serveur">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+    <meta property="og:image:alt" content="Code Learn Share" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <title>Transformer un Raspberry Pi en serveur - Guide complet</title>
+
+    <link rel="stylesheet" href="../styles.css">
+    <script>
+        window.TallyConfig = {
+          "formId": "3lo6WV",
+          "popup": {
+            "emoji": {
+              "text": "👋",
+              "animation": "wave"
+            },
+            "open": {
+              "trigger": "scroll",
+              "scrollPercent": 40
+            }
+          }
+        };
+    </script>
+
+    <script async src="https://tally.so/widgets/embed.js"></script>
+</head>
+<body>
+<article>
+    <header>
+        <h1>Jonathan Suru</h1>
+        <nav>
+            <a href="../index.html">Accueil</a> |
+            <a href="../projects.html">Projets</a> |
+            <a href="../about.html">À propos</a>
+        </nav>
+    </header>
+    <section>
+        <h1>Transformer un Raspberry Pi en serveur</h1>
+        <p>Dans le cadre du projet HealthBox, j'ai transformé un Raspberry Pi en serveur pour héberger notre système. Cette solution est idéale pour sa flexibilité, son coût abordable et sa faible consommation d'énergie. Dans cet article, je vous guide pas à pas pour transformer votre Raspberry Pi en un serveur fonctionnel et sécurisé.</p>
+    </section>
+
+    <section>
+        <h2>Pourquoi utiliser un Raspberry Pi comme serveur ?</h2>
+        <p>Le Raspberry Pi est une excellente solution pour héberger des applications légères et des services. Voici pourquoi :</p>
+        <ul>
+            <li><strong>Coût abordable</strong> : Le Raspberry Pi est bien moins cher qu'un serveur dédié.</li>
+            <li><strong>Faible consommation d'énergie</strong> : Il consomme très peu d'électricité, ce qui est idéal pour une utilisation continue.</li>
+            <li><strong>Flexibilité</strong> : Il peut être utilisé pour une variété de tâches, de l'hébergement web à la gestion de bases de données.</li>
+        </ul>
+        <p>Le Raspberry Pi est particulièrement utile pour les projets où un serveur dédié n'est pas nécessaire, mais où une machine fiable et économique est requise. Il est également idéal pour les projets éducatifs et les petites entreprises qui ont besoin d'un serveur sans investir dans du matériel coûteux.</p>
+    </section>
+
+    <section>
+        <h2>Choix du système d'exploitation</h2>
+        <p>Il existe plusieurs options pour transformer votre Raspberry Pi en serveur. Voici les principales :</p>
+
+        <section>
+            <h3>Raspberry Pi OS Full</h3>
+            <ul>
+                <li><strong>Avantages</strong> : Interface graphique complète, facile à utiliser localement.</li>
+                <li><strong>Inconvénients</strong> : Plus lourd et consomme plus de ressources.</li>
+            </ul>
+            <p>Raspberry Pi OS Full est idéal si vous avez besoin d'une interface graphique pour gérer votre serveur localement. Cependant, il consomme plus de ressources, ce qui peut être un inconvénient pour un serveur dédié.</p>
+        </section>
+
+        <section>
+            <h3>Raspberry Pi OS Lite</h3>
+            <ul>
+                <li><strong>Avantages</strong> : Léger et optimisé pour les serveurs, idéal pour une utilisation à distance.</li>
+                <li><strong>Inconvénients</strong> : Pas d'interface graphique, nécessite des connaissances en ligne de commande.</li>
+            </ul>
+            <p>Raspberry Pi OS Lite est recommandé pour les serveurs car il est plus léger et consomme moins de ressources. Il est parfait pour une utilisation à distance via SSH.</p>
+        </section>
+
+        <section>
+            <h3>DietPi</h3>
+            <ul>
+                <li><strong>Avantages</strong> : Très léger et optimisé pour les serveurs.</li>
+                <li><strong>Inconvénients</strong> : Moins de support et de documentation que Raspberry Pi OS.</li>
+            </ul>
+            <p>DietPi est une excellente option si vous cherchez à minimiser la consommation de ressources et à optimiser les performances de votre serveur.</p>
+        </section>
+
+        <p>Pour installer l'OS, suivez le guide officiel : <a href="https://www.raspberrypi.com/documentation/computers/getting-started.html#installing-the-operating-system" target="_blank" rel="noopener noreferrer">Installing the operating system</a>.</p>
+
+        <div class="code-block">
+            <p><strong>N'oubliez pas de configurer les éléments suivants lors de l'installation :</strong></p>
+            <ul>
+                <li><strong>Hostname</strong> : Donnez un nom à votre Raspberry Pi pour faciliter l'accès à distance.</li>
+                <li><strong>User</strong> : Configurez un utilisateur avec les droits appropriés.</li>
+                <li><strong>Wi-Fi</strong> : Configurez la connexion Wi-Fi si vous n'utilisez pas de câble Ethernet.</li>
+                <li><strong>Remote Access</strong> : Activez le SSH pour permettre l'accès à distance.</li>
+            </ul>
+            <p>Si vous ne configurez pas ces éléments maintenant, vous pourrez toujours le faire plus tard en utilisant un clavier et une souris.</p>
+        </div>
+
+        <p><strong>Conseil</strong> : Pour un serveur, je recommande Raspberry Pi OS Lite pour sa légèreté et sa performance.</p>
+    </section>
+
+    <section>
+        <h2>Configuration initiale</h2>
+
+        <section>
+            <h3>Configuration du réseau</h3>
+            <p>Assurez-vous que votre Raspberry Pi est connecté à un réseau stable. Vous pouvez utiliser un câble Ethernet pour une connexion plus stable ou configurer le Wi-Fi si nécessaire. Une connexion réseau stable est cruciale pour un serveur, car elle garantit que votre serveur est toujours accessible.</p>
+        </section>
+
+        <section>
+            <h3>Mise à jour du système</h3>
+            <p>Mettez à jour votre système avec les dernières mises à jour de sécurité et de logiciels :</p>
+            <pre class="code-block"><code>sudo apt update
+sudo apt upgrade -y</code></pre>
+            <p>Mettre à jour votre système est essentiel pour garantir que toutes les vulnérabilités de sécurité sont corrigées et que vous disposez des dernières fonctionnalités et améliorations.</p>
+        </section>
+
+        <section>
+            <h3>Configuration de la sécurité</h3>
+            <p>Changez le mot de passe par défaut et configurez un pare-feu pour protéger votre serveur :</p>
+            <pre class="code-block"><code>sudo passwd
+sudo apt install ufw
+sudo ufw enable
+sudo ufw allow ssh</code></pre>
+            <p>La configuration de la sécurité est une étape cruciale pour protéger votre serveur contre les attaques. Un pare-feu bien configuré peut empêcher les accès non autorisés et protéger vos données.</p>
+        </section>
+    </section>
+
+    <section>
+        <h2>Première connexion SSH</h2>
+        <p>Pour vous connecter à votre Raspberry Pi via SSH, suivez ces étapes :</p>
+        <ol>
+            <li>Trouvez l'adresse IP de votre Raspberry Pi :</li>
+            <pre class="code-block"><code>hostname -I</code></pre>
+            <li>Trouvez le nom d'utilisateur :</li>
+            <pre class="code-block"><code>whoami</code></pre>
+            <li>Connectez-vous depuis votre PC :</li>
+            <pre class="code-block"><code>ssh username@adresse_ip</code></pre>
+        </ol>
+        <p>Si vous avez configuré un hostname, vous pouvez utiliser :</p>
+        <pre class="code-block"><code>ssh username@hostname.local</code></pre>
+        <p>SSH (Secure Shell) est un protocole de communication sécurisé qui permet de se connecter à distance à votre serveur. C'est une méthode sécurisée et fiable pour gérer votre serveur à distance.</p>
+    </section>
+
+    <section>
+        <h2>Installation et mise à jour</h2>
+        <p>Une fois connecté, mettez à jour le système avec les commandes suivantes :</p>
+        <pre class="code-block"><code>sudo apt update
+sudo apt upgrade -y</code></pre>
+        <p>Installez vos outils habituels. Pour la gestion de l'environnement, je recommande <a href="https://docs.astral.sh/uv/" target="_blank" rel="noopener noreferrer">uv</a>.</p>
+        <p>L'installation et la mise à jour des logiciels sont essentielles pour maintenir votre serveur à jour et sécurisé. Utilisez des outils comme <code>uv</code> pour gérer les environnements et les dépendances de vos applications.</p>
+    </section>
+
+    <section>
+        <h2>Navigation et gestion des fichiers</h2>
+        <p>Voici quelques commandes de base pour la navigation et la gestion des fichiers :</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Commande</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>ls</code></td>
+                <td>Lister les fichiers et dossiers</td>
+            </tr>
+            <tr>
+                <td><code>cd &lt;dossier&gt;</code></td>
+                <td>Se déplacer dans un dossier</td>
+            </tr>
+            <tr>
+                <td><code>pwd</code></td>
+                <td>Afficher le dossier actuel</td>
+            </tr>
+            <tr>
+                <td><code>mkdir &lt;nom&gt;</code></td>
+                <td>Créer un nouveau dossier</td>
+            </tr>
+            <tr>
+                <td><code>cp &lt;fichier&gt; &lt;destination&gt;</code></td>
+                <td>Copier un fichier</td>
+            </tr>
+            <tr>
+                <td><code>mv &lt;fichier&gt; &lt;destination&gt;</code></td>
+                <td>Déplacer ou renommer un fichier</td>
+            </tr>
+            <tr>
+                <td><code>rm &lt;fichier&gt;</code></td>
+                <td>Supprimer un fichier</td>
+            </tr>
+            <tr>
+                <td><code>cat &lt;fichier&gt;</code></td>
+                <td>Afficher le contenu d'un fichier</td>
+            </tr>
+            </tbody>
+        </table>
+        <p><strong>Attention</strong> : La commande <code>rm -r &lt;dossier&gt;</code> supprime un dossier et tout son contenu de manière irréversible.</p>
+        <p>La gestion des fichiers est une tâche courante lorsque vous travaillez avec un serveur. Ces commandes de base vous permettront de naviguer et de gérer les fichiers sur votre serveur de manière efficace.</p>
+    </section>
+
+    <section>
+        <h2>Transfert de fichiers</h2>
+        <p>Pour transférer des fichiers entre votre PC et le Raspberry Pi, utilisez les protocoles SCP ou rsync.</p>
+
+        <section>
+            <h3>Transférer un fichier</h3>
+            <pre class="code-block"><code>scp /chemin/du/fichier_sur_pc utilisateur@IP_DU_PI:/chemin/de/destination</code></pre>
+        </section>
+
+        <section>
+            <h3>Transférer un dossier</h3>
+            <pre class="code-block"><code>rsync -av --exclude='.git' --exclude='node_modules' /chemin/du/dossier utilisateur@IP_DU_PI:/chemin/destination</code></pre>
+        </section>
+        <p>SCP (Secure Copy Protocol) est idéal pour transférer des fichiers individuels, tandis que rsync est plus adapté pour les dossiers et les transferts de fichiers en masse. rsync permet également d'exclure certains fichiers ou dossiers, ce qui est utile pour les transferts de données complexes.</p>
+    </section>
+
+    <section>
+        <h2>Édition de fichiers</h2>
+        <p>Pour modifier des fichiers directement dans le terminal, utilisez des éditeurs de texte comme <code>nano</code> ou <code>micro</code>. Je recommande <a href="https://micro-editor.github.io/index.html" target="_blank" rel="noopener noreferrer">micro</a> pour sa simplicité.</p>
+        <p>Pour installer micro :</p>
+        <pre class="code-block"><code>sudo apt install micro -y</code></pre>
+        <p>Pour ouvrir un fichier :</p>
+        <pre class="code-block"><code>micro mon_script.py</code></pre>
+        <p>Utilisez <kbd>Ctrl+S</kbd> pour sauvegarder et <kbd>Ctrl+Q</kbd> pour quitter.</p>
+        <p>L'édition de fichiers directement sur le serveur est souvent nécessaire pour apporter des modifications rapides ou pour configurer des fichiers de configuration. Les éditeurs de texte en ligne de commande comme micro ou nano sont des outils puissants pour cette tâche.</p>
+    </section>
+
+    <section>
+        <h2>Sécurité renforcée</h2>
+        <p>Pour une sécurité renforcée, utilisez des clés SSH au lieu de mots de passe. Voici comment faire :</p>
+        <ol>
+            <li>Générez une paire de clés SSH sur votre machine locale :</li>
+            <pre class="code-block"><code>ssh-keygen -t rsa -b 4096</code></pre>
+            <li>Copiez la clé publique sur votre Raspberry Pi :</li>
+            <pre class="code-block"><code>ssh-copy-id username@adresse_ip</code></pre>
+            <li>Désactivez l'authentification par mot de passe :</li>
+            <pre class="code-block"><code>sudo nano /etc/ssh/sshd_config</code></pre>
+            <p>Modifiez les lignes suivantes :</p>
+            <pre class="code-block"><code>PasswordAuthentication no
+PubkeyAuthentication yes</code></pre>
+            <li>Puis redémarrez le service SSH :</li>
+            <pre class="code-block"><code>sudo systemctl restart ssh</code></pre>
+        </ol>
+        <p>L'utilisation de clés SSH est une méthode de sécurité renforcée qui empêche les attaques par force brute. Les clés SSH sont plus sécurisées que les mots de passe car elles sont basées sur une cryptographie à clé publique.</p>
+    </section>
+
+    <section>
+        <h2>Configuration d'une IP statique</h2>
+        <p>Pour éviter que l'adresse IP de votre Raspberry Pi ne change, configurez une IP statique :</p>
+        <ol>
+            <li>Trouvez l'adresse IP actuelle et la passerelle par défaut :</li>
+            <pre class="code-block"><code>hostname -I
+ip route | default via</code></pre>
+            <li>Modifiez le fichier de configuration du réseau :</li>
+            <pre class="code-block"><code>sudo nano /etc/dhcpcd.conf</code></pre>
+            <p>Ajoutez les lignes suivantes à la fin du fichier (remplacez les valeurs par celles de votre réseau) :</p>
+            <pre class="code-block"><code>interface eth0
+static ip_address=192.168.1.100/24
+static routers=192.168.1.1
+static domain_name_servers=192.168.1.1</code></pre>
+            <p>Si vous utilisez le Wi-Fi, remplacez <code>eth0</code> par <code>wlan0</code>.</p>
+            <li>Redémarrez le service réseau :</li>
+            <pre class="code-block"><code>sudo service dhcpcd restart</code></pre>
+        </ol>
+        <p>Une IP statique est utile pour garantir que votre serveur est toujours accessible à la même adresse IP. Cela est particulièrement important pour les serveurs qui doivent être accessibles de manière fiable et constante.</p>
+    </section>
+
+    <section>
+        <h2>Automatisation : Lancer le service au démarrage</h2>
+        <p>Pour que votre service démarre automatiquement au démarrage du Raspberry Pi, utilisez <code>systemd</code> :</p>
+        <ol>
+            <li>Créez un fichier de service :</li>
+            <pre class="code-block"><code>sudo nano /etc/systemd/system/mon_service.service</code></pre>
+            <li>Ajoutez le contenu suivant (remplacez par le chemin de votre script ou commande) :</li>
+            <pre class="code-block"><code>[Unit]
+Description=Mon Service
+After=network.target
+
+[Service]
+ExecStart=/chemin/vers/votre/script.sh
+WorkingDirectory=/chemin/vers/le/dossier
+User=username
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+            <li>Activez le service :</li>
+            <pre class="code-block"><code>sudo systemctl enable mon_service.service</code></pre>
+            <li>Démarrez le service :</li>
+            <pre class="code-block"><code>sudo systemctl start mon_service.service</code></pre>
+        </ol>
+        <p>L'automatisation des services au démarrage est essentielle pour garantir que vos applications et services sont toujours disponibles, même après un redémarrage du serveur.</p>
+    </section>
+
+    <section>
+        <h2>Optimisation du serveur</h2>
+        <p>Pour optimiser les performances de votre serveur :</p>
+        <ul>
+            <li><strong>Désactivez les services inutiles</strong> : Identifiez et désactivez les services qui ne sont pas nécessaires.</li>
+            <li><strong>Utilisez un système de fichiers léger</strong> : Si vous utilisez une carte SD, envisagez d'utiliser un système de fichiers léger pour prolonger sa durée de vie.</li>
+            <li><strong>Surveillez les ressources</strong> : Utilisez des outils comme <code>htop</code> pour surveiller l'utilisation des ressources.</li>
+        </ul>
+        <p>L'optimisation de votre serveur est cruciale pour garantir des performances optimales et une longue durée de vie de votre matériel. En désactivant les services inutiles et en surveillant les ressources, vous pouvez maximiser l'efficacité de votre serveur.</p>
+    </section>
+
+    <section>
+        <h2>Conclusion</h2>
+        <p>Transformer un Raspberry Pi en serveur est une tâche accessible qui peut être réalisée en suivant ces étapes. Chaque étape est cruciale pour un serveur fonctionnel et sécurisé.</p>
+        <p>N'hésitez pas à explorer davantage et à poser des questions si vous rencontrez des difficultés. Pour aller plus loin, consultez la documentation officielle du Raspberry Pi et les ressources en ligne sur la gestion des serveurs.</p>
+    </section>
+    <div class="music-suggestion">
+        <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+        <a href="https://www.youtube.com/watch?v=iiOHqmmjdGk" target="_blank">Écouter sur YouTube</a>
+    </div>
+    <footer>
+        <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
+    </footer>
+    <!-- 100% privacy-first analytics -->
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</article>
+</body>
+</html>
