@@ -6,12 +6,11 @@
     <meta name="description" content="Apprenez à transformer un Raspberry Pi en serveur avec ce guide complet. Découvrez les étapes pour choisir l'OS, configurer le réseau, sécuriser votre serveur et bien plus encore.">
     <meta name="keywords" content="Raspberry Pi, serveur, configuration serveur, SSH, sécurité serveur, IP statique, automatisation serveur">
     <meta name="author" content="Jonathan Suru">
+    <title>Transformer un Raspberry Pi en serveur - Guide complet</title>
     <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
     <meta property="og:image:alt" content="Code Learn Share" />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <title>Transformer un Raspberry Pi en serveur - Guide complet</title>
-
+    <meta property="og:image:height" content="630" /><!-- Feuille de style externe -->
     <link rel="stylesheet" href="../styles.css">
     <script>
         window.TallyConfig = {
@@ -43,7 +42,7 @@
     </header>
     <section>
         <h1>Transformer un Raspberry Pi en serveur</h1>
-        <p>Dans le cadre du projet HealthBox, j'ai transformé un Raspberry Pi en serveur pour héberger notre système. Cette solution est idéale pour sa flexibilité, son coût abordable et sa faible consommation d'énergie. Dans cet article, je vous guide pas à pas pour transformer votre Raspberry Pi en un serveur fonctionnel et sécurisé.</p>
+        <p>Dans le cadre du projet <a href="https://jonathansuru.me/articles/healthbox.html" target="_blank">HealthBox</a>, j'ai transformé un Raspberry Pi en serveur pour héberger notre système. Cette solution est idéale pour sa flexibilité, son coût abordable et sa faible consommation d'énergie. Dans cet article, je vous guide pas à pas pour transformer votre Raspberry Pi en un serveur fonctionnel et sécurisé, particulièrement adapté pour un environnement de développement. Cependant, ces instructions peuvent également être appliquées à un environnement de production, à condition de mettre en place des mesures de sécurité supplémentaires.</p>
     </section>
 
     <section>
@@ -68,6 +67,10 @@
                 <li><strong>Inconvénients</strong> : Plus lourd et consomme plus de ressources.</li>
             </ul>
             <p>Raspberry Pi OS Full est idéal si vous avez besoin d'une interface graphique pour gérer votre serveur localement. Cependant, il consomme plus de ressources, ce qui peut être un inconvénient pour un serveur dédié.</p>
+            <div class="code-block">
+                <p><strong>Pour ceux qui choisissent Raspberry Pi OS Full :</strong></p>
+                <p>Activez <strong>PI Connect</strong> pour pouvoir vous connecter à distance à l'interface graphique sans avoir à connecter le Raspberry Pi à un écran. Cela vous permettra d'utiliser votre propre ordinateur pour gérer le serveur.</p>
+            </div>
         </section>
 
         <section>
@@ -122,12 +125,16 @@ sudo apt upgrade -y</code></pre>
 
         <section>
             <h3>Configuration de la sécurité</h3>
-            <p>Changez le mot de passe par défaut et configurez un pare-feu pour protéger votre serveur :</p>
+            <p>Pour un environnement de développement, voici quelques conseils de base pour sécuriser votre serveur :</p>
+            <ul>
+                <li><strong>Changez le mot de passe par défaut</strong> : Utilisez un mot de passe fort et unique.</li>
+                <li><strong>Installez un pare-feu</strong> : Vous pouvez utiliser <code>ufw</code> pour configurer un pare-feu et limiter l'accès aux ports nécessaires.</li>
+            </ul>
             <pre class="code-block"><code>sudo passwd
 sudo apt install ufw
 sudo ufw enable
 sudo ufw allow ssh</code></pre>
-            <p>La configuration de la sécurité est une étape cruciale pour protéger votre serveur contre les attaques. Un pare-feu bien configuré peut empêcher les accès non autorisés et protéger vos données.</p>
+            <p><strong>Note</strong> : Ces conseils de sécurité sont plus idéaux pour un environnement de développement. Pour un environnement de production, des mesures de sécurité plus grandes sont nécessaires.</p>
         </section>
     </section>
 
@@ -275,6 +282,7 @@ static domain_name_servers=192.168.1.1</code></pre>
     <section>
         <h2>Automatisation : Lancer le service au démarrage</h2>
         <p>Pour que votre service démarre automatiquement au démarrage du Raspberry Pi, utilisez <code>systemd</code> :</p>
+        <p>L'automatisation permet de lancer des outils ou d'autres applications fréquemment utilisées, garantissant que vos services sont toujours disponibles, même après un redémarrage du serveur.</p>
         <ol>
             <li>Créez un fichier de service :</li>
             <pre class="code-block"><code>sudo nano /etc/systemd/system/mon_service.service</code></pre>
@@ -325,6 +333,7 @@ WantedBy=multi-user.target</code></pre>
     <!-- 100% privacy-first analytics -->
     <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
     <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+
 </article>
 </body>
 </html>
