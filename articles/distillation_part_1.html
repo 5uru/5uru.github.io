@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Jonathan Suru">
+  <title>Knowledge Distillation : L'Art de Compresser l'Intelligence (Partie 1)</title>
+
+  <!-- MathJax pour les formules mathématiques -->
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Feuille de style externe -->
+  <link rel="stylesheet" href="../styles.css">
+  <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+  <meta property="og:image:alt" content="Code Learn Share" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" /><!-- Feuille de style externe -->
+  <link rel="stylesheet" href="../styles.css">
+  <script>
+    window.TallyConfig = {
+      "formId": "3lo6WV",
+      "popup": {
+        "emoji": {
+          "text": "👋",
+          "animation": "wave"
+        },
+        "open": {
+          "trigger": "scroll",
+          "scrollPercent": 40
+        }
+      }
+    };
+  </script>
+
+  <script async src="https://tally.so/widgets/embed.js"></script>
+</head>
+<body>
+<header>
+  <h1>Jonathan Suru</h1>
+  <nav>
+    <a href="../index.html">Accueil</a> |
+    <a href="../projects.html">Projets</a> |
+    <a href="../about.html">À propos</a>
+  </nav>
+</header>
+
+<h2>Knowledge Distillation : L'Art de Compresser l'Intelligence (Partie 1)</h2>
+
+<p>Dans le paysage actuel de l'intelligence artificielle, une tension structurelle persiste entre deux impératifs : la <strong>performance</strong> et l'<strong>efficacité</strong>. D'un côté, la course aux modèles toujours plus gigantesques tels que les LLMs. De l'autre, la réalité industrielle impose des contraintes drastiques : déploiement sur appareils mobiles, objets connectés (IoT), latence réduite et nécessité de minimiser l'empreinte énergétique.</p>
+
+<p>J'ai moi-même été confronté à ce dilemme en développant mon projet <a href="https://jonathansuru.me/articles/healthbox.html">Healthbox</a>. En travaillant sur cette solution, j'ai rapidement réalisé que la puissance brute d'un modèle ne suffisait pas. Pour garantir une expérience utilisateur fluide et réactive, tout en préservant les ressources matérielles, il était impératif de réduire la taille des modèles sans en sacrifier l'efficacité. C'est en cherchant une solution à ce problème précis que j'ai découvert la puissance de la <strong>Distillation de Connaissances</strong> (<em>Knowledge Distillation</em>).</p>
+
+<em>Cet article, premier volet d'une série inspirée des ateliers pratiques <a href="https://github.com/MENA-ML/lab_sessions_2026/tree/main/distillation">MENA-ML</a>, pose les fondations théoriques de cette méthode.</em>
+
+<h2>Le Contexte : Les Techniques d'Optimisation</h2>
+<p>Avant de plonger dans la distillation, il est essentiel de la situer parmi les autres stratégies d'optimisation. Réduire un modèle pour le rendre <strong>plus léger et plus rapide</strong> peut se faire selon plusieurs approches, mais toutes n'ont pas le même impact sur la capacité d'apprentissage :</p>
+<ul>
+  <li><strong>Le Fine-tuning :</strong> Il s'agit d'adapter un modèle pré-entraîné à une tâche spécifique. Bien qu'utile pour la précision, il ne réduit pas intrinsèquement l'empreinte mémoire ni la complexité de calcul. C'est une adaptation fonctionnelle, pas une compression structurelle.</li>
+  <li><strong>La Quantification (Quantization) :</strong> Technique très répandue consistant à réduire la précision des nombres stockés (ex: passer de flottants 32 bits à des entiers 8 bit). Elle allège le modèle "physiquement" sans changer son architecture, bien qu'elle puisse nécessiter un ré-entraînement pour compenser la perte de précision.</li>
+  <li><strong>Le Pruning (Élagage) :</strong> Cette méthode retire les connexions (poids) ou les neurones les moins pertinents, "taillant" le réseau pour le rendre plus léger.</li>
+</ul>
+<p>La <strong>Distillation de Connaissances</strong> offre une approche radicalement différente : au lieu de modifier un modèle existant, elle propose d'entraîner un <strong>nouveau modèle compact</strong> (l'élève) en le guidant par un modèle expert (le maître). C'est une méthode de transfert d'apprentissage.</p>
+
+
+
+<h2>Le Paradigme Maître-Élève</h2>
+<p>L'idée centrale repose sur une analogie pédagogique : le couple <strong>Maître-Élève</strong> (<em>Teacher-Student</em>).</p>
+<ul>
+  <li><strong>Le "Teacher" (Le Maître) :</strong> Un modèle pré-entraîné, souvent massif (ou un "ensemble" de modèles), qui a appris à généraliser sur de vastes jeux de données. Il est précis mais lourd.</li>
+  <li><strong>Le "Student" (L'Élève) :</strong> Un réseau de neurones compact, conçu pour être rapide et léger. Il a une capacité de représentation moindre.</li>
+</ul>
+<p>L'objectif n'est pas que l'élève se contente d'apprendre les réponses par cœur, mais qu'il apprenne <strong>à raisonner comme le professeur</strong>. En imitant la manière dont le professeur classe les données, l'élève acquiert une capacité de généralisation bien supérieure à celle qu'il aurait obtenue en apprenant seul.</p>
+
+<h2>Architecture des Acteurs : Comment sont-ils construits ?</h2>
+<p>La réussite de la distillation repose sur le choix judicieux de l'architecture de chacun des acteurs. Il ne s'agit pas simplement de prendre deux modèles au hasard, mais d'optimiser la relation entre une capacité de stockage (Teacher) et une capacité de généralisation (Student).</p>
+
+<h3>Le Teacher : Le Géant Gelé</h3>
+<p>Le modèle Maître est généralement un réseau de neurones profond et complexe, déjà entraîné (pré-entraîné) sur de vastes corpus de données. Sa construction vise la performance brute avant tout :</p>
+<ul>
+  <li><strong>Architecture :</strong> On utilise souvent des modèles état de l'art (SOTA) comme <strong>BERT-Large</strong>, <strong>ResNet-101</strong> ou des <strong>Ensembles</strong> de modèles (combinaison de plusieurs réseaux). L'idée est de maximiser la richesse sémantique.</li>
+  <li><strong>État pendant la distillation :</strong> Crucialement, les poids du Teacher sont <strong>gelés</strong> (<em>frozen</em>). Il ne réapprend pas. On l'utilise uniquement en mode inférence pour générer les "Soft Labels" sur les données d'entraînement. C'est une source de connaissance statique et inébranlable.</li>
+</ul>
+
+<h3>Le Student : L'Architecture Compacte</h3>
+<p>La conception de l'élève est un exercice d'équilibre. Il doit être assez petit pour être rapide, mais assez expressif pour capturer la connaissance du maître. Il existe deux stratégies principales pour le construire :</p>
+<ul>
+  <li><strong>Conception "Sur Mesure" (Custom) :</strong> On opte pour des architectures conçues pour l'efficacité, comme <strong>MobileNet</strong> pour la vision ou <strong>DistilBERT</strong>/TinyBERT pour le NLP. Ces réseaux utilisent des opérations optimisées (convolutions depthwise, factorisation de matrices) pour réduire les calculs.</li>
+  <li><strong>Simplification du Maître :</strong> On prend l'architecture du Teacher et on retire des couches (ex: passer de 12 couches à 6) ou on réduit la largeur des couches (nombre de neurones). C'est l'approche utilisée par DistilBERT : même architecture, mais moitié moins de couches.</li>
+</ul>
+
+<p>Bien que les architectures diffèrent, la couche de sortie finale doit impérativement avoir la <strong>même dimension</strong> (le même nombre de classes ou de tokens) pour que la comparaison des probabilités (Softmax) entre le Teacher et le Student soit mathématiquement possible.</p>
+
+<h2>La "Dark Knowledge" : L'Information Cachée</h2>
+<p>Pour comprendre l'efficacité de la distillation, il faut s'intéresser au concept de <strong>"Dark Knowledge"</strong> (Connaissance Obscure), introduit par Geoffrey Hinton et ses collègues dans leur <a href="https://arxiv.org/abs/1503.02531" target="_blank" rel="noopener noreferrer">article fondateur de 2015</a>.</p>
+
+<p>Dans un entraînement classique supervisé, le modèle reçoit une vérité "dure" (<em>Hard Target</em>). Pour une image de chien, le label est : \( [ Chien : 1, Chat : 0, Voiture : 0] \). Cette approche binaire ignore totalement les nuances. Elle dit au modèle que le chien n'a rien à voir avec un chat ou une voiture, ce qui est faux sémantiquement : un chien ressemble structurellement plus à un chat qu'à une voiture.</p>
+
+<p>Hinton explique que les modèles entraînés produisent des probabilités pour les classes incorrectes qui ne sont pas aléatoires. La sortie du Teacher est beaucoup plus riche. Pour le même chien, il pourrait prédire :</p>
+
+
+<div >
+  <!-- Graphique SVG : Comparaison Hard vs Soft Labels -->
+  <svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg" style="font-family: system-ui, -apple-system, sans-serif; max-width: 100%; height: auto; margin: 2em 0;">
+
+    <defs>
+      <!-- Dégradés -->
+      <linearGradient id="hardGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#94a3b8" />
+        <stop offset="100%" style="stop-color:#cbd5e1" />
+      </linearGradient>
+      <linearGradient id="softMainGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#2563eb" />
+        <stop offset="100%" style="stop-color:#3b82f6" />
+      </linearGradient>
+      <linearGradient id="softDarkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#d97706" />
+        <stop offset="100%" style="stop-color:#f59e0b" />
+      </linearGradient>
+      <!-- Ombre douce -->
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+      </filter>
+    </defs>
+
+    <!-- Fond de carte -->
+    <rect x="0" y="0" width="500" height="350" rx="12" fill="#ffffff" filter="url(#shadow)" stroke="#e2e8f0" stroke-width="1"/>
+
+    <!-- TITRE PRINCIPAL -->
+    <text x="250" y="35" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Hard Labels vs Soft Labels : La Nuance qui change tout</text>
+
+    <!-- SECTION 1 : HARD LABELS (En haut) -->
+    <g transform="translate(20, 60)">
+      <rect x="0" y="0" width="460" height="100" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="15" y="25" font-size="13" font-weight="600" fill="#475569">Entraînement Classique (Hard Target)</text>
+
+      <!-- Barres -->
+      <g transform="translate(15, 45)">
+        <text x="0" y="10" font-size="12" fill="#64748b">Chien</text>
+        <rect x="60" y="0" width="350" height="16" rx="3" fill="url(#hardGrad)" />
+        <text x="420" y="11" font-size="11" fill="#64748b">100%</text>
+      </g>
+      <g transform="translate(15, 70)">
+        <text x="0" y="10" font-size="12" fill="#64748b">Chat</text>
+        <rect x="60" y="0" width="0" height="16" rx="3" fill="#e2e8f0" />
+        <text x="65" y="11" font-size="11" fill="#94a3b8">0%</text>
+      </g>
+    </g>
+
+    <!-- FLECHE DE TRANSITION -->
+    <g transform="translate(250, 170)">
+      <path d="M0,0 L0,20 M-10,15 L0,25 L10,15" stroke="#94a3b8" stroke-width="2" fill="none"/>
+    </g>
+
+    <!-- SECTION 2 : SOFT LABELS (En bas) -->
+    <g transform="translate(20, 200)">
+      <rect x="0" y="0" width="460" height="130" rx="8" fill="#fffbeb" stroke="#fde68a"/>
+      <text x="15" y="25" font-size="13" font-weight="600" fill="#92400e">Sortie du Teacher (Soft Target)</text>
+
+      <!-- Barre Chien -->
+      <g transform="translate(15, 45)">
+        <text x="0" y="10" font-size="12" fill="#334155" font-weight="500">Chien</text>
+        <!-- 90% de 350px = 315px -->
+        <rect x="60" y="0" width="315" height="16" rx="3" fill="url(#softMainGrad)" />
+        <text x="385" y="11" font-size="11" fill="#2563eb" font-weight="bold">90%</text>
+      </g>
+
+      <!-- Barre Chat (Dark Knowledge) -->
+      <g transform="translate(15, 70)">
+        <text x="0" y="10" font-size="12" fill="#334155" font-weight="500">Chat</text>
+        <!-- 9% de 350px = 31.5px -->
+        <rect x="60" y="0" width="32" height="16" rx="3" fill="url(#softDarkGrad)" />
+        <text x="100" y="11" font-size="11" fill="#d97706" font-weight="bold">9%</text>
+        
+      </g>
+
+      <!-- Barre Voiture -->
+      <g transform="translate(15, 95)">
+        <text x="0" y="10" font-size="12" fill="#334155" font-weight="500">Voiture</text>
+        <!-- 0.1% -> ~1px de largeur minimum -->
+        <rect x="60" y="0" width="2" height="16" rx="1" fill="#cbd5e1" />
+        <text x="70" y="11" font-size="11" fill="#94a3b8">0.1%</text>
+      </g>
+    </g>
+
+  </svg>
+</div>
+
+<p>Ces 9% pour le chat constituent la <strong>Dark Knowledge</strong>. Ils révèlent que <em>ce chien particulier ressemble un peu à un chat</em>. Selon Hinton, cette information est cruciale car elle encode la similarité entre les classes. En forçant le petit modèle à apprendre ces probabilités relatives (les "Soft Targets"), on lui transfère bien plus d'information que le simple label "Chien". On lui apprend la structure du problème, pas seulement la solution.</p>
+
+
+<h2>La Mécanique : La Température \((T)\)</h2>
+<p>Pour transférer efficacement cette connaissance obscure, nous devons rendre visibles les probabilités faibles. Si le Teacher est trop confiant (ex: 99.99%), les nuances comme le "9% chat" sont écrasées. Nous utilisons pour cela le paramètre de <strong>Température \((T)\)</strong> appliqué à la fonction Softmax :</p>
+
+<p>
+  $$ q_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)} $$ </p>
+
+<p>La température contrôle l'entropie de la distribution de sortie :</p>
+<ul>
+  <li><strong>\(T = 1\) :</strong> Comportement standard. La distribution est pointue, le modèle est très confiant.</li>
+  <li><strong>\(T > 1\) :</strong> Distribution "molle". Les écarts entre les classes se resserrent, révélant la structure fine des données et les similarités entre classes.</li>
+</ul>
+
+<p>Techniquement, Hinton suggère que l'on peut voir l'apprentissage par distillation comme l'apprentissage de logits (les scores bruts) plutôt que de classes. Lorsque la température est élevée, la fonction Softmax se comporte comme une régression sur les logits. La température est appliquée aux logits des deux modèles (Teacher et Student) pour aligner leurs distributions. Les valeurs typiques oscillent généralement entre <strong>3 et 20</strong>.</p>
+
+<h2>Approfondissements : Variations de la Distillation</h2>
+<p>Au-delà de l'approche standard basée sur la réponse finale, des techniques plus avancées existent pour maximiser le transfert.</p>
+
+<h3>La Distillation Multi-Experts</h3>
+<p>Hinton souligne qu'utiliser un ensemble de modèles (un <em>ensemble</em>) comme Teacher est très efficace. La prédiction finale de l'ensemble est la moyenne (arithmétique ou géométrique) des prédictions individuelles. L'élève apprend alors à reproduire cette sagesse collective. L'avantage est double : on obtient les performances de l'ensemble, mais avec la vitesse d'un seul modèle compact au moment de l'inférence.</p>
+
+<h3>La Distillation de Caractéristiques (Feature Distillation)</h3>
+<p>Ici, l'élève ne copie pas seulement la sortie finale, mais aussi les <strong>représentations intermédiaires</strong> (les caractéristiques cachées) du Teacher. On force l'élève à "voir" l'image de la même manière que le maître à chaque étape du réseau.</p>
+<p>Cela pose un défi technique : les architectures étant différentes, les dimensions des couches ne correspondent pas. On utilise alors une couche linéaire (adaptateur) pour projeter les caractéristiques de l'élève vers celles du professeur. La perte (<em>loss</em>) associée repose souvent sur la <strong>similarité cosinus</strong> :</p>
+<p>
+  $$ L_{feature} = 1 - \text{CosineSimilarity}(F_{teacher}, F_{student}) $$ </p>
+
+<h2>La Fonction de Perte : L'Équilibre Final</h2>
+<p>L'entraînement de l'élève repose sur une fonction de perte composite, équilibrant l'imitation du maître et le respect de la réalité (vérité terrain) :</p>
+<p>
+  $$ L_{total} = \alpha \cdot L_{hard} + (1 - \alpha) \cdot L_{soft} $$ </p>
+<ul>
+  <li><strong>\(L_{hard}\) :</strong> Erreur classique (Cross-Entropy) par rapport aux vrais labels. Cela garde le modèle ancré dans la réalité pour ne pas qu'il dérive.</li>
+  <li><strong>\(L_{soft}\) :</strong> Divergence (souvent KL-Divergence) entre les prédictions douces du Teacher et du Student. C'est le vecteur de transfert de la "Dark Knowledge".</li>
+  <li><strong>\(\alpha\) :</strong> Paramètre de pondération. Un \(\alpha\) faible privilégie l'imitation du maître, ce qui est souvent préférable si le maître est très performant.</li>
+</ul>
+
+<h2>Résultats et Perspectives</h2>
+<p>La théorie se vérifie en pratique : des modèles étudiants distillés surpassent systématiquement les modèles de même taille entraînés depuis zéro, avec un gain de performance typique de <strong>1 à 5 %</strong>. Plus impressionnant encore, un modèle distillé peut parfois surpasser le modèle Teacher lui-même. Cela arrive lorsque le maître, trop complexe, souffre de sur-apprentissage (<em>overfitting</em>) ; l'élève, contraint par sa capacité limitée, est forcé de ne retenir que l'essentiel, agissant comme un régularisateur naturel.</p>
+<p>Le domaine continue d'évoluer avec des variantes prometteuses :</p>
+<ul>
+  <li><strong>Auto-distillation :</strong> Le modèle se distille lui-même, agissant comme un régularisateur puissant.</li>
+  <li><strong>Distillation en ligne :</strong> Le Teacher et le Student apprennent simultanément, s'améliorant mutuellement.</li>
+  <li><strong>Architectures spécifiques :</strong> Des modèles comme <strong>DistilBERT</strong> ont révolutionné le NLP en réduisant la taille des modèles de moitié tout en préservant 97% des performances.</li>
+</ul>
+
+<h2>Lien avec le Reinforcement Learning</h2>
+<p>En découvrant les mécanismes de la distillation, j'ai immédiatement fait le rapprochement avec le <strong>Reinforcement Learning</strong> (RL). Cette intuition m'a naturellement conduit vers le domaine de l'<strong>Apprentissage par Imitation</strong> (<em>Imitation Learning</em>).</p>
+<p>Dans ce cadre, le Teacher agit exactement comme une "Politique Optimale". Ce qui m'a frappé, c'est la similitude entre les "Soft Labels" et le <strong>Reward Shaping</strong> en RL : au lieu d'un signal binaire et sporadique (succès/échec), le Teacher fournit un guide dense et nuancé. Il n'indique pas seulement la bonne action à l'élève, mais aussi la valeur relative des alternatives. C'est une leçon de "pourquoi" et de "comment" bien plus riche qu'un simple résultat.</p>
+<h2>Conclusion</h2>
+<p>La Distillation de Connaissances est bien plus qu'une technique de compression ; c'est un véritable transfert d'intelligence. En exploitant la "Dark Knowledge" mise en lumière par Hinton et en calibrant la température du transfert, nous pouvons créer des modèles compacts détenant la sagesse des géants.</p>
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+  <li><a href="https://www.ttic.edu/dl/dark14.pdf">Dark knowledge (Geoffrey Hinton, Oriol Vinyals & Jeff Dean)</a></li>
+  <li><a href="https://github.com/MENA-ML/lab_sessions_2026/tree/main/distillation">Knowledge Distillation: Teacher-Student Networks by  Adam Kosiorek & Ruba Haroun (Google DeepMind), Andres Villa (KAUST) (MENA-ML)</a></li>
+  <li><a href="https://www.ibm.com/fr-fr/think/topics/knowledge-distillation">Qu’est-ce que la distillation de connaissances ? (IBM)</a></li>
+  <li><a href="https://www.llama.com/docs/how-to-guides/distillation/">Distillation (Llama by Meta)</a></li>
+</ul>
+<div class="music-suggestion">
+  <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+  <a href="https://www.youtube.com/watch?v=Cmh_uRzDVfw" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+  <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+
+</body>
+</html>
