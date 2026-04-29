@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+  <meta property="og:image:alt" content="Code Learn Share" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <title>Deep Learning et Vibe Coding : Mon retour d'expérience</title>
+  <link rel="stylesheet" href="../styles.css">
+  <script>
+    window.TallyConfig = {
+      "formId": "3lo6WV",
+      "popup": {
+        "emoji": {
+          "text": "👋",
+          "animation": "wave"
+        },
+        "open": {
+          "trigger": "scroll",
+          "scrollPercent": 40
+        }
+      }
+    };
+  </script>
+
+  <script async src="https://tally.so/widgets/embed.js"></script>
+</head>
+<body>
+<header>
+  <h1>Jonathan Suru</h1>
+  <nav>
+    <a href="../index.html">Accueil</a> |
+    <a href="../projects.html">Projets</a> |
+    <a href="../about.html">À propos</a>
+  </nav>
+</header>
+<h1>Deep Learning et Vibe Coding : Mon retour d'expérience</h1>
+
+<p>Ces derniers temps, avec l'avènement du <em>Vibe Coding</em>, j'ai vu toute la hype et les avantages que cela pouvait apporter. Mais honnêtement, pour moi, je ne voyais pas personnellement le bénéfice. Cela n'intervenait pas directement dans ce que je fais au quotidien, étant donné que je code quasi exclusivement en Python et que je développe de zéro des modèles ou des pipelines avec des API.</p>
+
+<p>Du coup, pour mon cas, je n'arrivais pas à entrer dans le mouvement, car la majorité des applications étaient orientées vers le développement Web classique. Je me contentais donc de la complétion de code et de chats pour m'aider à résoudre mes problèmes. J'utilisais principalement les chatbots de Qwen ou Z.ai pour m'aider à mieux comprendre certaines notions et résoudre des problèmes ponctuels.</p>
+
+<h2>Le déclic : Comprendre par la pratique</h2>
+
+<p>Récemment, je suis tombé sur <a href="https://opencode.school">OpenCode.school</a>, un petit cours rapide, introductif et interactif sur le <em>Vibe Coding</em>. En suivant ce cours, j'ai pu mieux comprendre ce qu'est vraiment le <em>Vibe Coding</em> et me faire mon propre avis par la pratique, plutôt que de me fier à la tendance du moment.</p>
+
+<h2>L'évolution des outils : De Codex aux Agents autonomes</h2>
+
+<p>Cette transition vers le <em>Vibe Coding</em> a été grandement facilitée par l'évolution rapide des outils d'IA. On est passé d'une génération d'outils basés sur la prédiction de texte à une génération d'agents capables d'agir.</p>
+
+<p>Dans un premier temps, des outils comme <strong>GitHub Copilot</strong> ont révolutionné ma façon de coder en offrant une autocomplétion intelligente. C'était très utile pour des snippets de code, mais ça restait limité pour gérer la complexité d'un projet complet.</p>
+
+<p>Plus récemment, l'arrivée d'outils comme <strong>Claude Code</strong> a changé la donne. Contrairement aux chats classiques où je dois constamment copier-coller les extraits de code et les erreurs, Claude Code a un accès direct à mon terminal. Par exemple, quand je lance mes tests unitaires et que ça échoue, l'agent lit l'erreur directement dans la sortie du terminal, ouvre le fichier <code>train.py</code> concerné, et applique la correction automatiquement. C'est ce passage de la "complétion" passive à l'agenticité active qui rend le <em>Vibe Coding</em> viable pour mes projets techniques.</p>
+
+<h2>L'adaptation technique : Notebooks vs Scripts</h2>
+
+<p>Rapidement, en intégrant le <em>Vibe Coding</em>, cela a changé ma manière de coder. D'habitude, pour les projets de Deep Learning, on code souvent dans un Jupyter Notebook ou dans Colab. C'est une approche très linéaire et expérimentale.</p>
+
+<p>Avec le <em>Vibe Coding</em>, on travaille plutôt avec des fichiers <code>.py</code> classiques. Ce n'est pas un problème en soi, mais c'est important pour une question de contexte : l'IA se débrouille mieux pour comprendre et modifier un projet structuré en modules Python plutôt qu'un notebook fragmenté. Cela montre qu'il y a souvent une certaine réadaptation nécessaire dans nos habitudes.</p>
+
+<h2>Cas d'usage concrets dans mon workflow Data Science</h2>
+
+<p>Dans ma situation, le <em>Vibe Coding</em> m'a aidé principalement dans trois cas précis qui me font gagner un temps considérable.</p>
+
+<h3>1. L'analyse de données automatisée (EDA)</h3>
+
+<p>L'analyse exploratoire de données (EDA) peut être très chronophage. J'utilise désormais le <em>Vibe Coding</em> pour générer une première analyse solide, qui me servira de base de travail pour la suite.</p>
+
+<p><strong>L'approche "Skill" avec OpenCode :</strong><br>
+  J'ai créé un <em>Skill</em> personnalisé dans OpenCode. Le concept est simple : je donne mes données à l'IA, et elle utilise un script que j'ai configuré pour produire un rapport standardisé. J'ai basé cela sur <code>data_profiling</code> pour générer un fichier <code>.md</code> complet qui résume les statistiques, les distributions et les valeurs manquantes.<br>
+  Vous pouvez voir le code que j'utilise pour ce Skill ici : <a href="https://gist.github.com/5uru/e2ca7a3448a7ac7ba222b61c616e1a6b">voir le Gist</a>.<br>
+  Ce rapport me sert ensuite de contexte pour les prochaines prompts, évitant ainsi à l'IA de poser des questions basiques sur mes données.</p>
+
+<p><strong>L'intégration de Nao :</strong><br>
+  J'ai aussi découvert <a href="https://github.com/getnao/nao">Nao</a>, qui est un agent analyste de données plus poussé. En connectant Nao à <a href="https://openrouter.ai">OpenRouter.ai</a>, je peux faire une analyse très poussée et discuter via un chat directement sur les données. De plus, en passant par une instance locale comme <strong>Ollama</strong>, je garde le contrôle total sur mes données sensibles.</p>
+
+<h3>2. La recherche scientifique et l'implémentation technique</h3>
+
+<p>Le deuxième aspect est l'aide à la compréhension des papiers de recherche (<em>papers</em>). Lire une publication complexe et la traduire en code PyTorch fonctionnel est un défi. Le <em>Vibe Coding</em> m'aide étape par étape dans ces recherches.</p>
+
+<p>Pour cela, je me base sur des <strong>Skills</strong> spécialisés, véritables experts virtuels :</p>
+
+<p><strong>Pour la veille et la documentation :</strong></p>
+<ul>
+  <li><a href="https://github.com/Orchestra-Research/AI-Research-SKILLs">AI Research SKILLs</a> : Pour structurer une recherche bibliographique.</li>
+  <li><a href="https://mcpmarket.com/tools/skills/arxiv-research-assistant-1">Arxiv Research Assistant</a> : Pour interroger directement la base Arxiv.</li>
+  <li><a href="https://huggingface.co/settings/mcp">HuggingFace MCP Settings</a> : Pour intégrer les modèles de la communauté.</li>
+</ul>
+
+<p><strong>Pour l'expertise technique :</strong></p>
+<ul>
+  <li><a href="https://mcpmarket.com/tools/skills/yann-lecun-technical-ai-expert">Yann Lecun Technical AI Expert</a> : Pour valider des concepts théoriques.</li>
+  <li><a href="https://mcpmarket.com/tools/skills/computer-vision-expert-1">Computer Vision Expert</a> : Pour des conseils spécifiques sur le traitement d'image.</li>
+  <li><a href="https://mcpmarket.com/tools/skills/machine-learning-engineer-1">Machine Learning Engineer</a> : Pour l'aspect optimisation et pipeline.</li>
+</ul>
+
+<h3>3. L'ingénierie de production avec FastAPI</h3>
+
+<p>Enfin, c'est un point crucial que j'avais sous-estimé : l'aide à la mise en production. Le <em>Vibe Coding</em> m'est indispensable pour créer et modifier mes routes FastAPI. Quand je dois ajouter un nouveau endpoint ou mettre à jour un modèle Pydantic pour accepter de nouveaux champs de données, l'IA génère la structure et les validations automatiquement. Elle s'assure également que la documentation automatique de l'API (via Swagger ou ReDoc) reste synchronisée avec le code, une tâche souvent fastidieuse quand on développe à la main.</p>
+
+<p>Il existe de nombreux autres outils sur le <a href="https://mcpmarket.com/tools/skills">MCP Market</a> qui permettent d'étendre cette logique.</p>
+
+<h2>Conclusion</h2>
+
+<p>Le <em>Vibe Coding</em> n'est pas une révolution qui remplace le développeur, mais une évolution de la boîte à outils. Grâce à des outils avancés comme Claude Code ou l'écosystème MCP, j'ai pu déplacer ma charge cognitive de l'écriture de syntaxe vers l'architecture.</p>
+
+<p>Cependant, la transition entre le code en scripts <code>.py</code> requis par ces agents et l'interactivité dont j'ai besoin en tant que Data Scientist reste un défi. Pour moi, la solution finale et idéale pour combiner ces deux mondes semble être <a href="https://marimo.io">Marimo.io</a>. Il offre la rigueur du code Python (nécessaire pour que le Vibe Coding fonctionne bien) tout en gardant la réactivité d'un notebook. C'est probablement vers cet outil que je vais orienter mes futurs projets pour unifier complètement mon workflow.</p>
+<div class="music-suggestion">
+  <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+  <a href="https://www.youtube.com/watch?v=mdcBqqWj3kY" target="_blank">Écouter sur YouTube</a>
+</div>
+<footer>
+  <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
