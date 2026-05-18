@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+    <meta property="og:image:alt" content="Code Learn Share" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <title>Les Neurosciences Computationnelles : Introduction</title>
+
+    <!-- Configuration de MathJax pour accepter les signes $ pour le latex inline -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script>
+        window.TallyConfig = {
+            "formId": "3lo6WV",
+            "popup": {
+                "emoji": {
+                    "text": "👋",
+                    "animation": "wave"
+                },
+                "open": {
+                    "trigger": "scroll",
+                    "scrollPercent": 40
+                }
+            }
+        };
+    </script>
+
+    <script async src="https://tally.so/widgets/embed.js"></script>
+
+    <!-- Scripts pour le rendu des équations MathJax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Lien vers la feuille de style -->
+    <link rel="stylesheet" href="../styles.css">
+
+
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <nav>
+        <a href="../index.html">Accueil</a> |
+        <a href="../projects.html">Projets</a> |
+        <a href="../about.html">À propos</a>
+    </nav>
+</header>
+<article>
+
+    <h1>Les Neurosciences Computationnelles : Introduction</h1>
+
+    <p>Le cerveau humain est l'un des objets les plus complexes connu de l'univers. Cette masse de tissu gélatineux, pesant à peine 1,4 kg, contient environ 86 milliards de neurones connectés par des milliers de milliards de synapses. Comment une telle architecture peut-elle produire nos pensées, nos souvenirs ou nos mouvements ?</p>
+
+    <p>C'est pour tenter de répondre à cette question colossale que je me base ici sur les leçons issues du cours d'introduction sur le CNI proposé par l'<a href="https://www.acnei.org" target="_blank"><strong>African Computational Neuroscience Educational Initiative (ACNEI)</strong></a>. Cette initiative unique permet de plonger au cœur d'un domaine interdisciplinaire qui mobilise les mathématiques, l'informatique et la physique pour modéliser, simuler et comprendre la structure et les fonctions du cerveau.</p>
+
+    <p>Ce champ de recherche ne se contente pas d'observer ; il construit des modèles. Plus encore, il entretient une relation étroite et symbiotique avec l'<strong>intelligence artificielle (IA)</strong>. Tandis que les neurosciences étudient comment la connectivité et la dynamique neuronale dictent le comportement, l'IA et l'apprentissage automatique s'attachent à comprendre comment l'architecture et la dynamique des réseaux influencent leurs performances.</p>
+
+    <p>Historiquement, ces deux disciplines partagent des fondements communs, notamment depuis les travaux fondateurs de <strong>McCulloch et Pitts (1943)</strong>, qui ont démontré que des circuits neuronaux simples peuvent implémenter des <strong>fonctions logiques</strong>. Aujourd'hui, cette convergence se traduit par la conception de systèmes <strong>neuromorphiques bio-inspirés</strong>, tels que les réseaux de neurones à impulsions (Spiking Neural Networks), qui imitent le codage de l'information biologique. En retour, l'IA est désormais un outil indispensable, permettant des <strong>analyses assistées par ordinateur</strong> de données cérébrales complexes et une modélisation efficace à grande échelle.</p>
+
+    <p>Pour comprendre cette science, il faut d'abord appréhender l'objet de base, puis décortiquer ses fondements théoriques et biophysiques.</p>
+
+    <h2>1. L'épistémologie : Les trois niveaux de David Marr</h2>
+
+    <p>Avant même d'écrire une équation, le scientifique doit se poser une question fondamentale : "Qu'est-ce que j'essaie de modéliser ?". Pour structurer la pensée scientifique et éviter la confusion entre le phénomène et la cause, le domaine s'appuie largement sur la trame conceptuelle proposée par David Marr.</p>
+
+    <p>Tout modèle en neurosciences computationnelles peut être classé selon trois niveaux d'abstraction :</p>
+
+    <ul>
+        <li><strong>Niveau Computationnel (The "Why") :</strong> Quel est le but du système ? Quel problème computationnel le cerveau résout-il ? Par exemple, la vision peut être vue comme la reconstruction d'une représentation 3D à partir d'images 2D. Ici, on s'intéresse à la logique de l'information (théorie de l'information, probabilités bayésiennes).</li>
+        <li><strong>Niveau Algorithmique (The "How") :</strong> Quelles représentations et quels algorithmes sont utilisés ? Comment une population de neurones encode-t-elle une variable (comme la direction d'un mouvement) ? C'est le domaine de l'encodage neuronal et du décodage.</li>
+        <li><strong>Niveau Implémentation (The "Hardware") :</strong> Comment l'algorithme est-il physiquement réalisé ? C'est ici que l'on étudie la biophysique, les canaux ioniques et les potentiels d'action.</li>
+    </ul>
+
+    <p>C'est à ce dernier niveau, et à sa jonction avec le niveau algorithmique, que les modèles de neurones entrent en jeu.</p>
+
+    <h2>2. Qu'est-ce qu'un Neurone ?</h2>
+
+    <p>Avant de plonger dans les mathématiques, il est crucial de définir l'acteur principal. Un neurone est une cellule excitable, spécialisée dans la réception, le traitement et la transmission de signaux électrochimiques.</p>
+
+    <p><strong>Le rôle du neurone</strong> est fondamental : il agit comme l'unité de traitement de l'information du système nerveux. Sa fonction principale est de transmettre des informations rapidement entre différentes parties du corps (cerveau, moelle épinière, muscles, organes) pour coordonner nos actions, nos sensations et nos pensées. Il reçoit des signaux d'entrée, les intègre, et si la stimulation est suffisante, envoie un signal de sortie.</p>
+
+    <!-- Image anatomique du neurone -->
+    <figure class="image-container">
+        <img src="/images/Neurone.svg" alt="Structure pyramidale abstraite" width="800" loading="lazy">
+        <figcaption>Anatomie d'un neurone : Dendrites, Soma, Axone et Synapses (Source: Wikimedia Commons).</figcaption>
+    </figure>
+
+    <p>La clé de son fonctionnement réside dans sa structure et, plus précisément, dans sa <strong>membrane neuronale</strong>. La membrane neuronale est une bicouche lipidique (une fine enveloppe grasse) d'environ 5 nanomètres d'épaisseur qui délimite la cellule. Ce n'est pas une simple paroi statique : elle agit comme une frontière sélective et active. Elle est parsemée de protéines (les <strong>canaux ioniques</strong>, des pores qui s'ouvrent et se ferment) qui contrôlent le passage des ions chargés (comme le sodium Na+ et le potassium K+), créant et maintenant ainsi une différence de potentiel électrique entre l'intérieur et l'extérieur de la cellule. C'est cette propriété électrique de la membrane qui permet le signal électrique.</p>
+
+    <p>Anatomiquement, on peut décomposer le neurone en quatre parties principales :</p>
+    <ul>
+        <li><strong>Les Dendrites :</strong> Ce sont des prolongements ramifiés qui ressemblent aux branches d'un arbre. Ils agissent comme des "antennes" réceptrices, collectant les signaux électriques provenant des autres neurones.</li>
+        <li><strong>Le Soma (Corps Cellulaire) :</strong> C'est le centre de commande de la cellule. Il intègre tous les signaux reçus par les dendrites. Si la somme de ces signaux dépasse un certain seuil, le soma déclenche un signal électrique.</li>
+        <li><strong>L'Axone :</strong> C'est un long câble unique qui transporte le signal électrique (le <strong>spike</strong> ou potentiel d'action) sur de longues distances, depuis le soma jusqu'aux autres cellules. Il est souvent entouré d'une gaine de myéline qui sert d'isolant pour accélérer la transmission.</li>
+        <li><strong>Les Synapses :</strong> Situées à l'extrémité de l'axone (boutons terminaux), ce sont les jonctions chimiques ou électriques qui permettent au neurone de communiquer avec la cible (dendrite ou muscle d'un autre neurone). C'est là que le signal électrique est converti en signal chimique (neurotransmetteurs).</li>
+    </ul>
+
+    <h2>3. Fondements Biophysiques : Le Neurone comme Circuit Électrique</h2>
+
+    <p>Pour modéliser un neurone, il faut comprendre sa physique. Comme vu précédemment, la membrane neuronale est une bicouche lipidique qui isole l'intérieur (conducteur, riche en potassium $K^+$) de l'extérieur (conducteur, riche en sodium $Na^+$).</p>
+
+    <p>Cette structure physique se traduit en électronique par deux composants fondamentaux :</p>
+    <ol>
+        <li><strong>Le Condensateur ($C_m$) :</strong> La bicouche lipidique agit comme un isolant entre deux milieux conducteurs. Elle stocke les charges séparées, créant une différence de potentiel.</li>
+        <li><strong>Les Résistances ($R$) :</strong> La membrane est percée de pores protéiques, les canaux ioniques, qui laissent passer les ions. Ils agissent comme des résistances variables.</li>
+    </ol>
+
+    <p>Par conséquent, le neurone se modélise élégamment comme un <strong>circuit RC (Résistance-Condensateur)</strong>.</p>
+
+    <!-- Image du circuit RC équivalent (Fournie par l'utilisateur) -->
+    <figure class="image-container">
+        <!-- Remarque : Téléchargez cette image pour qu'elle ne disparaisse pas après expiration du lien -->
+        <img src="/images/electrical_circuit_neuron.jpg" alt="Schéma du circuit RC équivalent d'une membrane neuronale">
+        <figcaption>Modèle électrique équivalent de la membrane : Résistance ($R$) et Capacité ($C$) en parallèle, alimentés par un courant externe.</figcaption>
+    </figure>
+
+    <ul>
+        <li><strong>Le potentiel de repos ($E_L$) :</strong> En l'absence de stimulation, la pompe sodium-potassium maintient un gradient chimique, résultant en une tension de membrane d'environ <strong>-70 mV</strong>. C'est l'état d'équilibre électrique de la cellule.</li>
+        <li><strong>L'équation de la membrane :</strong> La dynamique du potentiel de membrane $V(t)$ suit la loi de Kirchhoff. La somme des courants capacitifs et ioniques est égale au courant injecté :
+            $$ C_m \frac{dV}{dt} = -I_{ion} + I_{inj} $$             Le terme $-I_{ion}$ représente la fuite du courant à travers les résistances de la membrane.
+        </li>
+    </ul>
+
+    <h2>4. Le "Gold Standard" : Le Modèle de Hodgkin-Huxley (1952)</h2>
+
+    <p>C'est le modèle le plus célèbre et le plus précis en neurosciences computationnelles. Hodgkin et Huxley ont réussi à décomposer le courant ionique $I_{ion}$ en composantes spécifiques : le sodium ($Na^+$), le potassium ($K^+$) et un courant de fuite non-spécifique.</p>
+
+    <p>Leur génie a été de modéliser la conductance (l'inverse de la résistance) des canaux non pas comme constante, mais comme variable et dépendante du voltage et du temps.</p>
+
+    <p>L'équation maîtresse devient :</p>
+    $$ C_m \frac{dV}{dt} = -g_{Na}(V,t)(V - E_{Na}) - g_{K}(V,t)(V - E_{K}) - g_{L}(V - E_{L}) + I_{inj} $$     <!-- Image du potentiel d'action -->
+    <figure class="image-container">
+        <img src="/images/Hodgkin-Huxley.svg" alt="Graphique du potentiel d'action généré par le modèle de Hodgkin-Huxley">
+        <figcaption>Composants de base des modèles de type Hodgkin-Huxley.</figcaption>
+    </figure>
+
+    <p>Où :</p>
+    <ul>
+        <li>$g_{Na}$ et $g_{K}$ sont des fonctions dynamiques régies par des équations différentielles de premier ordre (les variables d'activation $m, h$ et $n$).</li>
+        <li>Ce système d'équations différentielles non-linéaires reproduit fidèlement la forme exacte du <strong>potentiel d'action</strong> (le spike), une brève augmentation de la tension électrique d'environ 100 mV qui se propage le long de l'axone.</li>
+    </ul>
+
+    <p>La résolution numérique de ce système à chaque pas de temps pour des millions de neurones est prohibitif en termes de coût de calcul.</p>
+
+    <h2>5. L'Élégance de la Simplification : Le Modèle LIF</h2>
+
+    <p>Pour étudier la dynamique de grands réseaux ou créer de l'IA efficace, les chercheurs ont besoin du "mécanisme minimum" capable de produire un spike. Cela nous amène au modèle <strong>Leaky Integrate-and-Fire (LIF)</strong>.</p>
+
+    <p>Ce modèle se concentre sur l'évolution temporelle du potentiel de membrane $V(t)$ en considérant simplement le comportement global du circuit RC. Son fonctionnement repose sur quatre mécanismes électriques successifs :</p>
+
+    <ol>
+        <li><strong>Intégration :</strong> Le potentiel de membrane augmente (ou diminue) en réponse au courant d'entrée $I(t)$ qui charge la capacité membranaire.</li>
+        <li><strong>Fuite (Leak) :</strong> Simultanément, en raison de la résistance membranaire, une partie de la charge électrique s'échappe. Cela force le potentiel à décroître spontanément pour revenir vers le niveau de repos $E_L$ en l'absence de stimulation.</li>
+        <li><strong>Déclenchement (Fire) :</strong> Si l'effet cumulé du courant injecté parvient à faire atteindre au potentiel un seuil critique $V_{th}$, le neurone génère immédiatement un potentiel d'action (un spike).</li>
+        <li><strong>Réinitialisation (Reset) :</strong> Suite à l'émission du spike, le potentiel de membrane est brutalement ramené à une valeur de départ $V_{reset}$, proche du potentiel de repos, mettant fin à l'intégration en cours.</li>
+    </ol>
+
+    <p>L'équation différentielle régissant ce système est :</p>
+    $$ \tau_m \frac{dV(t)}{dt} = -(V(t) - E_L) + R I(t) $$     <p>Où $\tau_m = R C_m$ est la constante de temps de la membrane.</p>
+
+    <p>Ce modèle ignore la forme complexe du spike biologique, mais il capture parfaitement l'essence du traitement de l'information neuronale : l'intégration temporelle et la décision binaire. C'est la base des <strong>Réseaux de Neurones Spiking (SNN)</strong>, une forme d'IA bio-inspirée qui code l'information par le timing des impulsions, imitant ainsi le cerveau pour une meilleure performance et une efficacité énergétique accrue.</p>
+
+    <h2>6. Au-delà du Neurone Unique : Réseaux et Plasticité</h2>
+
+    <p>Un neurone seul ne fait pas de calcul. Le calcul émerge de l'interaction entre les neurones via les <strong>synapses</strong>.</p>
+
+    <ul>
+        <li><strong>Dynamique Synaptique :</strong> Une synapse n'est pas un simple poids statique. Lorsqu'un spike pré-synaptique arrive, il provoque un courant post-synaptique (PSC). Les modèles utilisent souvent des fonctions exponentielles pour modéliser ce courant :
+            $$ I_{syn}(t) \propto \sum_{t_k} e^{-(t - t_k)/\tau_s} $$         </li>
+        <li><strong>Plasticité (STDP) :</strong> Comment apprend-on ? Le mécanisme clé est la <strong>Spike-Timing-Dependent Plasticity</strong> (Plasticité dépendante du temps des impulsions). Si le neurone A tire juste avant le neurone B, la connexion se renforce (règle de Hebb). Si c'est l'inverse, elle s'affaiblit. C'est une règle d'apprentissage locale et bio-plausible.</li>
+    </ul>
+
+    <h2>7. L'IA et les Neurosciences : Une Symbiose Nécessaire</h2>
+
+    <p>La relation entre l'intelligence artificielle et les neurosciences computationnelles est loin d'être à sens unique ; elle constitue une véritable symbiose. D'un côté, la biologie inspire l'ingénierie : les contraintes d'efficacité énergétique du cerveau poussent au développement de l'informatique neuromorphique et des réseaux de neurones à impulsions (SNN), cherchant à imiter le traitement événementiel de l'information. De l'autre, l'IA est devenue un "microscope algorithmique" pour les neuroscientifiques. Grâce au Deep Learning, il est désormais possible d'analyser des enregistrements massifs d'activité neuronale, de décoder des pensées à partir de signaux cérébraux ou de simuler des circuits complexes. Ce dialogue incessant permet non seulement de mieux comprendre l'intelligence naturelle, mais aussi de concevoir des machines plus robustes et adaptatives.</p>
+
+    <h2>Conclusion</h2>
+
+    <p>Les neurosciences computationnelles offrent un cadre rigoureux pour transformer des observations biologiques en principes de calcul. En passant de la structure anatomique du neurone au modèle de Hodgkin-Huxley (précision ionique), puis au modèle LIF (essence algorithmique), ce domaine nous rapproche d'une compréhension globale de l'esprit humain.</p>
+
+    <p>Cette quête n'est pas désintéressée. En dérivant ces principes, nous ne faisons pas que lire le code du cerveau ; nous écrivons celui de l'intelligence artificielle de demain.</p>
+    <h2>Liens Utiles</h2>
+    <p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+    <ul>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3852871/">Basic Neuron Model Electrical Equivalent Circuit: An Undergraduate Laboratory Exercise</a></li>
+        <li><a href="https://compneuro.neuromatch.io/tutorials/intro.html">Neuromatch computational neuroscience course</a></li>
+    </ul>
+    <div class="music-suggestion">
+        <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+        <a href="https://www.youtube.com/watch?v=mdcBqqWj3kY" target="_blank">Écouter sur YouTube</a>
+    </div>
+    <footer>
+        <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+    </footer>
+
+</article>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
