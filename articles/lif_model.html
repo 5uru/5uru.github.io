@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
+  <meta property="og:image:alt" content="Code Learn Share" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <title>Les Neurosciences Computationnelles : Le Modèle LIF</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+  </script>
+  <script>
+    window.TallyConfig = {
+      "formId": "3lo6WV",
+      "popup": {
+        "emoji": {
+          "text": "👋",
+          "animation": "wave"
+        },
+        "open": {
+          "trigger": "scroll",
+          "scrollPercent": 40
+        }
+      }
+    };
+  </script>
+
+  <script async src="https://tally.so/widgets/embed.js"></script>
+
+  <!-- Scripts pour le rendu des équations MathJax -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Lien vers la feuille de style -->
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+  <h1>Jonathan Suru</h1>
+  <nav>
+    <a href="../index.html">Accueil</a> |
+    <a href="../projects.html">Projets</a> |
+    <a href="../about.html">À propos</a>
+  </nav>
+</header>
+<article>
+  <h1>Les Neurosciences Computationnelles : Le Modèle LIF</h1>
+
+  <p>Suite à l'introduction à la neuroscience computationnelle (que vous pouvez retrouver <a href="https://jonathansuru.me/articles/computational_neuroscience.html">ici</a>), cet article propose d'explorer un modèle essentiel : le <strong>Leaky Integrate-and-Fire (LIF)</strong>.</p>
+
+  <p>Il est rapidement apparu que modéliser le cerveau est un exercice d'équilibre. Pour rester proche de la réalité biologique, le modèle de Hodgkin-Huxley est souvent cité, mais sa complexité mathématique constitue un obstacle. À l'inverse, les neurones artificiels classiques sont très efficaces, mais ils perdent la dimension temporelle qui fait la richesse du signal biologique.</p>
+
+  <p>C'est pour cela que le modèle LIF se situe exactement entre ces deux mondes, offrant le meilleur compromis pour coder des dynamiques réalistes.</p>
+
+  <h2>1. L'Analogie du "Seau Percé"</h2>
+
+  <p>Pour bien saisir les équations sous-jacentes, il est utile d'imaginer ce modèle comme le mécanisme d'un seau percé.</p>
+
+  <ul>
+    <li><strong>L'Intégration (Le remplissage) :</strong> Le neurone est comparable à un seau. Les signaux qu'il reçoit sont comme de l'eau versée dedans. Le niveau d'eau représente le potentiel électrique.</li>
+    <li><strong>La Fuite (Le "Leaky") :</strong> Le seau possède un trou. L'eau s'échappe constamment. Si l'eau n'est pas versée assez vite, le niveau redescend. C'est cette propriété de "fuite" qui donne son nom au modèle.</li>
+    <li><strong>Le Seuil et la Décharge (Le "Fire") :</strong> Si l'eau est versée assez rapidement pour atteindre le bord, le seau déborde. Ce débordement représente le "spike", le signal envoyé aux autres neurones.</li>
+    <li><strong>La Réinitialisation (Le "Reset") :</strong> Juste après avoir débordé, le seau se vide instantanément pour revenir à zéro.</li>
+  </ul>
+
+  <h2>2. Fondements Biophysiques et Mathématiques</h2>
+
+  <p>Cette analogie repose sur une réalité biophysique : la membrane du neurone se comporte comme un circuit <strong>RC (Résistance-Capacité)</strong>. L'équation différentielle utilisée pour modéliser le potentiel $V(t)$ est :</p>
+
+  <p>
+    $$ \tau_m \frac{dV(t)}{dt} = E_L - V(t) + RI(t) $$         </p>
+
+  <p>Elle traduit simplement que la variation de tension dépend de l'écart par rapport au repos ($E_L - V$), de la vitesse de fuite ($\tau_m$) et du courant injecté ($RI$). Cette équation est privilégiée car elle capture l'essence de l'électrophysiologie sans la complexité de la modélisation des canaux ioniques individuels.</p>
+
+  <h2>3. Simulation en JAX : Ajouter du Réalisme</h2>
+
+  <p>Pour aller au-delà de la théorie, une implémentation de ce modèle a été développée en utilisant <strong>JAX</strong>. L'objectif est double : obtenir un code performant (grâce à la compilation) et corriger un défaut du modèle de base : l'absence de <strong>période réfractaire</strong>.</p>
+
+  <p>Dans la réalité biologique, un neurone ne peut pas tirer indéfiniment ; il nécessite un temps de repos. Ce paramètre a donc été intégré dans la simulation.</p>
+
+  <p><strong>Voici le résultat obtenu avec un courant d'entrée sinusoïdal :</strong></p>
+
+  <figure>
+    <img src="/images/lif_sim.png" alt="Graphique montrant la dynamique LIF avec période réfractaire">
+    <figcaption>Simulation LIF montrant l'intégration, le seuil de décharge et la période réfractaire.</figcaption>
+  </figure>
+
+  <p>L'analyse de ce graphique confirme que le modèle se comporte comme prévu :</p>
+
+  <ol>
+    <li><strong>L'Intégration Asynchrone (Courbe Bleue) :</strong> On observe que le potentiel ne suit pas linéairement le courant (Vert). Il monte avec une inertie (intégration) et redescend doucement (fuite), formant ces courbes lisses typiques d'un circuit RC.</li>
+    <li><strong>Le Reset Brutal :</strong> À chaque fois que la courbe bleue touche la ligne rouge pointillée ($V_{th}$), le potentiel s'effondre. C'est la mécanique de "Fire and Reset" en action.</li>
+    <li><strong>La Plateau Réfractaire :</strong> C'est le détail le plus notable. Regardez la courbe bleue juste après une chute : elle reste <strong>plate</strong> pendant un court instant (environ 5 ms), même si le courant d'entrée est fort. Le neurone ignore le stimulus. C'est la preuve visuelle que la période réfractaire fonctionne correctement.</li>
+  </ol>
+
+  <p>Le code complet permettant de générer cette simulation est disponible sur GitHub :</p>
+
+  <p><a href="https://github.com/5uru/Computational_Neuroscience/tree/main/LIF_model">Voir le code complet de la simulation LIF</a></p>
+
+  <h2>4. Pourquoi le LIF est le choix par défaut ?</h2>
+
+  <p>Face au spectre des modèles existants, le LIF se positionne comme le modèle de référence pour plusieurs raisons :</p>
+
+  <ul>
+    <li><strong>Contre Hodgkin-Huxley :</strong> Bien que ce dernier soit la "norme d'or", la modélisation explicite des canaux sodiques et potassiques est trop lourde pour des simulations à grande échelle. Le LIF fournit un comportement macroscopique équivalent pour une fraction du coût calculatoire.</li>
+    <li><strong>Contre le Neurone Artificiel (Deep Learning) :</strong> Les neurones classiques (ReLU, Sigmoid) sont instantanés et dépourvus de mémoire temporelle. Or, le timing des spikes est crucial pour le traitement de l'information biologique. Le LIF préserve cette dimension temporelle.</li>
+  </ul>
+
+  <h2>5. Limites et Perspectives</h2>
+
+  <p>Bien que ce modèle soit apprécié pour sa flexibilité, il convient de noter ses limites :</p>
+
+  <ol>
+    <li><strong>Forme de spike :</strong> Dans la simulation, le spike est un événement discret (un saut). Il ne reproduit pas la forme d'onde complexe de dépolarisation/repolarisation biologique.</li>
+    <li><strong>Seuil Fixe :</strong> Un seuil constant est utilisé ici. Cependant, en biologie, les neurones s'adaptent : plus ils tirent, plus il devient difficile de les faire tirer à nouveau. Un seuil adaptatif pourrait être ajouté dans une version améliorée du modèle.</li>
+  </ol>
+
+  <h2>Conclusion</h2>
+
+  <p>Le modèle Leaky Integrate-and-Fire est bien plus qu'une simple équation. C'est un outil qui permet de construire un pont tangible entre la biologie et l'informatique. En capturant l'accumulation, la fuite et le seuil de décharge, il offre une base solide pour explorer comment des réseaux simples peuvent traiter de l'information complexe.</p>
+  <h2>Liens Utiles</h2>
+  <p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+  <ul>
+    <li><a href="https://compneuro.neuromatch.io/tutorials/W2D4_BiologicalNeuronModels/student/W2D4_Tutorial1.html">Tutorial 1: The Leaky Integrate-and-Fire (LIF) Neuron Model</a>(Neuromatch)</li>
+    <li><a href="https://unaterzavia.com/neural-dynamics1/">Neural Dynamics for ML Engineers – Part 1: The LIF Neuron
+    </a></li>
+  </ul>
+  <div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=mdcBqqWj3kY" target="_blank">Écouter sur YouTube</a>
+  </div>
+  <footer>
+    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+  </footer>
+</article>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+</body>
+</html>
