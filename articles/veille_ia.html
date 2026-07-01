@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <meta charset="UTF-8">
   <title>Veille IA : Pourquoi je mise sur les petites startups et l'Open Source pour anticiper demain</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,6 +84,11 @@
 <body>
 <header>
 <h1>Jonathan Suru</h1>
+    <button class="nav-toggle" aria-label="Menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
     <nav>
         <a href="../index.html">Accueil</a><span class="sep">/</span>
         <a href="../projects.html">Projets</a><span class="sep">/</span>
@@ -267,5 +273,11 @@
         localStorage.setItem('theme', next);
     });
 </script>
+    <script>
+        document.querySelector('.nav-toggle').addEventListener('click', function() {
+            this.classList.toggle('open');
+            document.querySelector('nav').classList.toggle('open');
+        });
+    </script>
 </body>
 </html>
