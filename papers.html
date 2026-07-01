@@ -5,15 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Papiers de Recherche - Jonathan Suru</title>
   <link rel="stylesheet" href="styles.css">
+  <script>
+      (function() {
+          var theme = localStorage.getItem('theme');
+          if (!theme) {
+              theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+      })();
+  </script>
+    <meta name="description" content="Implémentations de travaux académiques en IA : RNN, GCN, RBM, AdamW, VGG.">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:title" content="Papiers de Recherche — Jonathan Suru">
+    <meta property="og:description" content="Implémentations de travaux académiques en IA : RNN, GCN, RBM, AdamW, VGG.">
+    <meta property="og:url" content="https://jonathansuru.me/papers.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png">
+    <meta property="og:image:alt" content="Papiers de Recherche — Jonathan Suru">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Papiers de Recherche — Jonathan Suru">
+    <meta name="twitter:description" content="Implémentations de travaux académiques en IA : RNN, GCN, RBM, AdamW, VGG.">
+    <meta name="twitter:image" content="https://jonathansuru.me/thumbnail.png">
+    <link rel="canonical" href="https://jonathansuru.me/papers.html">
 </head>
 <body>
 <header>
   <h1>Jonathan Suru</h1>
   <nav>
-    <a href="index.html">Accueil</a> |
-    <a href="projects.html">Projets</a> |
-    <a href="papers.html">Papiers de Recherche</a> |
+    <a href="index.html">Accueil</a><span class="sep">/</span>
+    <a href="projects.html">Projets</a><span class="sep">/</span>
+    <a href="papers.html">Papiers de Recherche</a><span class="sep">/</span>
     <a href="about.html">À propos</a>
+    <button id="theme-toggle" aria-label="Changer de thème">
+        <span class="icon-sun">&#9788;</span>
+        <span class="icon-moon">&#9790;</span>
+    </button>
   </nav>
 </header>
 
@@ -22,51 +52,58 @@
   <p>Cette section est dédiée à mes reproductions et implémentations de travaux académiques en IA.</p>
 
   <article>
-
     <h3><a href="https://github.com/5uru/Stream/tree/main/rnn">Implémentation d'un RNN avec LSTM pour la Classification de Texte.</a></h3>
     <p>J'ai implémenté un <strong>RNN utilisant des cellules LSTM </strong> pour la classification de texte (sentiment positif/négatif) avec TinyGrad. Le modèle traite des phrases issues du dataset <em>Sentences_AllAgree.txt</em>, en exploitant les vecteurs de mots pré-entraînés de <strong>spaCy</strong> (<code>en_core_web_sm</code>, 300 dimensions). L'architecture inclut une couche LSTM (dimension cachée de 32) suivie d'une couche linéaire avec dropout (0.5). Les séquences sont pré-traitées pour supprimer la ponctuation et les stopwords, avec des longueurs variables gérées via un <strong>padding dynamique</strong> adapté à chaque batch.</p>
   </article>
-  <article>
 
+  <article>
     <h3><a href="https://github.com/5uru/Stream/tree/main/gcn">Implémentation d'un Réseau de Convolution sur Graphes (GCN) avec TinyGrad.</a></h3>
     <p>J'ai implémenté un <strong>GCN (Graph Convolutional Network) </strong> pour détecter des communautés dans le <em>dataset Zachary Karate Club</em>. Le modèle utilise deux couches de convolution graphique, chacune suivie d'une couche linéaire et d'une activation <code>tanh</code>, terminé par un classifieur linéaire. Les caractéristiques des nœuds sont initialement codées en <strong>one-hot</strong>, et la matrice d'adjacence est normalisée avec des boucles auto-connectées. L'entraînement s'est effectué sur <strong>100 époques</strong> avec l'optimiseur <strong>Adam</strong>, atteignant une <strong>accuracy de 100%</strong> dès la 20e époque.</p>
   </article>
-  <article>
 
+  <article>
     <h3><a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer">Implémentation de l'Optimiseur <strong>Lion</strong> avec TinyGrad.</a></h3>
-    <p>J'ai implémenté l'optimiseur <strong>Lion</strong> (basé sur l'article <a href="https://arxiv.org/abs/2302.06675 ">Symbolic Discovery of Optimization Algorithms</a>) pour entraîner un CNN sur le dataset <em>MNIST</em>. Contrairement à Adam, Lion n'utilise qu'un seul paramètre de moment et applique une opération <code>sign()</code> sur les mises à jour des poids, réduisant la mémoire utilisée.</p>
+    <p>J'ai implémenté l'optimiseur <strong>Lion</strong> (basé sur l'article <a href="https://arxiv.org/abs/2302.06675">Symbolic Discovery of Optimization Algorithms</a>) pour entraîner un CNN sur le dataset <em>MNIST</em>. Contrairement à Adam, Lion n'utilise qu'un seul paramètre de moment et applique une opération <code>sign()</code> sur les mises à jour des poids, réduisant la mémoire utilisée.</p>
     <p>Les résultats montrent une <strong>convergence extrêmement rapide</strong> : la perte chute de <strong>2.0</strong> à <strong>0.02</strong> en 5 000 étapes, tandis que l'accuracy atteint <strong>99%</strong> dès les premières centaines d'étapes.</p>
   </article>
-  <article>
 
+  <article>
     <h3><a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer">Implémentation d'un Optimiseur AdamW avec TinyGrad.</a></h3>
     <p>J'ai implémenté une version personnalisée de l'optimiseur <strong>AdamW</strong> pour entraîner un réseau de neurones convolutif (CNN) sur le dataset <em>MNIST</em>.</p>
     <p>Les résultats montrent une <strong>convergence rapide</strong> : la perte initiale de <strong>2.0</strong> chute à <strong>0.02</strong> en 5 000 étapes, tandis que l'accuracy atteint <strong>99%</strong> dès les premières centaines d'étapes.</p>
   </article>
-  <article>
 
+  <article>
     <h3><a href="https://github.com/5uru/Stream/tree/main/rbm">Implémentation d'une Machine de Boltzmann Restreinte (RBM) avec TinyGrad.</a></h3>
-    <p>J’ai implémenté une <strong>RBM (Restricted Boltzmann Machine)</strong> avec <em>TinyGrad</em> pour recommander des livres via le dataset <em>GoodBooks-10k</em>. Le modèle compte <strong>64 unités cachées</strong> et <strong>17 000 unités visibles</strong>, entraîné sur <strong>150 000 notations</strong> en <strong>5 époques</strong> avec un taux d’apprentissage de <strong>0.6</strong> et des lots de <strong>100 échantillons</strong>.</p>
-    <p>Les résultats montrent une <strong>convergence stable</strong> : l’erreur moyenne diminue de <strong>0.029 à 0.005</strong>, tandis que l’énergie libre augmente de <strong>150 à 280</strong>.</p>
+    <p>J'ai implémenté une <strong>RBM (Restricted Boltzmann Machine)</strong> avec <em>TinyGrad</em> pour recommander des livres via le dataset <em>GoodBooks-10k</em>. Le modèle compte <strong>64 unités cachées</strong> et <strong>17 000 unités visibles</strong>, entraîné sur <strong>150 000 notations</strong> en <strong>5 époques</strong> avec un taux d'apprentissage de <strong>0.6</strong> et des lots de <strong>100 échantillons</strong>.</p>
+    <p>Les résultats montrent une <strong>convergence stable</strong> : l'erreur moyenne diminue de <strong>0.029 à 0.005</strong>, tandis que l'énergie libre augmente de <strong>150 à 280</strong>.</p>
   </article>
-  <article>
 
+  <article>
     <h3><a href="https://github.com/5uru/Stream/tree/main/vgg">Implémentation du Réseau VGG avec TinyGrad.</a></h3>
     <p>J'ai implémenté une version simplifiée du réseau <strong>VGG</strong> pour classer les images de <strong>CIFAR-10</strong>, entraîné en <em>7000 étapes</em> avec <strong>Adam (lr=0.001)</strong> et des <strong>lots de 128 images</strong>.</p>
-    <p>Le modèle atteint <strong>75 % d'accuracy</strong> grâce à <em>8 couches convolutionnelles</em> et un <em>dropout</em>, illustrant les performances sur ce dataset.</p>  </article>
+    <p>Le modèle atteint <strong>75 % d'accuracy</strong> grâce à <em>8 couches convolutionnelles</em> et un <em>dropout</em>, illustrant les performances sur ce dataset.</p>
+  </article>
 
   <article>
-
     <h3><a href="https://github.com/5uru/Stream/tree/main/alexnet">AlexNet avec TinyGrad : Une exploration du deep learning minimaliste.</a></h3>
-    <p>Dans ce projet, j'ai réimplementé l'architecture emblématique d'AlexNet en utilisant <a href="https://github.com/tinygrad/tinygrad " target="_blank">TinyGrad</a>, un framework minimaliste pour le deep learning. Entraîné sur le dataset CIFAR-10 avec un optimiseur Adam (learning rate=0.001) et des lots de 128 images, le modèle atteint une précision de <strong>75%</strong> sur les données de test après 7000 étapes d'entraînement.</p>
+    <p>Dans ce projet, j'ai réimplementé l'architecture emblématique d'AlexNet en utilisant <a href="https://github.com/tinygrad/tinygrad" target="_blank">TinyGrad</a>, un framework minimaliste pour le deep learning. Entraîné sur le dataset CIFAR-10 avec un optimiseur Adam (learning rate=0.001) et des lots de 128 images, le modèle atteint une précision de <strong>75%</strong> sur les données de test après 7000 étapes d'entraînement.</p>
   </article>
 </main>
 
 <footer>
-  <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+  <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
 </footer>
-<!-- 100% privacy-first analytics -->
 <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+<script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
 </body>
 </html>

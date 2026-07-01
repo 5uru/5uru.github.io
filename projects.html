@@ -5,14 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Projets - Jonathan Suru</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <meta name="description" content="Projets en IA : Grad-CAM, Transformers, ViT, GCN, LSTM et plus encore avec JAX, Flax et TinyGrad.">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:title" content="Mes Projets — Jonathan Suru">
+    <meta property="og:description" content="Projets en IA : Grad-CAM, Transformers, ViT, GCN, LSTM et plus encore avec JAX, Flax et TinyGrad.">
+    <meta property="og:url" content="https://jonathansuru.me/projects.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png">
+    <meta property="og:image:alt" content="Mes Projets — Jonathan Suru">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mes Projets — Jonathan Suru">
+    <meta name="twitter:description" content="Projets en IA : Grad-CAM, Transformers, ViT, GCN, LSTM et plus encore avec JAX, Flax et TinyGrad.">
+    <meta name="twitter:image" content="https://jonathansuru.me/thumbnail.png">
+    <link rel="canonical" href="https://jonathansuru.me/projects.html">
 </head>
 <body>
 <header>
     <h1>Jonathan Suru</h1>
     <nav>
-        <a href="index.html">Accueil</a> |
-        <a href="projects.html">Projets</a> |
+        <a href="index.html">Accueil</a><span class="sep">/</span>
+        <a href="projects.html">Projets</a><span class="sep">/</span>
+        <a href="papers.html">Papiers de Recherche</a><span class="sep">/</span>
         <a href="about.html">À propos</a>
+        <button id="theme-toggle" aria-label="Changer de thème">
+            <span class="icon-sun">&#9788;</span>
+            <span class="icon-moon">&#9790;</span>
+        </button>
     </nav>
 </header>
 <main>
@@ -21,11 +52,11 @@
     <!-- === GRAD-CAM === -->
     <div class="project">
         <div class="project-title">
-            <h3>Grad-CAM : localiser l’attention d’un CNN grâce aux gradients</h3>
-            <a href="https://jonathansuru.me/articles/grad-cam-explained.html" class="project-hook"> [lien]</a>
+            <h3>Grad-CAM : localiser l'attention d'un CNN grâce aux gradients</h3>
+            <a href="https://jonathansuru.me/articles/grad-cam-explained.html" class="project-hook">[lien]</a>
         </div>
         <p>
-            Dans un monde où les systèmes d’intelligence artificielle prennent des décisions critiques — en médecine, en justice, en finance ou en conduite autonome — il ne suffit plus qu’un modèle soit performant : il doit aussi être compréhensible. C’est l’objectif de l’IA explicable (Explainable AI ou XAI). Grad-CAM (Gradient-weighted Class Activation Mapping) permet de générer une carte de chaleur indiquant quelles régions d’une image ont le plus contribué à la prédiction d’une classe donnée. J’ai implémenté cette méthode en JAX/Flax sur un classifieur CIFAR-10, en détaillant chaque étape : du rôle des gradients à l’agrégation pondérée, en passant par le seuillage ReLU et la visualisation finale. Une plongée technique dans la transparence des CNNs.
+            Dans un monde où les systèmes d'intelligence artificielle prennent des décisions critiques — en médecine, en justice, en finance ou en conduite autonome — il ne suffit plus qu'un modèle soit performant : il doit aussi être compréhensible. C'est l'objectif de l'IA explicable (Explainable AI ou XAI). Grad-CAM (Gradient-weighted Class Activation Mapping) permet de générer une carte de chaleur indiquant quelles régions d'une image ont le plus contribué à la prédiction d'une classe donnée. J'ai implémenté cette méthode en JAX/Flax sur un classifieur CIFAR-10, en détaillant chaque étape : du rôle des gradients à l'agrégation pondérée, en passant par le seuillage ReLU et la visualisation finale. Une plongée technique dans la transparence des CNNs.
         </p>
         <div class="tags">
             <span class="tag">XAI</span>
@@ -40,10 +71,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Transformers without Normalization : implémentation de DyT en JAX/Flax</h3>
-            <a href="https://github.com/5uru/OpenLabs/tree/main/transformer_dyt" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/OpenLabs/tree/main/transformer_dyt" class="project-hook">[lien]</a>
         </div>
         <p>
-            Inspiré par l’article <em>“Transformers without Normalization”</em> (CVPR 2025) de Zhu et al. (Meta FAIR, NYU, MIT), j’ai implémenté <strong>Dynamic Tanh (DyT)</strong> — une alternative élégante aux couches de normalisation (LayerNorm, RMSNorm) dans les Transformers. DyT remplace ces couches par une opération élémentaire basée sur une fonction tanh dynamique, paramétrée par des poids appris. Mon implémentation en <strong>JAX/Flax</strong> reproduit fidèlement l’architecture proposée et montre que, même sans normalisation, un Transformer peut atteindre des performances comparables, voire supérieures, tout en simplifiant l’architecture et en réduisant la dépendance aux hyperparamètres. Ce projet remet en question un dogme du deep learning moderne et explore les mécanismes sous-jacents de stabilité et de propagation du signal dans les réseaux profonds.
+            Inspiré par l'article <em>"Transformers without Normalization"</em> (CVPR 2025) de Zhu et al. (Meta FAIR, NYU, MIT), j'ai implémenté <strong>Dynamic Tanh (DyT)</strong> — une alternative élégante aux couches de normalisation (LayerNorm, RMSNorm) dans les Transformers. DyT remplace ces couches par une opération élémentaire basée sur une fonction tanh dynamique, paramétrée par des poids appris. Mon implémentation en <strong>JAX/Flax</strong> reproduit fidèlement l'architecture proposée et montre que, même sans normalisation, un Transformer peut atteindre des performances comparables, voire supérieures, tout en simplifiant l'architecture et en réduisant la dépendance aux hyperparamètres. Ce projet remet en question un dogme du deep learning moderne et explore les mécanismes sous-jacents de stabilité et de propagation du signal dans les réseaux profonds.
         </p>
         <div class="tags">
             <span class="tag">Transformer</span>
@@ -59,11 +90,11 @@
     <!-- === HACKATHON META === -->
     <div class="project">
         <div class="project-title">
-            <h3>L’Hackathon Meta</h3>
-            <a href="https://jonathansuru.me/articles/meta-hackaton-indaba2024.html" class="project-hook"> [lien]</a>
+            <h3>L'Hackathon Meta</h3>
+            <a href="https://jonathansuru.me/articles/meta-hackaton-indaba2024.html" class="project-hook">[lien]</a>
         </div>
         <p>
-            Lors du <strong>Deep Learning Indaba 2024</strong> à Dakar, mon équipe et moi avons relevé le défi lancé par <strong>Meta</strong> : créer un modèle de traduction anglais-twi malgré des données extrêmement limitées (4 800 phrases). En binôme, nous avons exploité le modèle <strong>NLLB-200</strong> de Meta, en combinant <strong>augmentation des données</strong> (paraphrase via WordNet, équilibrage à 75 %) et optimisation de la mémoire GPU via le <em>gradient checkpointing</em> et l’accumulation de gradients. Malgré les contraintes, notre collaboration a porté ses fruits : un <strong>score BLEU de 26,4</strong> et une <strong>4<sup>e</sup> place finale</strong>, illustrant comment l’IA peut surmonter les défis linguistiques africains tout en valorisant la diversité culturelle. Une réussite collective qui prouve qu’une technologie inclusive est possible, même avec des ressources restreintes.
+            Lors du <strong>Deep Learning Indaba 2024</strong> à Dakar, mon équipe et moi avons relevé le défi lancé par <strong>Meta</strong> : créer un modèle de traduction anglais-twi malgré des données extrêmement limitées (4 800 phrases). En binôme, nous avons exploité le modèle <strong>NLLB-200</strong> de Meta, en combinant <strong>augmentation des données</strong> (paraphrase via WordNet, équilibrage à 75 %) et optimisation de la mémoire GPU via le <em>gradient checkpointing</em> et l'accumulation de gradients. Malgré les contraintes, notre collaboration a porté ses fruits : un <strong>score BLEU de 26,4</strong> et une <strong>4<sup>e</sup> place finale</strong>, illustrant comment l'IA peut surmonter les défis linguistiques africains tout en valorisant la diversité culturelle. Une réussite collective qui prouve qu'une technologie inclusive est possible, même avec des ressources restreintes.
         </p>
         <div class="tags">
             <span class="tag">NLP</span>
@@ -78,10 +109,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Transformer from Scratch avec JAX/Flax</h3>
-            <a href="https://github.com/5uru/OpenLabs/tree/main/transformers" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/OpenLabs/tree/main/transformers" class="project-hook">[lien]</a>
         </div>
         <p>
-            Implémentation complète d’une architecture Transformer (encodeur-décodeur) depuis zéro, fidèle à l’article fondateur <em>“Attention Is All You Need”</em>. Ce projet explore les mécanismes fondamentaux de l’attention multi-têtes, du position encoding, de l’attention masquée et des couches feed-forward, le tout en utilisant les bibliothèques JAX et Flax pour une exécution efficace et fonctionnelle. Un exercice de rigueur théorique et de programmation qui renforce ma compréhension des fondations des grands modèles modernes.
+            Implémentation complète d'une architecture Transformer (encodeur-décodeur) depuis zéro, fidèle à l'article fondateur <em>"Attention Is All You Need"</em>. Ce projet explore les mécanismes fondamentaux de l'attention multi-têtes, du position encoding, de l'attention masquée et des couches feed-forward, le tout en utilisant les bibliothèques JAX et Flax pour une exécution efficace et fonctionnelle. Un exercice de rigueur théorique et de programmation qui renforce ma compréhension des fondations des grands modèles modernes.
         </p>
         <div class="tags">
             <span class="tag">Transformer</span>
@@ -96,7 +127,7 @@
     <div class="project">
         <div class="project-title">
             <h3>Median</h3>
-            <a href="https://github.com/5uru/Median" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/Median" class="project-hook">[lien]</a>
         </div>
         <p>
             Median est une application de flashcards avancée et open-source qui s'appuie sur des algorithmes de répétition espacée et sur l'intelligence artificielle pour améliorer le processus d'apprentissage. En analysant les performances de l'utilisateur, Median crée des programmes d'étude personnalisés et adapte la difficulté du contenu, ce qui améliore considérablement la rétention et la mémorisation des informations. Ce système intelligent transforme la mémorisation traditionnelle par cœur en une expérience d'apprentissage efficace, interactive et attrayante.
@@ -114,7 +145,7 @@
     <div class="project">
         <div class="project-title">
             <h3>Discute</h3>
-            <a href="https://github.com/5uru/Discute" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/Discute" class="project-hook">[lien]</a>
         </div>
         <p>
             Discute est une plateforme d'apprentissage des langues de pointe qui utilise l'intelligence artificielle pour simuler des conversations immersives dans le monde réel. En engageant les utilisateurs dans des dialogues dynamiques et contextuels, Discute accélère l'acquisition des langues et améliore la fluidité des conversations. L'application s'adapte au niveau de compétence de chaque utilisateur, offrant une expérience d'apprentissage sur mesure qui se concentre sur l'utilisation pratique de la langue et les nuances culturelles, comblant ainsi le fossé entre l'apprentissage traditionnel des langues et la communication dans le monde réel.
@@ -132,10 +163,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Vision Transformer (ViT) pour MNIST</h3>
-            <a href="https://github.com/5uru/Implementation/blob/main/vit.ipynb" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/Implementation/blob/main/vit.ipynb" class="project-hook">[lien]</a>
         </div>
         <p>
-            Adaptation de l’architecture Vision Transformer (ViT) au problème de classification de chiffres manuscrits (MNIST). Inspiré par l’article <em>“An Image is Worth 16x16 Words”</em>, ce projet démontre que les Transformers, conçus initialement pour le langage, peuvent être efficacement transférés à la vision. En découpant les images en “patches” et en les traitant comme des tokens, le modèle atteint <strong>88,13 % de précision</strong> après seulement 20 époques — une preuve convaincante de la polyvalence de l’architecture Transformer.
+            Adaptation de l'architecture Vision Transformer (ViT) au problème de classification de chiffres manuscrits (MNIST). Inspiré par l'article <em>"An Image is Worth 16x16 Words"</em>, ce projet démontre que les Transformers, conçus initialement pour le langage, peuvent être efficacement transférés à la vision. En découpant les images en "patches" et en les traitant comme des tokens, le modèle atteint <strong>88,13 % de précision</strong> après seulement 20 époques — une preuve convaincante de la polyvalence de l'architecture Transformer.
         </p>
         <div class="tags">
             <span class="tag">Computer Vision</span>
@@ -150,10 +181,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Modèles N-gram avec JAX</h3>
-            <a href="https://github.com/5uru/OpenLabs/tree/main/ngram" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/OpenLabs/tree/main/ngram" class="project-hook">[lien]</a>
         </div>
         <p>
-            Implémentation d’un modèle de langage statistique (unigramme et bigramme) en JAX, entraîné sur des extraits des œuvres de Molière. Le projet inclut la gestion des mots rares via le token <code><unk></code> et l’application du lissage de Laplace pour éviter les probabilités nulles. Une exploration élégante des fondements historiques du traitement du langage, revisitée avec des outils modernes de calcul accéléré.
+            Implémentation d'un modèle de langage statistique (unigramme et bigramme) en JAX, entraîné sur des extraits des œuvres de Molière. Le projet inclut la gestion des mots rares via le token <code>&lt;unk&gt;</code> et l'application du lissage de Laplace pour éviter les probabilités nulles. Une exploration élégante des fondements historiques du traitement du langage, revisitée avec des outils modernes de calcul accéléré.
         </p>
         <div class="tags">
             <span class="tag">NLP</span>
@@ -167,11 +198,11 @@
     <div class="project">
         <div class="project-title">
             <h3>AlexNet & VGG simplifiés avec TinyGrad</h3>
-            <a href="https://github.com/5uru/Stream/tree/main/alexnet" class="project-hook"> [AlexNet]</a>
-            <a href="https://github.com/5uru/Stream/tree/main/vgg" class="project-hook"> [VGG]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/alexnet" class="project-hook">[AlexNet]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/vgg" class="project-hook">[VGG]</a>
         </div>
         <p>
-            Réimplémentation de deux architectures classiques de réseaux convolutifs — AlexNet et une version allégée de VGG (8 couches) — en utilisant <strong>TinyGrad</strong>, un framework minimaliste de deep learning. Entraînés sur CIFAR-10, ces modèles atteignent tous deux <strong>75 % de précision</strong> après 7 000 pas d’entraînement. Ce projet illustre ma capacité à recréer des architectures fondatrices avec des outils expérimentaux, tout en comprenant les compromis entre complexité et performance.
+            Réimplémentation de deux architectures classiques de réseaux convolutifs — AlexNet et une version allégée de VGG (8 couches) — en utilisant <strong>TinyGrad</strong>, un framework minimaliste de deep learning. Entraînés sur CIFAR-10, ces modèles atteignent tous deux <strong>75 % de précision</strong> après 7 000 pas d'entraînement. Ce projet illustre ma capacité à recréer des architectures fondatrices avec des outils expérimentaux, tout en comprenant les compromis entre complexité et performance.
         </p>
         <div class="tags">
             <span class="tag">Computer Vision</span>
@@ -186,10 +217,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Restricted Boltzmann Machine (RBM) pour recommandation</h3>
-            <a href="https://github.com/5uru/Stream/tree/main/rbm" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/rbm" class="project-hook">[lien]</a>
         </div>
         <p>
-            Développement d’une RBM avec TinyGrad pour recommander des livres à partir du jeu de données GoodBooks-10k (150 000 évaluations). Le modèle réduit l’erreur moyenne de 0,029 à 0,005 et augmente l’énergie libre de 150 à 280, signe d’une meilleure modélisation des préférences utilisateurs. Une plongée dans les méthodes génératives et non supervisées, souvent négligées au profit des architectures modernes, mais toujours pertinentes pour des tâches de recommandation explicites.
+            Développement d'une RBM avec TinyGrad pour recommander des livres à partir du jeu de données GoodBooks-10k (150 000 évaluations). Le modèle réduit l'erreur moyenne de 0,029 à 0,005 et augmente l'énergie libre de 150 à 280, signe d'une meilleure modélisation des préférences utilisateurs. Une plongée dans les méthodes génératives et non supervisées, souvent négligées au profit des architectures modernes, mais toujours pertinentes pour des tâches de recommandation explicites.
         </p>
         <div class="tags">
             <span class="tag">Recommendation System</span>
@@ -203,11 +234,11 @@
     <div class="project">
         <div class="project-title">
             <h3>Optimiseurs personnalisés avec TinyGrad</h3>
-            <a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer" class="project-hook"> [AdamW]</a>
-            <a href="https://github.com/5uru/Stream/tree/main/lion_optimizer" class="project-hook"> [Lion]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/adamW_optimizer" class="project-hook">[AdamW]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/lion_optimizer" class="project-hook">[Lion]</a>
         </div>
         <p>
-            Implémentation manuelle de deux optimiseurs avancés — <strong>AdamW</strong> et <strong>Lion</strong> — dans TinyGrad, puis application à l’entraînement d’un CNN sur MNIST. Les deux convergent rapidement : perte initiale de 2,0 à 0,02 en 5 000 pas, avec une précision de <strong>99 %</strong> en quelques centaines d’itérations. Ce travail montre ma maîtrise des mécanismes d’optimisation, cœur du deep learning moderne, même dans des environnements minimalistes.
+            Implémentation manuelle de deux optimiseurs avancés — <strong>AdamW</strong> et <strong>Lion</strong> — dans TinyGrad, puis application à l'entraînement d'un CNN sur MNIST. Les deux convergent rapidement : perte initiale de 2,0 à 0,02 en 5 000 pas, avec une précision de <strong>99 %</strong> en quelques centaines d'itérations. Ce travail montre ma maîtrise des mécanismes d'optimisation, cœur du deep learning moderne, même dans des environnements minimalistes.
         </p>
         <div class="tags">
             <span class="tag">Optimization</span>
@@ -222,10 +253,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Graph Convolutional Network (GCN)</h3>
-            <a href="https://github.com/5uru/Stream/tree/main/gcn" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/gcn" class="project-hook">[lien]</a>
         </div>
         <p>
-            Construction d’un réseau de convolution sur graphe (GCN) avec TinyGrad pour détecter les communautés dans le célèbre jeu de données Zachary Karate Club. Le modèle atteint <strong>100 % de précision</strong> dès la 20<sup>e</sup> époque, démontrant la puissance des GNNs pour capturer la structure topologique des réseaux sociaux, même avec des outils légers.
+            Construction d'un réseau de convolution sur graphe (GCN) avec TinyGrad pour détecter les communautés dans le célèbre jeu de données Zachary Karate Club. Le modèle atteint <strong>100 % de précision</strong> dès la 20<sup>e</sup> époque, démontrant la puissance des GNNs pour capturer la structure topologique des réseaux sociaux, même avec des outils légers.
         </p>
         <div class="tags">
             <span class="tag">GNN</span>
@@ -239,10 +270,10 @@
     <div class="project">
         <div class="project-title">
             <h3>RNN avec LSTM pour classification de texte</h3>
-            <a href="https://github.com/5uru/lstm-text-classification" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/lstm-text-classification" class="project-hook">[lien]</a>
         </div>
         <p>
-            Développement d’un RNN basé sur des cellules LSTM (via TinyGrad) pour classifier le sentiment (positif/négatif) de phrases. Le modèle utilise des embeddings pré-entraînés (spaCy) et une gestion dynamique du padding pour généraliser efficacement sur des données textuelles variées. Un hommage aux architectures séquentielles, encore utiles dans des contextes à faible ressource ou à interprétabilité contrôlée.
+            Développement d'un RNN basé sur des cellules LSTM (via TinyGrad) pour classifier le sentiment (positif/négatif) de phrases. Le modèle utilise des embeddings pré-entraînés (spaCy) et une gestion dynamique du padding pour généraliser efficacement sur des données textuelles variées. Un hommage aux architectures séquentielles, encore utiles dans des contextes à faible ressource ou à interprétabilité contrôlée.
         </p>
         <div class="tags">
             <span class="tag">NLP</span>
@@ -257,10 +288,10 @@
     <div class="project">
         <div class="project-title">
             <h3>Autoencoder sur MNIST</h3>
-            <a href="https://github.com/5uru/Stream/tree/main/AutoEncodeur" class="project-hook"> [lien]</a>
+            <a href="https://github.com/5uru/Stream/tree/main/AutoEncodeur" class="project-hook">[lien]</a>
         </div>
         <p>
-            Implémentation d’un autoencodeur minimaliste en TinyGrad, entraîné sans supervision sur MNIST. Le modèle produit des reconstructions propres et un espace latent structuré : une visualisation T-SNE révèle une séparation nette entre les classes de chiffres. Ce projet explore l’apprentissage non supervisé et la compression de représentations, fondements de nombreuses techniques modernes en IA générative.
+            Implémentation d'un autoencodeur minimaliste en TinyGrad, entraîné sans supervision sur MNIST. Le modèle produit des reconstructions propres et un espace latent structuré : une visualisation T-SNE révèle une séparation nette entre les classes de chiffres. Ce projet explore l'apprentissage non supervisé et la compression de représentations, fondements de nombreuses techniques modernes en IA générative.
         </p>
         <div class="tags">
             <span class="tag">Autoencoder</span>
@@ -273,9 +304,18 @@
 
 </main>
 <footer>
-    <p><span class="copyleft">&copy;</span> 2025 Jonathan Suru. This work is free.</p>
+    <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
 </footer>
 <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+<script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
 </body>
 </html>

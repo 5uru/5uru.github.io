@@ -5,14 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Les Données en Deep Learning : Tenseurs</title>
     <link rel="stylesheet" href="../styles.css">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <meta name="description" content="Les données en deep learning : introduction aux tenseurs.">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:title" content="Les Données en Deep Learning : Tenseurs">
+    <meta property="og:description" content="Les données en deep learning : introduction aux tenseurs.">
+    <meta property="og:url" content="https://jonathansuru.me/articles/tenseur.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png">
+    <meta property="og:image:alt" content="Les Données en Deep Learning : Tenseurs">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Les Données en Deep Learning : Tenseurs">
+    <meta name="twitter:description" content="Les données en deep learning : introduction aux tenseurs.">
+    <meta name="twitter:image" content="https://jonathansuru.me/thumbnail.png">
+    <link rel="canonical" href="https://jonathansuru.me/articles/tenseur.html">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Les Données en Deep Learning : Tenseurs",
+        "description": "Les données en deep learning : introduction aux tenseurs.",
+        "url": "https://jonathansuru.me/articles/tenseur.html",
+        "datePublished": "2025-07-04",
+        "dateModified": "2025-07-04",
+        "author": {
+            "@type": "Person",
+            "name": "Jonathan Suru",
+            "url": "https://jonathansuru.me/about.html"
+        },
+        "publisher": {
+            "@type": "Person",
+            "name": "Jonathan Suru"
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://jonathansuru.me/articles/tenseur.html"
+        }
+    }
+    </script>
 </head>
 <body>
 <header>
     <h1>Jonathan Suru</h1>
-    <nav>
-        <a href="../index.html">Accueil</a> |
-        <a href="../projects.html">Projets</a> |
+        <nav>
+        <a href="../index.html">Accueil</a><span class="sep">/</span>
+        <a href="../projects.html">Projets</a><span class="sep">/</span>
+        <a href="../papers.html">Papiers de Recherche</a><span class="sep">/</span>
         <a href="../about.html">À propos</a>
+                <button id="theme-toggle" aria-label="Changer de thème">
+            <span class="icon-sun">&#9788;</span>
+            <span class="icon-moon">&#9790;</span>
+        </button>
     </nav>
 </header>
 <h1>Les Données en Deep Learning : Tenseurs</h1>
@@ -124,10 +179,19 @@ superficie_moyenne = torch.mean(tensor[:, 1, [3,17]][tensor[:, 2, :] == 3], dim=
     <a href="https://www.youtube.com/watch?v=PRrpGuzpJfo&list=RDPRrpGuzpJfo&start_radio=1" target="_blank">Écouter sur YouTube</a>
 </div>
 <footer>
-    <p><span class="copyleft">&copy;</span> 2024 Jonathan Suru. This work is free.</p>
+    <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
 </footer>
 <!-- 100% privacy-first analytics -->
 <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+<script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
 </body>
 </html>

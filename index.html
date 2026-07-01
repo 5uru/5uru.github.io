@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png"/>
-    <meta property="og:image:alt" content="Code Learn Share" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
     <title>Jonathan Suru</title>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <script>
         window.TallyConfig = {
           "formId": "3lo6WV",
@@ -24,204 +29,207 @@
           }
         };
     </script>
-
     <script async src="https://tally.so/widgets/embed.js"></script>
+    <meta name="description" content="Blog de Jonathan Suru : notes sur l'intelligence artificielle, le deep learning, JAX/Flax et l'open source.">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:title" content="Jonathan Suru — IA, Deep Learning et Open Source">
+    <meta property="og:description" content="Blog de Jonathan Suru : notes sur l'intelligence artificielle, le deep learning, JAX/Flax et l'open source.">
+    <meta property="og:url" content="https://jonathansuru.me/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png">
+    <meta property="og:image:alt" content="Jonathan Suru — IA, Deep Learning et Open Source">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jonathan Suru — IA, Deep Learning et Open Source">
+    <meta name="twitter:description" content="Blog de Jonathan Suru : notes sur l'intelligence artificielle, le deep learning, JAX/Flax et l'open source.">
+    <meta name="twitter:image" content="https://jonathansuru.me/thumbnail.png">
+    <link rel="canonical" href="https://jonathansuru.me/">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Jonathan Suru",
+        "url": "https://jonathansuru.me",
+        "description": "Notes sur l'IA, le deep learning et l'open source.",
+        "author": {
+            "@type": "Person",
+            "name": "Jonathan Suru"
+        }
+    }
+    </script>
 </head>
 <body>
 <header>
     <h1>Jonathan Suru</h1>
     <nav>
-        <a href="index.html">Accueil</a> |
-        <a href="projects.html">Projets</a> |
-        <a href="papers.html">Papiers de Recherche</a> |
+        <a href="index.html">Accueil</a><span class="sep">/</span>
+        <a href="projects.html">Projets</a><span class="sep">/</span>
+        <a href="papers.html">Papiers de Recherche</a><span class="sep">/</span>
         <a href="about.html">À propos</a>
+        <button id="theme-toggle" aria-label="Changer de thème">
+            <span class="icon-sun">&#9788;</span>
+            <span class="icon-moon">&#9790;</span>
+        </button>
     </nav>
 </header>
 <main>
-
-    <div class="pack-cta">
-        🎁 <strong>AI Prototype Pack Vol.1</strong> — Gratuit.
-        <a href="https://openlabs.mychariow.shop/prd_5re50b" target="_blank" rel="noopener">Télécharger</a>
-    </div>
-    <article>
-
-        <h3><a href="articles/choisir_un_llm.html">Comment choisir le bon LLM ?</a></h3>
-        <p class="article-meta">Publié le : 22 juin 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/lif_model.html">Les Neurosciences Computationnelles : Le Modèle LIF</a></h3>
-        <p class="article-meta">Publié le : 24 mai 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/computational_neuroscience.html">Les Neurosciences Computationnelles : Introduction.</a></h3>
-        <p class="article-meta">Publié le : 18 mai 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/vibe_coding_and_deep_learning.html">Deep Learning et Vibe Coding : Mon retour d'expérience.</a></h3>
-        <p class="article-meta">Publié le : 29 avril 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/cycle_de_vie_projet_ia.html">Le Cycle de Vie d'un Projet IA : De l'Idée à la Production.</a></h3>
-        <p class="article-meta">Publié le : 21 avril 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/veille_ia.html">Veille IA : Pourquoi je mise sur les petites startups et l'Open Source pour anticiper demain.</a></h3>
-        <p class="article-meta">Publié le : 23 février 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/distillation_part_1.html">Knowledge Distillation : L'Art de Compresser l'Intelligence (Partie 1).</a></h3>
-        <p class="article-meta">Publié le : 16 février 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/raspberry_pi_en_serveur.html">Transformer un Raspberry Pi en serveur.</a></h3>
-        <p class="article-meta">Publié le : 5 février 2026 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/healthbox.html">HealthBox : Bâtir une souveraineté du diagnostic médical en Afrique.</a></h3>
-        <p class="article-meta">Publié le : 17 décembre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/bootcamp_ia_2025.html">Plongée au cœur de l'innovation : Mon Bootcamp IA avec le PNUD en Guinée.</a></h3>
-        <p class="article-meta">Publié le : 07 décembre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/intro-rl-partie-2.html">Introduction Au Reinforcement Learning (Partie 2).</a></h3>
-        <p class="article-meta">Publié le : 24 octobre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/intro-rl-partie-1.html">Introduction Au Reinforcement Learning.</a></h3>
-        <p class="article-meta">Publié le : 23 octobre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/rag.html">RAG : Le Guide Complet pour des Chatbots Fiables et Intelligents.</a></h3>
-        <p class="article-meta">Publié le : 16 octobre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/algorithme_évolutionniste.html">Algorithmes évolutionnaires.</a></h3>
-        <p class="article-meta">Publié le : 9 octobre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/cnn_grad_cam.html">Grad-CAM : localiser l’attention d’un CNN grâce aux gradients.</a></h3>
-        <p class="article-meta">Publié le : 7 octobre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/transformer.html">Comprendre le Transformer, pas à pas.</a></h3>
-        <p class="article-meta">Publié le : 4 octobre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/intro_qml.html">Introduction Au Quantum Machine Learning.</a></h3>
-        <p class="article-meta">Publié le : 30 septembre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/ngram.html">Retour aux sources : redécouvrir les modèles n-gram avec JAX et Molière.</a></h3>
-        <p class="article-meta">Publié le : 26 septembre 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/dli25_vector_calculus.html">Calcul Vectoriel : Fondements Essentiels pour le Machine Learning.</a></h3>
-        <p class="article-meta">Publié le : 28 août 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/dli25_linear_algebra.html">L'Algèbre Linéaire : Fondements Essentiels pour le Machine Learning.</a></h3>
-        <p class="article-meta">Publié le : 27 août 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/notes_ai.html">Notes sur l'Intelligence Artificielle : Fondamentaux et Concepts Clés.</a></h3>
-        <p class="article-meta">Publié le : 26 août 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/dli25_intro.html">Rétrospective avant le Deep Learning Indaba 2025.</a></h3>
-        <p class="article-meta">Publié le : 16 août 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/mon_expérience_avec_les_gpu_droplets_amd_pour_le_deep_learning.html">Mon Expérience avec les GPU Droplets AMD pour le Deep Learning.</a></h3>
-        <p class="article-meta">Publié le : 1 août 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/audio_en_deep_learning.html">Les Données en Deep Learning : Audio.</a></h3>
-        <p class="article-meta">Publié le : 7 juillet 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/images_en_deep_learning.html">Les Données en Deep Learning : Images.</a></h3>
-        <p class="article-meta">Publié le : 6 juillet 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/texte_en_deep_learning.html">Les Données en Deep Learning : Textes.</a></h3>
-        <p class="article-meta">Publié le : 5 juillet 2025 </p>
-    </article>
-    <article>
-
-        <h3><a href="articles/tenseur.html">Les Données en Deep Learning : Tenseurs.</a></h3>
-        <p class="article-meta">Publié le : 4 juillet 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/discute.html">Discute : Ma Mise à Jour Essentielle pour Pratiquer l'Anglais.</a></h3>
-        <p class="article-meta">Publié le : 22 juin 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/open_source_et_afrique.html">Réflexion sur l'Open Source : Au-delà de la Technologie.</a></h3>
-        <p class="article-meta">Publié le : 22 avril 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/vit.html">Implémentation d'une Vision Transformer (ViT) avec Flax et JAX pour la classification MNIST.</a></h3>
-        <p class="article-meta">Publié le : 3 avril 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/introduction-jax-flax.html">Introduction à JAX et Flax.</a></h3>
-        <p class="article-meta">Publié le : 27 mars 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/Transformers_without_normalization.html">Les Transformers sans normalisation : une approche innovante avec DyT, JAX et Flax.</a></h3>
-        <p class="article-meta">Publié le : 26 mars 2025 </p>
-    </article>
-    <article>
-    <h3><a href="articles/CNN_avec_JAX.html">Entraîner un CNN avec JAX : Un Guide Simple et Complet.</a></h3>
-    <p class="article-meta">Publié le : 26 février 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/Couches_de_Réseaux_Neuronaux_avec_JAX.html">Exploration des Couches de Réseaux Neuronaux avec JAX.</a></h3>
-        <p class="article-meta">Publié le : 23 février 2025 </p>
-    </article>
-    <article>
-        <h3><a href="articles/awale_1.html">L'Awalé rencontre l'IA : Un voyage dans l'apprentissage par renforcement (Partie1).</a></h3>
-        <p class="article-meta">Publié le : 21 octobre 2024 </p>
-    </article>
-    <article>
-        <h3><a href="articles/meta-hackaton-indaba2024.html">Plongée Technique dans l'Hackathon Meta : Notre Solution de Traduction Anglais-Twi</a></h3>
-        <p class="article-meta">Publié le : 10 septembre 2024 </p>
-    </article>
-    <article>
-        <h3><a href="articles/indaba2024.html">L'Afrique à l'avant-garde de l'IA : Mon voyage transformateur au Deep Learning Indaba 2024</a></h3>
-        <p class="article-meta">Publié le : 9 septembre 2024 </p>
-    </article>
-    <article>
-        <h3><a href="articles/ia-et-afrique.html">L'Afrique a-t-elle vraiment besoin d'intelligence artificielle ?</a></h3>
-        <p class="article-meta">Publié le : 18 août 2024 </p>
-    </article>
+    <ul class="article-list">
+        <li>
+            <h3><a href="articles/choisir_un_llm.html">Comment choisir le bon LLM ?</a></h3>
+            <p class="article-meta">Publié le 22 juin 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/lif_model.html">Les Neurosciences Computationnelles : Le Modèle LIF</a></h3>
+            <p class="article-meta">Publié le 24 mai 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/computational_neuroscience.html">Les Neurosciences Computationnelles : Introduction.</a></h3>
+            <p class="article-meta">Publié le 18 mai 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/vibe_coding_and_deep_learning.html">Deep Learning et Vibe Coding : Mon retour d'expérience.</a></h3>
+            <p class="article-meta">Publié le 29 avril 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/cycle_de_vie_projet_ia.html">Le Cycle de Vie d'un Projet IA : De l'Idée à la Production.</a></h3>
+            <p class="article-meta">Publié le 21 avril 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/veille_ia.html">Veille IA : Pourquoi je mise sur les petites startups et l'Open Source pour anticiper demain.</a></h3>
+            <p class="article-meta">Publié le 23 février 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/distillation_part_1.html">Knowledge Distillation : L'Art de Compresser l'Intelligence (Partie 1).</a></h3>
+            <p class="article-meta">Publié le 16 février 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/raspberry_pi_en_serveur.html">Transformer un Raspberry Pi en serveur.</a></h3>
+            <p class="article-meta">Publié le 5 février 2026</p>
+        </li>
+        <li>
+            <h3><a href="articles/healthbox.html">HealthBox : Bâtir une souveraineté du diagnostic médical en Afrique.</a></h3>
+            <p class="article-meta">Publié le 17 décembre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/bootcamp_ia_2025.html">Plongée au cœur de l'innovation : Mon Bootcamp IA avec le PNUD en Guinée.</a></h3>
+            <p class="article-meta">Publié le 07 décembre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/intro-rl-partie-2.html">Introduction Au Reinforcement Learning (Partie 2).</a></h3>
+            <p class="article-meta">Publié le 24 octobre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/intro-rl-partie-1.html">Introduction Au Reinforcement Learning.</a></h3>
+            <p class="article-meta">Publié le 23 octobre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/rag.html">RAG : Le Guide Complet pour des Chatbots Fiables et Intelligents.</a></h3>
+            <p class="article-meta">Publié le 16 octobre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/algorithme_évolutionniste.html">Algorithmes évolutionnaires.</a></h3>
+            <p class="article-meta">Publié le 9 octobre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/cnn_grad_cam.html">Grad-CAM : localiser l'attention d'un CNN grâce aux gradients.</a></h3>
+            <p class="article-meta">Publié le 7 octobre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/transformer.html">Comprendre le Transformer, pas à pas.</a></h3>
+            <p class="article-meta">Publié le 4 octobre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/intro_qml.html">Introduction Au Quantum Machine Learning.</a></h3>
+            <p class="article-meta">Publié le 30 septembre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/ngram.html">Retour aux sources : redécouvrir les modèles n-gram avec JAX et Molière.</a></h3>
+            <p class="article-meta">Publié le 26 septembre 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/dli25_vector_calculus.html">Calcul Vectoriel : Fondements Essentiels pour le Machine Learning.</a></h3>
+            <p class="article-meta">Publié le 28 août 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/dli25_linear_algebra.html">L'Algèbre Linéaire : Fondements Essentiels pour le Machine Learning.</a></h3>
+            <p class="article-meta">Publié le 27 août 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/notes_ai.html">Notes sur l'Intelligence Artificielle : Fondamentaux et Concepts Clés.</a></h3>
+            <p class="article-meta">Publié le 26 août 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/dli25_intro.html">Rétrospective avant le Deep Learning Indaba 2025.</a></h3>
+            <p class="article-meta">Publié le 16 août 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/mon_expérience_avec_les_gpu_droplets_amd_pour_le_deep_learning.html">Mon Expérience avec les GPU Droplets AMD pour le Deep Learning.</a></h3>
+            <p class="article-meta">Publié le 1 août 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/audio_en_deep_learning.html">Les Données en Deep Learning : Audio.</a></h3>
+            <p class="article-meta">Publié le 7 juillet 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/images_en_deep_learning.html">Les Données en Deep Learning : Images.</a></h3>
+            <p class="article-meta">Publié le 6 juillet 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/texte_en_deep_learning.html">Les Données en Deep Learning : Textes.</a></h3>
+            <p class="article-meta">Publié le 5 juillet 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/tenseur.html">Les Données en Deep Learning : Tenseurs.</a></h3>
+            <p class="article-meta">Publié le 4 juillet 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/discute.html">Discute : Ma Mise à Jour Essentielle pour Pratiquer l'Anglais.</a></h3>
+            <p class="article-meta">Publié le 22 juin 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/open_source_et_afrique.html">Réflexion sur l'Open Source : Au-delà de la Technologie.</a></h3>
+            <p class="article-meta">Publié le 22 avril 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/vit.html">Implémentation d'une Vision Transformer (ViT) avec Flax et JAX pour la classification MNIST.</a></h3>
+            <p class="article-meta">Publié le 3 avril 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/introduction-jax-flax.html">Introduction à JAX et Flax.</a></h3>
+            <p class="article-meta">Publié le 27 mars 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/Transformers_without_normalization.html">Les Transformers sans normalisation : une approche innovante avec DyT, JAX et Flax.</a></h3>
+            <p class="article-meta">Publié le 26 mars 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/CNN_avec_JAX.html">Entraîner un CNN avec JAX : Un Guide Simple et Complet.</a></h3>
+            <p class="article-meta">Publié le 26 février 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/Couches_de_Réseaux_Neuronaux_avec_JAX.html">Exploration des Couches de Réseaux Neuronaux avec JAX.</a></h3>
+            <p class="article-meta">Publié le 23 février 2025</p>
+        </li>
+        <li>
+            <h3><a href="articles/awale_1.html">L'Awalé rencontre l'IA : Un voyage dans l'apprentissage par renforcement (Partie1).</a></h3>
+            <p class="article-meta">Publié le 21 octobre 2024</p>
+        </li>
+        <li>
+            <h3><a href="articles/meta-hackaton-indaba2024.html">Plongée Technique dans l'Hackathon Meta : Notre Solution de Traduction Anglais-Twi</a></h3>
+            <p class="article-meta">Publié le 10 septembre 2024</p>
+        </li>
+        <li>
+            <h3><a href="articles/indaba2024.html">L'Afrique à l'avant-garde de l'IA : Mon voyage transformateur au Deep Learning Indaba 2024</a></h3>
+            <p class="article-meta">Publié le 9 septembre 2024</p>
+        </li>
+        <li>
+            <h3><a href="articles/ia-et-afrique.html">L'Afrique a-t-elle vraiment besoin d'intelligence artificielle ?</a></h3>
+            <p class="article-meta">Publié le 18 août 2024</p>
+        </li>
+    </ul>
 </main>
 <footer>
     <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
@@ -229,5 +237,14 @@
 <!-- 100% privacy-first analytics -->
 <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+<script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
 </body>
 </html>
