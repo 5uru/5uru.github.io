@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portage de modèle : Migrer de PyTorch à JAX/Flax</title>
+    <!-- Feuille de style externe -->
+    <link rel="stylesheet" href="../styles.css">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <meta name="description" content="Introduction aux algorithmes évolutionnaires et optimisation.">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:title" content="Algorithmes évolutionnaires">
+    <meta property="og:description" content="Introduction aux algorithmes évolutionnaires et optimisation.">
+    <meta property="og:url" content="https://jonathansuru.me/articles/algorithme_évolutionniste.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png">
+    <meta property="og:image:alt" content="Algorithmes évolutionnaires">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Portage de modèle : Migrer de PyTorch à JAX/Flax">
+    <meta name="twitter:description" content="Guide pour migrer des modèles PyTorch vers JAX/Flax.">
+    <meta name="twitter:image" content="https://jonathansuru.me/thumbnail.png">
+    <link rel="canonical" href="https://jonathansuru.me/articles/model_porting.html">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Portage de modèle : Migrer de PyTorch à JAX/Flax",
+            "description": "Guide pour migrer des modèles PyTorch vers JAX/Flax.",
+            "url": "https://jonathansuru.me/articles/model_porting.html",
+            "datePublished": "2025-10-09",
+            "dateModified": "2025-10-09",
+            "author": {
+                "@type": "Person",
+                "name": "Jonathan Suru",
+                "url": "https://jonathansuru.me/about.html"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Jonathan Suru"
+            },
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": "https://jonathansuru.me/articles/model_porting.html"
+            }
+        }
+
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <button class="nav-toggle" aria-label="Menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <nav>
+        <a href="../index.html">Accueil</a><span class="sep">/</span>
+        <a href="../projects.html">Projets</a><span class="sep">/</span>
+        <a href="../papers.html">Papiers de Recherche</a><span class="sep">/</span>
+        <a href="../about.html">À propos</a>
+        <button id="theme-toggle" aria-label="Changer de thème">
+            <span class="icon-sun">&#9788;</span>
+            <span class="icon-moon">&#9790;</span>
+        </button>
+    </nav>
+</header>
+
+<h1>Portage de modèle : Migrer de PyTorch à JAX/Flax</h1>
+<br>
+
+<p>Vous avez passé des jours à ajuster les hyperparamètres de votre modèle sur PyTorch, consommant des heures de calcul. Mais voilà : pour la mise en production, vous devez exploiter la puissance brute des TPU Google, ce qui exige d'utiliser JAX/Flax. Faut-il tout ré-entraîner de zéro ? Heureusement, non. C'est ce qu'on appelle le portage de modèle, et voici comment je m'y suis pris pour le réaliser sans perdre une miette de performance.</p>
+
+<h2>Qu'est-ce que le portage de modèle et pourquoi est-ce possible ?</h2>
+
+<p>Pour comprendre le portage, il faut se rappeler ce qu'est vraiment un réseau de neurones une fois l'entraînement terminé. Ce n'est plus un processus dynamique : c'est une immense suite d'opérations mathématiques figées, principalement des multiplications et des additions de matrices.</p>
+
+<p>Toute "l'intelligence" acquise par votre modèle est stockée sous forme de simples nombres (des float32 ou float16) : les <strong>poids</strong> (weights) et les <strong>biais</strong> (biases). PyTorch, JAX, TensorFlow... ne sont finalement que des interfaces qui ordonnent à une puce d'exécuter ces opérations.</p>
+
+<p>Porter un modèle, c'est donc simplement extraire ces nombres pour les injecter dans un modèle équivalent dans un autre framework. C'est possible précisément parce que les mathématiques sous-jacentes sont universelles. D'ailleurs, cette universalité dépasse largement les frameworks classiques. Puisqu'un modèle n'est qu'un fichier contenant des matrices de nombres, le portage peut tout à fait se faire en dehors de tout framework existant. Si vous avez besoin d'aller en bas niveau pour des raisons de performance extrême, ou que vous souhaitez changer complètement de langage de programmation (par exemple passer de Python à Rust, Zig ou C++), il vous suffit de lire ce fichier de poids et de recoder vous-même les boucles de multiplications matricielles. Le modèle n'a pas besoin de PyTorch ou de JAX pour "exister".</p>
+
+<p>Bien sûr, pour des cas standards de transfert entre écosystèmes, des formats intermédiaires comme ONNX existent pour automatiser une partie du travail, mais comprendre le portage manuel reste la clé pour garder un contrôle total et ne pas se retrouver bloqué face à une architecture un peu particulière. La seule vraie difficulté du portage, c'est de comprendre comment chaque framework décide de ranger ces nombres dans la mémoire.</p>
+<p>Pour mettre ces principes en pratique et voir concrètement comment les choses se passent, j'ai décidé de m'attaquer à un petit modèle CNN.</p>
+
+<h2>L'architecture de notre CNN</h2>
+
+<p>Pour rendre les choses concrètes, regardons le modèle que je vais porter. Il s'agit d'un petit réseau de neurones convolutif (SmallCNN) conçu pour classifier des vêtements du jeu de données Fashion-MNIST (des images en niveaux de gris de 28x28 pixels réparties en 10 catégories). L'architecture est classique : deux blocs Convolution + Pooling pour extraire les features visuelles, suivis d'un aplatissement et de deux couches denses (Linéaires) pour prendre la décision finale.</p>
+
+<h3>Observer la structure des modèles</h3>
+
+<p>Avant de toucher au code de portage, il est indispensable de visualiser clairement la structure de notre modèle et la forme des tenseurs qui y transitent. Sous PyTorch, j'utilise <code>torchsummary</code> dans ce but :</p>
+
+<pre><code>from torchsummary import summary
+# Permet de visualiser la structure : couches, tailles d'entrée/sortie, et forme des poids
+summary(model, input_size=(64, 1, 28, 28), col_names=["input_size", "output_size", "num_params", "kernel_size"])</code></pre>
+
+<p>De l'autre côté, je crée le même modèle sous Flax. Pour visualiser son architecture avec le format NHWC attendu, on utilise <code>nnx.tabulate</code> :</p>
+
+<pre><code>import jax.numpy as jnp
+from flax import nnx
+# tabulate permet de mieux visualiser l'architecture sous JAX
+print(nnx.tabulate(flax_model, jnp.ones((1, 28, 28, 1))))</code></pre>
+
+<p>Mais si, en plus de la structure, j'inspecte les poids bruts de ce modèle Flax vierge :</p>
+
+<pre><code>flax_state = nnx.state(flax_model)
+for key, value in flax_state.items():
+    print(f"{key}: {value}")</code></pre>
+
+<p>On voit des poids initialisés aléatoirement, mais surtout, tous les biais sont exactement à zéro. C'est l'état par défaut d'un modèle qui n'a rien appris. Notre but va être de remplacer ces valeurs par celles de PyTorch.</p>
+<p>Pour bien comprendre ce qui va se passer lors du portage, voici un tableau qui compare directement comment les données se transforment étape par étape d'un côté sous PyTorch, et de l'autre sous Flax. Vous y verrez immédiatement que si les dimensions sont identiques, leur ordre change totalement à cause du format NCHW pour PyTorch et NHWC pour Flax :</p>
+
+<table>
+    <tr>
+        <th>Couche</th>
+        <th>Transformation</th>
+        <th>Forme PyTorch (NCHW)</th>
+        <th>Forme Flax (NHWC)</th>
+    </tr>
+    <tr>
+        <td><strong>Entrée</strong></td>
+        <td>Lot de 64 images 28x28 (1 canal)</td>
+        <td>(64, <strong>1</strong>, 28, 28)</td>
+        <td>(64, 28, 28, <strong>1</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>Conv1</strong></td>
+        <td>1 vers 32 canaux, noyau 3x3</td>
+        <td>(64, <strong>32</strong>, 28, 28)</td>
+        <td>(64, 28, 28, <strong>32</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>MaxPool</strong></td>
+        <td>Réduction spatiale par 2</td>
+        <td>(64, <strong>32</strong>, 14, 14)</td>
+        <td>(64, 14, 14, <strong>32</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>Conv2</strong></td>
+        <td>32 vers 64 canaux, noyau 3x3</td>
+        <td>(64, <strong>64</strong>, 14, 14)</td>
+        <td>(64, 14, 14, <strong>64</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>MaxPool</strong></td>
+        <td>Réduction spatiale par 2</td>
+        <td>(64, <strong>64</strong>, 7, 7)</td>
+        <td>(64, 7, 7, <strong>64</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>Flatten</strong></td>
+        <td>Aplatissement (64x7x7 = 3136)</td>
+        <td>(64, <strong>3136</strong>)</td>
+        <td>(64, <strong>3136</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>FC1 (Linéaire)</strong></td>
+        <td>Réduction de 3136 à 128 neurones</td>
+        <td>(64, <strong>128</strong>)</td>
+        <td>(64, <strong>128</strong>)</td>
+    </tr>
+    <tr>
+        <td><strong>FC2 (Linéaire)</strong></td>
+        <td>Sortie des 10 classes</td>
+        <td>(64, <strong>10</strong>)</td>
+        <td>(64, <strong>10</strong>)</td>
+    </tr>
+</table>
+<br>
+
+<p>Ce tableau illustre parfaitement le problème central : bien que les tailles de lot (64) et les dimensions spatiales (28x28, puis 14x14, puis 7x7) restent les mêmes, la position des canaux (mis en gras) bouge constamment. Et comme si cela ne suffisait pas, regardons l'étape <strong>Flatten</strong> : les deux frameworks aboutissent au même chiffre (3136), mais ils n'y arrivent pas en lisant la grille 7x7x64 dans le même ordre ! C'est ce détail qui va nous causer le plus de soucis.</p>
+
+<h3>Le problème pratique : NCHW contre NHWC</h3>
+
+<p>Comme le montre le tableau, la différence fondamentale de stockage des images oppose le format <strong>NCHW</strong> de PyTorch <code>(Batch, Channels, Hauteur, Largeur)</code> au format <strong>NHWC</strong> de JAX/Flax <code>(Batch, Hauteur, Largeur, Channels)</code>.</p>
+<p>Maintenant que l'on voit clairement ce que l'on a des deux côtés, comment fait-on le pont entre les deux ?</p>
+
+<h2>Les trois transformations mathématiques du portage</h2>
+
+<p>Pour copier les poids sans corrompre le modèle, notre moteur de portage doit appliquer trois transformations très précises.</p>
+
+<h3>1. Les couches Denses (Linear)</h3>
+
+<p>C'est l'étape la plus directe. La seule différence réside dans l'ordre de la matrice de poids. PyTorch stocke sa matrice sous la forme <code>(Sortie, Entrée)</code>, tandis que Flax l'exige en <code>(Entrée, Sortie)</code>, ce qui se résout par une simple transposée mathématique pour inverser les lignes et les colonnes. Il faut également penser à mapper les noms lors du transfert, car PyTorch appelle ce poids <code>weight</code> là où Flax l'appelle <code>kernel</code>.</p>
+
+<h3>2. Les Convolutions</h3>
+
+<p>Puisque le format global de l'image change de NCHW vers NHWC, les filtres de la convolution doivent logiquement suivre le même mouvement. PyTorch stocke le filtre en <code>(Canaux_Sortie, Canaux_Entrée, Hauteur, Largeur)</code>, mais Flax exige de mettre les dimensions spatiales en premier : <code>(Hauteur, Largeur, Canaux_Entrée, Canaux_Sortie)</code>. On corrige cela en déplaçant les axes du tenseur avec la fonction <code>permute(2, 3, 1, 0)</code>, en n'oubliant pas là encore de renommer le <code>weight</code> en <code>kernel</code>.</p>
+
+<h3>3. Le piège de l'aplatissement (Quand la Convolution rencontre la couche Dense)</h3>
+
+<p>C'est l'étape où 90% des portages échouent silencieusement, produisant un modèle qui donne des résultats aléatoires. Après nos couches de convolution, on a un tenseur 3D (par exemple : 64 canaux, 7x7 pixels). Pour l'envoyer à la couche Dense, il faut l'aplatir en une ligne unique de 3136 éléments. Mais PyTorch et JAX ne parcourent pas ce tenseur dans le même ordre.</p>
+
+<p>Prenons un exemple visuel avec un minuscule tenseur de 2x2 pixels ayant 2 canaux ($C_1$ et $C_2$). En mémoire, ce bloc 3D ressemble à ça :</p>
+
+<p>$$ \text{Image} = \begin{bmatrix} [C_1, C_2]_{P_1} & [C_1, C_2]_{P_2} \\ [C_1, C_2]_{P_3} & [C_1, C_2]_{P_4} \end{bmatrix} $$</p>
+
+<p><strong>Sous PyTorch (Channel-major) :</strong> Le canal est placé au début (NCHW). L'algorithme va faire varier la position spatiale le plus rapidement, et le canal le plus lentement. Il va donc lire tout le canal 1, puis tout le canal 2. Le vecteur aplati est :</p>
+
+<p>$$ V_{\text{PyTorch}} = \begin{bmatrix} C_1P_1 \\ \mathbf{C_1P_2} \\ C_1P_3 \\ C_1P_4 \\ \mathbf{C_2P_1} \\ C_2P_2 \\ C_2P_3 \\ C_2P_4 \end{bmatrix} $$</p>
+
+<p><strong>Sous JAX (Spatial-major) :</strong> Le canal est à la fin (NHWC). L'algorithme va faire varier le canal le plus rapidement, et la position spatiale le plus lentement. Il lit tous les canaux du pixel 1, puis tous les canaux du pixel 2. Le vecteur aplati devient :</p>
+
+<p>$$ V_{\text{JAX}} = \begin{bmatrix} C_1P_1 \\ \mathbf{C_2P_1} \\ C_1P_2 \\ C_2P_2 \\ C_1P_3 \\ C_2P_3 \\ C_1P_4 \\ C_2P_4 \end{bmatrix} $$</p>
+
+<p>Regardez bien les valeurs en gras à la deuxième ligne. Dans PyTorch, la deuxième case représente le canal 1 du pixel 2 ($C_1P_2$). Dans JAX, la deuxième case représente le canal 2 du pixel 1 ($C_2P_1$). Si vous vous contentez de transposer la matrice de la couche Dense pour passer de PyTorch à Flax, la ligne numéro 2 de cette matrice de poids (qui a appris à traiter $C_1P_2$ sous PyTorch) va se retrouver connectée à $C_2P_1$ sous JAX. Les connexions sont totalement perverties.</p>
+
+<p>Notre moteur doit donc faire plus qu'une simple transposée : il doit calculer une permutation précise pour réordonner les lignes de la couche Dense, afin que la ligne entraînée pour $C_1P_2$ vienne se placer exactement à la 3ème position (là où JAX attend $C_1P_2$).</p>
+
+<p>Pour automatiser tout ça, j'ai construit un véritable moteur de traduction.</p>
+<h2>Plongée dans le moteur de portage</h2>
+
+<p>Pour construire ce moteur, je me suis d'ailleurs fortement inspiré des excellents exemples de la documentation JAXStack, en l'adaptant pour le rendre complètement récursif et générique. J'ai codé une classe <code>Torch2Flax</code> où les deux premières étapes se traduisent par ces fonctions d'aide :</p>
+
+
+<pre><code>def _conv_params_permute(name, torch_param):
+    if name == "weight":
+        # (out_c, in_c, H, W) -> (H, W, in_c, out_c)
+        return torch_param.permute(2, 3, 1, 0).contiguous()
+    return torch_param
+
+def _linear_params_permute(name, torch_param):
+    if name == "weight":
+        # (out_feat, in_feat) -> (in_feat, out_feat)
+        return torch_param.permute(1, 0).contiguous()
+    return torch_param</code></pre>
+
+<p>Le cœur du moteur utilise un dictionnaire pour faire le lien entre les objets PyTorch et Flax, en appliquant la bonne fonction de permutation et en gérant le renommage <code>weight</code> -> <code>kernel</code> :</p>
+
+<pre><code>class Torch2Flax:
+    def __init__(self):
+        self._last_conv_out_channels = None
+
+    modules_mapping_info = {
+        nn.Conv2d: {
+            "type": nnx.Conv,
+            "params_mapping": {"weight": "kernel", "bias": "bias"},
+            "params_transform": _conv_params_permute,
+        },
+        nn.Linear: {
+            "type": nnx.Linear,
+            "params_mapping": {"weight": "kernel", "bias": "bias"},
+            "params_transform": _linear_params_permute,
+        },
+        # ... (mapping aussi pour Identity, Flatten, ReLU qui n'ont pas de poids)
+    }</code></pre>
+
+<p>Comment ce moteur sait-il quelles couches comparer ? J'ai construit une marche arborée récursive. La méthode <code>copy_module</code> descend dans l'arborescence de PyTorch. Si elle voit un conteneur (comme <code>nn.Sequential</code>), elle avance enfant par enfant. Si elle voit un module avec des attributs (comme <code>self.conv1</code>), elle cherche l'attribut du même nom dans le modèle Flax et y plonge. Quand elle tombe enfin sur une couche de base (Conv ou Linear), elle appelle la copie de paramètres.</p>
+
+<p>C'est dans cette copie qu'on gère le piège de l'aplatissement. Le code détecte si une couche Linéaire fait suite à une Convolution, puis reconstruit mathématiquement l'ordre spatial de JAX :</p>
+
+<pre><code># Au sein de la méthode de copie des paramètres
+if (isinstance(torch_nn_module, nn.Linear)
+        and torch_key == "weight"
+        and self._last_conv_out_channels is not None):
+    C = self._last_conv_out_channels
+    in_features = torch_nn_module.in_features
+    if in_features > C and in_features % C == 0:
+        remaining = in_features // C
+        H = int(math.isqrt(remaining))
+        W = H
+        if H * W == remaining:
+            perm = torch.empty(in_features, dtype=torch.long)
+            # On recrée l'ordre exact pour passer de Channel-major à Spatial-major
+            for c_idx in range(C):
+                for h_idx in range(H):
+                    for w_idx in range(W):
+                        cm_idx = c_idx * H * W + h_idx * W + w_idx # Index PyTorch
+                        sm_idx = (h_idx * W + w_idx) * C + c_idx    # Index JAX
+                        perm[sm_idx] = cm_idx
+            torch_value = torch_value[perm] # Réordonnancement de la matrice !
+
+# On convertit enfin le tenseur PyTorch modifié en tableau JAX natif, puis on l'injecte directement pour écraser les anciens poids
+nnx_param.set_value(jnp.asarray(torch_value.data))</code></pre>
+
+<h2>Vérification et test de vérité</h2>
+
+<p>Après avoir exécuté le script de portage (<code>t2f.copy_module(model, flax_model)</code>), je relance ma commande d'inspection des poids Flax :</p>
+
+<pre><code>flax_state = nnx.state(flax_model)
+for key, value in flax_state.items():
+    print(f"{key}: {value}")</code></pre>
+
+<p>Les zéros ont disparu. Les biais ont maintenant des valeurs non nulles, et les poids correspondent parfaitement à ceux de PyTorch (aux permutations d'axes près). L'intelligence a réellement migré.</p>
+
+<p>Il ne reste plus qu'à tester le modèle avec de vraies données, sans oublier de transposer les images du jeu de test de NCHW vers NHWC à l'entrée :</p>
+
+<pre><code>for images, labels in test_loader:
+    images = images.numpy().transpose(0, 2, 3, 1) # NCHW -> NHWC
+    outputs = flax_model(jnp.array(images))
+    predictions = jnp.argmax(outputs, axis=1)
+    # ... calcul de l'accuracy</code></pre>
+
+<p>Résultat : <strong>91.61%</strong> en PyTorch, et <strong>91.61%</strong> en Flax. Le portage est un succès total.</p>
+
+<h2>Conclusion</h2>
+
+<p>En définitive, porter un modèle d'un framework à l'autre n'est pas de la magie noire, mais de la logique pure. Dès lors qu'on saisit qu'un réseau de neurones n'est qu'un empilement de matrices, le portage devient un simple exercice de traduction spatiale. Cette compétence vous rend totalement agnostique : vous n'êtes plus lié à un seul outil, et vous pouvez même exporter vos poids vers des langages comme Rust ou Zig pour un contrôle bas niveau absolu.</p>
+
+<p>Toutefois, il faut rester prudent : ici, nous avons manipulé un petit et simple CNN. Pour des modèles beaucoup plus imposants, comme des architectures de type Transformer (LLM, Vision Transformers), la traduction peut devenir nettement plus ardue, où la gestion des erreurs d'arrondi, des normalisations spécifiques et des couches d'attention se transforme en un véritable casse-tête ! Mais comprendre ces mécanismes de base reste la meilleure des clés.</p>
+
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://chris-tng.github.io/blog/transformer/nlp/flax/pytorch/jax/2020/12/16/tips-flax.html">Mon code</a></li>
+    <li><a href="https://docs.jaxstack.ai/en/latest/JAX_porting_PyTorch_model.html"> Porting a PyTorch model to JAX</a> de JAXStack </li>
+    <li><a href="https://flax-linen.readthedocs.io/en/latest/guides/converting_and_upgrading/convert_pytorch_to_flax.html">Convert PyTorch models to Flax</a> </li>
+    <li><a href="https://chris-tng.github.io/blog/transformer/nlp/flax/pytorch/jax/2020/12/16/tips-flax.html">Tips on converting pytorch models to flax</a></li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=9PukqhfMxfc" target="_blank">Écouter sur YouTube</a>
+</div>
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+<script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
+<script>
+    document.querySelector('.nav-toggle').addEventListener('click', function() {
+        this.classList.toggle('open');
+        document.querySelector('nav').classList.toggle('open');
+    });
+</script>
+</body>
+</html>

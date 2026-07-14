@@ -617,3 +617,13 @@ strong {
     display: none;
   }
 }
+
+table {
+  border-collapse: collapse; /* Replaces cellspacing="0" */
+}
+
+table td,
+table th {
+  border: 1px solid black;  /* Replaces border="1" */
+  padding: 8px;             /* Replaces the removed cellpadding="8" */
+}
