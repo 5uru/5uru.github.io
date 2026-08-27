@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <meta name="description" content="Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum.">
+    <meta name="author" content="Jonathan Suru">
+    <meta property="og:title" content="Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum">
+    <meta property="og:description" content="Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum.">
+    <meta property="og:url" content="https://jonathansuru.me/articles/squirell_rl.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Jonathan Suru">
+    <meta property="og:image" content="https://jonathansuru.me/thumbnail.png">
+    <meta property="og:image:alt" content="Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum">
+    <meta name="twitter:description" content="Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum.">
+    <meta name="twitter:image" content="https://jonathansuru.me/thumbnail.png">
+    <link rel="canonical" href="https://jonathansuru.me/articles/squirell_rl.html">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum",
+            "description": "Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum.",
+            "url": "https://jonathansuru.me/articles/squirell_rl.html",
+            "datePublished": "2025-07-04",
+            "dateModified": "2025-07-04",
+            "author": {
+                "@type": "Person",
+                "name": "Jonathan Suru",
+                "url": "https://jonathansuru.me/about.html"
+            },
+            "publisher": {
+                "@type": "Person",
+                "name": "Jonathan Suru"
+            },
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": "https://jonathansuru.me/articles/squirell_rl.html"
+            }
+        }
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+</head>
+<body>
+<header>
+    <h1>Jonathan Suru</h1>
+    <button class="nav-toggle" aria-label="Menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+    <nav>
+        <a href="../index.html">Accueil</a><span class="sep">/</span>
+        <a href="../projects.html">Projets</a><span class="sep">/</span>
+        <a href="../papers.html">Papiers de Recherche</a><span class="sep">/</span>
+        <a href="../about.html">À propos</a>
+        <button id="theme-toggle" aria-label="Changer de thème">
+            <span class="icon-sun">&#9788;</span>
+            <span class="icon-moon">&#9790;</span>
+        </button>
+    </nav>
+</header>
+
+<h1>Entraîner un agent RL sur une grille 10×10 : environnement, récompenses et curriculum</h1>
+<br>
+
+<p>Dans cet article, je vous présente le projet sur lequel j'ai travaillé ces dernières semaines : un agent d'apprentissage par renforcement évoluant sur une grille de 10×10 cases. Sa mission est simple en apparence rejoindre une noix tout en évitant des murs et un prédateur mais la mise en œuvre d'un apprentissage efficace m'a confronté à plusieurs défis d'ingénierie.</p>
+<p>Plutôt que de me concentrer uniquement sur l'algorithme, j'ai exploré trois axes qui se sont révélés tout aussi déterminants : la génération d'environnements garantissant l'existence d'une solution , la conception d'une fonction de récompense qui guide l'agent sans l'enfermer dans des comportements parasites et enfin la mise en place d'un curriculum d'apprentissage pour structurer la progression par étapes.</p>
+<p>Le résultat est un agent qui atteint un taux de réussite moyen de <strong>98,2 %</strong> sur sept niveaux de difficulté, dont <strong>92 %</strong> sur le plus exigeant (prédateur rapide).</p>
+
+<h2>L'environnement : poser les bases</h2>
+<p>Pour commencer, posons les bases de l'environnement dans lequel l'agent va évoluer.</p>
+
+<h3>La grille et les règles</h3>
+<p>L'environnement est une grille carrée de <strong>10×10 cases</strong>. J'ai choisi cette taille parce qu'elle offre suffisamment d'espace pour des chemins complexes tout en restant accessible à un agent qui débute. Une grille plus petite (8×8) limite les possibilités de détour, tandis qu'une plus grande (15×15) allonge inutilement l'exploration.</p>
+<p>L'agent dispose de quatre actions : haut, bas, gauche, droite. S'il tente de sortir de la grille ou de pénétrer dans un mur, il reste sur place. La cible "une noix" est placée à une <strong>distance de Manhattan</strong> \( d \) comprise entre 1 et 7. Cette distance est le principal indicateur de difficulté : plus elle est grande, plus j'ajoute de murs sur le chemin.</p>
+<p>À partir du niveau 5, un prédateur entre en jeu. Sa règle de déplacement est simple : à chaque pas, il se déplace d'une case vers l'agent avec une probabilité qui définit sa vitesse. Il est immobile au niveau 5, lent au niveau 6, et rapide au niveau 7. L'épisode se termine sur un succès (la noix est atteinte), une capture (le prédateur rejoint l'agent), ou un timeout après 400 pas.</p>
+
+<h3>L'observation</h3>
+<p>Au-delà des règles de déplacement, la manière dont l'agent perçoit le monde est tout aussi cruciale. Pour qu'il puisse interpréter son environnement, je lui fournis une <strong>carte à quatre canaux</strong> de dimensions (10, 10, 4) :</p>
+<ul>
+    <li>la position de l'agent ;</li>
+    <li>la position de la noix ;</li>
+    <li>les murs ;</li>
+    <li>la position du prédateur (uniquement s'il est présent).</li>
+</ul>
+<p>Ce canal séparé pour le prédateur est un détail qui m'a coûté plusieurs heures de débogage. Je l'avais initialement fusionné avec les murs, et l'agent ne parvenait pas à distinguer un obstacle fixe d'une menace mobile. Il fonçait alors droit sur le prédateur, sans comprendre pourquoi il se faisait capturer.</p>
+
+<h2>Générer des niveaux garantis résolubles</h2>
+<p>Maintenant que l'observation est définie, il faut s'assurer que les cartes générées ne soient pas des pièges sans issue. Lorsqu'on génère des murs aléatoirement, une fraction non négligeable des niveaux est impossible à résoudre : l'agent peut se retrouver enfermé, ou la noix inaccessible. Confronter l'agent à l'insoluble est un problème d'équité, car même une politique parfaite échouerait.</p>
+<p>Pour garantir la résolubilité, j'ai adopté une approche constructive. À chaque génération, je trace d'abord un <strong>chemin en L</strong> entre le départ et la noix. Ce chemin consiste à avancer horizontalement jusqu'à la colonne de la noix, puis verticalement jusqu'à sa ligne.</p>
+<p>J'interdis ensuite aux murs de s'installer sur ce couloir. Je protège également les cases adjacentes au départ et à la noix, pour éviter que l'agent ne soit bloqué dès son premier mouvement ou que la cible soit scellée.</p>
+<p>Le prédateur est placé hors de ce chemin, sur une case libre à au moins trois cases du départ et de la noix. Si aucune cellule ne satisfait cette contrainte, je le positionne sur le chemin en L lui-même. Cette construction garantit qu'une politique triviale "suivre le couloir" mène toujours au succès.</p>
+
+<h2>La fonction de récompense : un équilibre itératif</h2>
+<p>Une fois les niveaux garantis résolubles, reste à définir le principal moteur de l'apprentissage : la récompense. La conception de la récompense a été l'étape la plus longue. Chaque version révélait un nouveau comportement parasite, que je corrigeais en ajoutant un signal spécifique.</p>
+
+<h3> Éviter l'immobilité</h3>
+<p>Commençons par la première difficulté rencontrée. Ma première idée fut un façonnage symétrique :</p>
+\[
+r = \alpha \cdot (d_{\text{old}} - d_{\text{new}})
+\]
+<p>L'idée était de récompenser le rapprochement et de pénaliser l'éloignement. Pourtant, l'agent est resté immobile. Pourquoi ? Pour contourner un mur, il faut parfois s'éloigner temporairement de la noix. L'agent calculait que ce détour coûtait une pénalité, et préférait donc l'inaction.</p>
+
+<h3>Le façonnage unilatéral</h3>
+<p>Ce constat m'a conduit à une seconde itération. J'ai alors rendu le façonnage unilatéral :</p>
+\[
+r_{\text{progress}} = \alpha \cdot \max(0, d_{\text{old}} - d_{\text{new}})
+\]
+<p>L'agent s'est remis à bouger, mais il passait son temps à heurter les murs, car ces collisions ne généraient aucun signal négatif distinct.</p>
+
+<h3>Des signaux pour chaque comportement</h3>
+<p>Toutefois, ce correctif en a fait émerger un autre. J'ai donc enrichi la récompense avec des pénalités spécifiques :</p>
+\[
+r = -\beta_{\text{temps}} - \beta_{\text{mur}} \cdot \mathbb{1}_{\text{wall}} + \alpha \cdot \max(0, d_{\text{old}} - d_{\text{new}}) - \beta_{\text{backtrack}} \cdot \mathbb{1}_{\text{backtrack}} + r_{\text{predator}}
+\]
+<p>Avec :</p>
+<ul>
+    <li>\( \beta_{\text{temps}} = 0.02 \) : coût temporel pour éviter les épisodes trop longs ;</li>
+    <li>\( \beta_{\text{mur}} = 0.3 \) : pénalité pour avoir heurté un mur ;</li>
+    <li>\( \alpha = 0.2 \) : gain pour chaque case de rapprochement ;</li>
+    <li>\( \beta_{\text{backtrack}} = 0.3 \) : pénalité pour un retour en arrière (détecté via la position à \( t-2 \)).</li>
+</ul>
+<p>Pour le prédateur, j'ai ajouté deux mécanismes. Le premier est un signal d'évitement actif :</p>
+\[
+r_{\text{avoid}} = 0.25 \cdot (d_{\text{pred}}^{\text{new}} - d_{\text{pred}}^{\text{old}})
+\]
+<p>L'agent est récompensé lorsqu'il s'éloigne du danger. Le second est une zone d'alerte : lorsque la distance au prédateur devient inférieure ou égale à 3, une pénalité progressive est appliquée :</p>
+\[
+r_{\text{proximity}} = -(4 - d_{\text{pred}}) \cdot 0.25
+\]
+<p>Cette pénalité précoce est essentielle : elle apprend à l'agent à anticiper la capture plutôt qu'à la subir.</p>
+
+<h3>Comment choisir ces coefficients ?</h3>
+<p>Mais comment choisir ces valeurs ? Les coefficients 0.2, 0.3, 0.25 résultent d'un arbitrage empirique. La pénalité de mur doit être plus forte que le bonus d'un pas de progression (sinon l'agent préfère traverser les murs). La récompense de succès (+10) doit écraser toutes les pénalités pour encourager l'exploration. Le coût temporel est juste assez fort pour éviter les longues errances. C'est un équilibre que je n'ai trouvé qu'en observant les courbes d'apprentissage.</p>
+
+<h2>L'algorithme PPO : acteur, critique et stabilité</h2>
+<p>Passons maintenant à l'algorithme qui fait tourner tout cela. J'ai choisi PPO pour sa stabilité réputée. Mais pour comprendre son fonctionnement, il faut d'abord saisir l'architecture qui le sous-tend.</p>
+
+<h3>Architecture acteur-critique</h3>
+<p>Faisons d'abord un point sur l'architecture. PPO appartient à la famille des méthodes <strong>acteur-critique</strong>. Ces deux rôles sont distincts.</p>
+<p>L'<strong>acteur</strong> est le réseau qui prend les décisions. Il reçoit l'observation et produit une distribution de probabilités sur les actions. Le <strong>critique</strong> est un évaluateur : il estime la valeur de l'état, c'est-à-dire le total des récompenses futures espérées :</p>
+\[
+V(s) = \mathbb{E} \left[ \sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s \right]
+\]
+<p>Le critique permet à l'acteur de savoir si une action était meilleure ou moins bonne que prévu. Concrètement, les deux réseaux partagent un tronc commun (trois couches de convolution (64, 128, 128 filtres) suivies d'une couche dense de 256 neurones) puis se divisent en deux têtes.</p>
+
+<h3>Le clipping : pourquoi PPO est stable</h3>
+<p>Pourquoi PPO est-il particulièrement stable ? La réponse tient en un mot : le <strong>clipping</strong>. Le ratio de vraisemblance mesure le changement de politique :</p>
+\[
+r_t(\theta) = \frac{\pi_\theta(a_t | s_t)}{\pi_{\text{old}}(a_t | s_t)}
+\]
+<p>L'objectif s'écrit alors :</p>
+\[
+L^{\text{CLIP}}(\theta) = \mathbb{E}_t \left[ \min\left( r_t(\theta) \hat{A}_t,\; \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]
+\]
+<p>Avec \( \epsilon = 0.2 \). Si le ratio s'éloigne trop de 1, il est rogné entre 0,8 et 1,2. L'agent peut s'améliorer, mais jamais brutalement. C'est ce frein qui évite les effondrements de performance.</p>
+
+<h3>L'estimation de l'avantage (GAE)</h3>
+<p>En complément du clipping, il faut une estimation fine de la qualité des actions. L'avantage généralisé permet de regarder au-delà de la récompense immédiate. On définit d'abord l'erreur temporelle :</p>
+\[
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+\]
+<p>L'avantage est une somme pondérée de ces erreurs :</p>
+\[
+\hat{A}_t = \sum_{l=0}^{T-t-1} (\gamma \lambda)^l \delta_{t+l}
+\]
+<p>Avec \( \gamma = 0.99 \) et \( \lambda = 0.95 \). Le GAE permet à l'agent de comprendre qu'un détour, bien que coûteux sur le moment, est un investissement payant à long terme.</p>
+
+<h3>La perte totale</h3>
+<p>Ces différents termes sont finalement rassemblés dans une perte unique. La perte totale combine trois composantes :</p>
+\[
+L_{\text{total}} = L^{\text{CLIP}} + c_1 \cdot L_{\text{critic}} - c_2 \cdot H(\pi_\theta)
+\]
+<p>Où \( L_{\text{critic}} \) est l'erreur du critique (loss de Huber), \( H(\pi_\theta) \) l'entropie de la politique (qui encourage l'exploration), et \( c_1 = 0.5 \), \( c_2 = 0.01 \).</p>
+
+<h2>Le curriculum : structurer la progression</h2>
+<p>L'algorithme étant posé, voyons maintenant comment structurer l'apprentissage dans le temps. Confronter un agent à un prédateur rapide dès le départ est une erreur : il n'a pas encore acquis les bases de la navigation. J'ai donc organisé l'apprentissage en <strong>sept niveaux de difficulté croissante</strong>.</p>
+
+<h3>Les niveaux</h3>
+<p>Pour cela, j'ai défini une progression en plusieurs étapes :</p>
+<table>
+    <tr><th>Niveau</th><th>Murs</th><th>Vitesse du prédateur</th></tr>
+    <tr><td>D1-D4</td><td>Densité croissante</td><td>Aucun (0)</td></tr>
+    <tr><td>D5</td><td>Élevée</td><td>Immobile (0)</td></tr>
+    <tr><td>D6</td><td>Élevée</td><td>Lent (0.5)</td></tr>
+    <tr><td>D7</td><td>Élevée</td><td>Rapide (1.0)</td></tr>
+</table>
+<p>Chaque niveau possède ses propres seuils de validation. Les niveaux D1 à D4 permettent d'acquérir la navigation de base. Le niveau D5 introduit le prédateur mais sans mouvement, pour que l'agent apprenne à le contourner. Les niveaux D6 et D7 ajoutent progressivement la dimension temporelle.</p>
+
+<h3>L'évaluation greedy</h3>
+<p>Mais comment savoir si l'agent est prêt à passer à l'étape suivante ? La décision de passer au niveau supérieur ne s'appuie <strong>jamais</strong> sur le taux de réussite pendant l'exploration. Un succès obtenu par hasard (actions aléatoires) ne prouve rien. J'évalue systématiquement l'agent sur sa <strong>politique déterministe (greedy)</strong> : il choisit toujours l'action qu'il estime être la meilleure, sans aucune exploration.</p>
+<p>Un niveau est validé si :</p>
+<ol>
+    <li>Le taux de succès greedy dépasse le seuil propre au niveau (<code>STAGE_THRESHOLD</code>, par exemple 0.8 pour D7) ;</li>
+    <li>Cette performance est maintenue pendant <strong>deux évaluations consécutives</strong> (pour éviter les coups de chance) ;</li>
+    <li>L'agent a effectué un nombre minimal de mises à jour (<code>STAGE_MIN_UPDATES</code>) pour laisser le temps à la politique de converger.</li>
+</ol>
+<p>L'exigence de deux réussites consécutives est une précaution que j'ai ajoutée après avoir observé des progressions suivies d'effondrements. Elle filtre les épisodes de performance aléatoire.</p>
+
+<h3>La régression</h3>
+<p>Cependant, il faut aussi prévoir le cas où l'agent est en difficulté. Si le taux de succès greedy tombe en dessous de <strong>15 %</strong> (<code>regress_threshold = 0.15</code>) après le nombre minimal de mises à jour, l'agent redescend d'un niveau. J'ai mis en place ce mécanisme après avoir constaté des stagnations prolongées : l'agent restait bloqué sur un niveau trop difficile, sans progresser. La régression agit comme un filet de sécurité qui lui permet de reprendre confiance sur un terrain plus familier.</p>
+<p>Cette valeur de 15 % n'est pas arbitraire. En dessous de ce seuil, l'agent n'a manifestement pas compris la mécanique du niveau, et le maintenir plus longtemps ne fait que renforcer des comportements erronés. Un recul temporaire est plus efficace qu'un entêtement.</p>
+
+<h3>L'anti-oubli</h3>
+<p>Au-delà de la montée et de la descente, un autre problème se pose : l'oubli. Même lorsque l'agent atteint le niveau 7, <strong>25 % des environnements en parallèle</strong> rejouent un niveau inférieur, tiré aléatoirement entre D1 et le niveau courant.</p>
+<p>Ce mécanisme d'anti-oubli est inspiré des techniques de <em>replay</em> en RL. En se concentrant exclusivement sur le prédateur rapide, l'agent risque d'oublier les compétences de base (naviguer dans des couloirs simples). En rejouant occasionnellement les anciens niveaux, il consolide ses acquis. C'est une forme de régularisation qui stabilise l'apprentissage sur le long terme.</p>
+
+<h3>Paramètres du curriculum</h3>
+<p>Enfin, pour que ce système fonctionne, certains paramètres doivent être calibrés. Les seuils et les durées minimales sont définis par niveau dans une configuration dédiée.</p>
+<p>Ces valeurs ont été ajustées empiriquement. Les niveaux inférieurs ont des seuils bas car l'objectif est de progresser rapidement. Les niveaux supérieurs exigent une maîtrise plus solide avant de passer à la suite. Le nombre minimal de mises à jour augmente avec la difficulté, car les comportements complexes (comme l'évitement actif) nécessitent plus de temps pour converger.</p>
+
+<h2>Résultats et performance</h2>
+<p>Toute cette mécanique repose sur un outil qui change la donne : JAX. J'ai écrit tout le code en <strong>JAX</strong> pour bénéficier de la vectorisation. Grâce à <code>jax.vmap</code>, une fonction conçue pour un seul environnement s'applique à un lot. L'état de chaque environnement est stocké dans un objet dont chaque champ a une première dimension <code>N</code>.</p>
+<p>Sur un GPU AMD MI300X, je fais tourner <strong>128 environnements en parallèle</strong>. Chaque pas est calculé simultanément. Le gain est spectaculaire : sans vectorisation (CPU, boucle Python), chaque entraînement prendrait plusieurs heures. Avec le GPU, la même charge ne demande que quelques secondes. Ce gain n'est pas un luxe : c'est une condition nécessaire à l'expérimentation. Sans cette rapidité, ajuster les coefficients de récompense ou les seuils du curriculum aurait été prohibitif.</p>
+
+<h3>Résultats quantitatifs</h3>
+<p>Après 550 mises à jour PPO, voici les taux de succès mesurés sur la politique greedy pour chaque niveau :</p>
+
+<figure>
+    <img src="/images/success_evolution_squirell_rl.png" alt="Taux de succès de la politique greedy par niveau au cours de l'entraînement.">
+</figure>
+<p><em>Taux de succès de la politique greedy par niveau au cours de l'entraînement.</em></p>
+
+<h3>Analyse des résultats</h3>
+<p>L'agent est parfait sur les niveaux sans prédateur (D1 à D4) dès la 300e mise à jour. Sur les niveaux D5 et D6, il atteint respectivement 97 % et 98 % en fin d'entraînement. Le niveau le plus difficile, D7 (prédateur rapide), plafonne à 92 %.</p>
+<p>Le moment le plus marquant se situe entre les mises à jour 125 et 250. Sur le niveau D3 (premiers murs significatifs), le taux de succès passe brutalement de 52 % à 99 %. Cette transition coïncide exactement avec le moment où l'agent intègre la pénalité de collision : il cesse de taper dans les murs.</p>
+<p>En observant les trajectoires, l'agent rejoint la noix en 6 à 12 pas, en maintenant une distance de sécurité d'environ 2 à 3 cases face au prédateur. Il n'hésite pas à faire des détours pour l'éviter, ce qui montre que le signal de zone d'alerte (pénalité à 3 cases) a bien été intégré.</p>
+
+<h2>Enseignements et perspectives</h2>
+<p>Ce projet m'a confirmé trois principes :</p>
+<ol>
+    <li><strong>Un environnement doit toujours être résoluble.</strong> Construire un chemin garanti est un investissement nécessaire. Si le niveau est impossible, l'agent n'a aucune chance, et l'apprentissage est condamné.</li>
+    <li><strong>Les récompenses se découvrent en observant l'agent.</strong> Chaque pénalité ajoutée est la réponse à un comportement parasite que j'ai constaté. C'est un dialogue permanent entre le concepteur et l'agent, où les courbes d'apprentissage servent de retour.</li>
+    <li>La progression par étapes, la régression, l'anti-oubli et les seuils par niveau sont des garde-fous indispensables. La vectorisation GPU est ce qui rend l'expérimentation possible.</li>
+</ol>
+
+<h2>Conclusion</h2>
+<p>Ce projet m'a permis de vérifier qu'un algorithme classique comme PPO, associé à un environnement bien conçu, des récompenses discriminantes et un curriculum progressif, suffit à résoudre une tâche qui semblait d'abord difficile. L'agent atteint <strong>98,2 %</strong> de réussite en moyenne, et <strong>92 %</strong> sur le niveau le plus exigeant.</p>
+<p>Trois enseignements se dégagent : la résolubilité des niveaux est un prérequis, les récompenses se découvrent en observant les comportements parasites de l'agent, et le curriculum (progression, régression, anti-oubli) n'est pas une option. La vectorisation GPU, quant à elle, est ce qui rend l'expérimentation itérative possible.</p>
+<p>Pour les lecteurs qui souhaitent approfondir les aspects techniques (équations complètes du GAE, détails d'implémentation JAX, hyperparamètres précis et figures d'apprentissage) le rapport complet est disponible sur
+<a href="https://github.com/5uru/squirrel-rl/blob/main/Report_PPO.pdf" target="_blank">mon dépôt GitHub</a>.</p>
+<h2>Liens Utiles</h2>
+<p>Pour approfondir vos connaissances et explorer des outils avancés, voici quelques ressources :</p>
+<ul>
+    <li><a href="https://github.com/5uru/squirrel-rl/">Mon code</a></li>
+    <li><a href="https://github.com/5uru/squirrel-rl/blob/main/Report_PPO.pdf"> Rapport technique</a></li>
+    <li><a href="https://lilianweng.github.io/posts/2020-01-29-curriculum-rl/">Curriculum for Reinforcement Learning</a> </li>
+</ul>
+
+<div class="music-suggestion">
+    <p>Ma recommandation musicale du jour : à écouter sans modération !</p>
+    <a href="https://www.youtube.com/watch?v=9ACOq7jUjDM&list=RD9ACOq7jUjDM&start_radio=1" target="_blank">Écouter sur YouTube</a>
+</div>
+
+<footer>
+    <p><span class="copyleft">&copy;</span> 2026 Jonathan Suru. This work is free.</p>
+</footer>
+<!-- 100% privacy-first analytics -->
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+<noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>
+<script>
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+</script>
+<script>
+    document.querySelector('.nav-toggle').addEventListener('click', function() {
+        this.classList.toggle('open');
+        document.querySelector('nav').classList.toggle('open');
+    });
+</script>
+</body>
+</html>
